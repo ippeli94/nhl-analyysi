@@ -127,6 +127,7 @@ def test_online_404_raises_without_retry(monkeypatch):
         return _Response(404)
 
     monkeypatch.setattr(requests.Session, "request", fake_request)
+    monkeypatch.setattr(nhl, "_throttle", lambda: None)
     monkeypatch.setattr(nhl.time, "sleep", lambda s: None)
     with pytest.raises(nhl.SourceError):
         nhl.get_json("/gamecenter/1/play-by-play")
@@ -140,5 +141,61 @@ def test_online_non_json_is_source_error(monkeypatch):
         return _Response(200, body="<html>maintenance</html>")
 
     monkeypatch.setattr(requests.Session, "request", fake_request)
+    monkeypatch.setattr(nhl, "_throttle", lambda: None)
+    monkeypatch.setattr(nhl.time, "sleep", lambda s: None)
     with pytest.raises(nhl.SourceError):
         nhl.get_json("/schedule/now")
+
+
+def _schedule_with(tmp_path, monkeypatch, mutate):
+    payload = json.loads(
+        (FIXTURES / nhl.fixture_name(f"/schedule/{FIXTURE_DATE}")).read_text("utf-8")
+    )
+    mutate(payload["gameWeek"][0]["games"])
+    monkeypatch.setattr(config, "OFFLINE_DIR", tmp_path)
+    (tmp_path / nhl.fixture_name(f"/schedule/{FIXTURE_DATE}")).write_text(
+        json.dumps(payload), "utf-8"
+    )
+    return nhl.fetch_schedule_week(FIXTURE_DATE)
+
+
+def test_non_regular_game_with_missing_fields_is_skipped(tmp_path, monkeypatch):
+    def mutate(games):
+        games[0]["gameType"] = 4  # All-Star
+        del games[0]["homeTeam"]["abbrev"]
+
+    original = json.loads(
+        (FIXTURES / nhl.fixture_name(f"/schedule/{FIXTURE_DATE}")).read_text("utf-8")
+    )
+    total = sum(len(day["games"]) for day in original["gameWeek"])
+    skipped_id = original["gameWeek"][0]["games"][0]["id"]
+
+    games, _ = _schedule_with(tmp_path, monkeypatch, mutate)
+    assert skipped_id not in [g["id"] for g in games]
+    assert len(games) == total - 1
+
+
+def test_regular_game_missing_dark_logo_gets_none(tmp_path, monkeypatch):
+    def mutate(games):
+        del games[0]["homeTeam"]["darkLogo"]
+
+    games, _ = _schedule_with(tmp_path, monkeypatch, mutate)
+    assert games[0]["home"]["logo_dark"] is None
+    assert games[0]["home"]["logo"].startswith("https://")
+
+
+def test_regular_game_missing_core_field_is_source_error(tmp_path, monkeypatch):
+    def mutate(games):
+        del games[0]["homeTeam"]["abbrev"]
+
+    with pytest.raises(nhl.SourceError, match="abbrev"):
+        _schedule_with(tmp_path, monkeypatch, mutate)
+
+
+def test_name_falls_back_to_abbreviation(tmp_path, monkeypatch):
+    def mutate(games):
+        del games[0]["awayTeam"]["placeName"]
+        del games[0]["awayTeam"]["commonName"]
+
+    games, _ = _schedule_with(tmp_path, monkeypatch, mutate)
+    assert games[0]["away"]["name"] == games[0]["away"]["abbr"]

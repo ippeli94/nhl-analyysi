@@ -95,7 +95,8 @@ SO game `2026020298`, period 3, home SJS, away PIT:
 | 02:56 | `1551` | `penalty`, team 28 (SJS), tripping |
 | 02:56 | `1541` | `faceoff`, PIT (5) now has 5 skaters, SJS has 4 |
 | 03:28 | `1541` | `goal`, team 5 (PIT), scorer 8482137, `xCoord` -82 |
-| 04:01 | `1551` | Next penalties and faceoff, back to 5 v 5 |
+| 04:01 | `1551` | `penalty` events (roughing, PIT and SJS). Still 5 v 5 at the penalty events |
+| 04:01 | `1451` | `faceoff`, PIT (away, 5) down a skater: away 4, home 5. Not back to 5 v 5 |
 
 The 1541 goal is a power-play goal for PIT: away 5 skaters, home 4. Index 1 is the away skater count and index 2 the home skater count. Goalies are 1 (in net) in both positions. A 1560 at 17:30 in the REG game (away goal, `goalieInNetId` absent) has home goalie `0`, which is the empty-net case.
 

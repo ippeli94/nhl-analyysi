@@ -45,7 +45,8 @@ class ScheduledGame(TypedDict):
     away: Team
 
 
-_TEAM_FIELDS = ("id", "abbrev", "logo", "darkLogo", "commonName.default", "placeName.default")
+# Core identifiers. Names and dark logo are optional and fall back to None or the abbreviation.
+_TEAM_FIELDS = ("id", "abbrev", "logo")
 SCHEDULE_GAME_FIELDS = ["id", "season", "gameType", "startTimeUTC", "gameState"] + [
     f"{side}.{field}" for side in ("homeTeam", "awayTeam") for field in _TEAM_FIELDS
 ]
@@ -144,13 +145,19 @@ def get_json(path: str) -> dict:
     return _get_online(path)
 
 
+def _localized(node: dict, key: str) -> str | None:
+    value = node.get(key)
+    return value.get("default") if isinstance(value, dict) else None
+
+
 def _team(team: dict) -> Team:
+    parts = [_localized(team, "placeName"), _localized(team, "commonName")]
     return {
         "id": team["id"],
         "abbr": team["abbrev"],
-        "name": f"{team['placeName']['default']} {team['commonName']['default']}",
+        "name": " ".join(part for part in parts if part) or team["abbrev"],
         "logo": team["logo"],
-        "logo_dark": team["darkLogo"],
+        "logo_dark": team.get("darkLogo"),
     }
 
 
@@ -162,6 +169,10 @@ def fetch_schedule_week(date: str) -> tuple[list[ScheduledGame], str | None]:
     for day in payload["gameWeek"]:
         require(day, ["date", "games"])
         for game in day["games"]:
+            # Non-regular games (All-Star, preseason) are not modelled; skip them unvalidated
+            # so one malformed exhibition game cannot abort the week.
+            if game.get("gameType") not in config.CACHED_GAME_TYPES:
+                continue
             require(game, SCHEDULE_GAME_FIELDS)
             games.append(
                 {
