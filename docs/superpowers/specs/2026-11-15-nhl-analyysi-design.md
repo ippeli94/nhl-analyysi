@@ -651,3 +651,17 @@ Päätettävä toteutussuunnitelmassa:
 - **Markkinat heti alusta:** voittaja (h2h), yli/alle (totals), tasoitus ±1,5 (spreads) ja 1X2 varsinaiselta peliajalta. Rakentajan tarkistettava, tarjoaako The Odds API NHL:lle 1X2:n (`h2h_3_way`) perusmarkkinana. Jos se on saatavilla vain kalliina tapahtumakohtaisena hakuna, 1X2 jätetään pois ja käyttäjälle kerrotaan. Budjetti: 4 markkinaa × 2 hakua/vrk ≈ 248 krediittiä/kk, mikä mahtuu 500:aan.
 - **Ajot:** aamu-, ilta- ja myöhäisilta-ajo (luvun 6 ajastus sellaisenaan). Kertoimet haetaan illalla ja myöhäisillalla.
 - **Panoskoko (Kelly):** ei ensimmäisessä versiossa, näytetään vain EV (suunnittelijan valinta, mahdollinen myöhempi lisäys).
+
+## 17. Toteutussuunnitelman päätökset
+
+Nämä päätökset täydentävät tai poikkeavat luvusta 15.4 (rakentaja saa ratkaista ne itse). Ne on kirjattu toteutuksen aikana.
+
+1. **xG ei tallennu välimuistitiedostoihin.** Välimuistitiedostot sisältävät vain raakoja laukausominaisuuksia eikä niitä kirjoiteta uudelleen. xG lasketaan latauksen yhteydessä tiedostosta `model/xg_coefs.json`. Luku 5.1 tallentaisi xG:n, mikä on ristiriidassa muuttumattomien tiedostojen ja uudelleenkoulutuksen kanssa.
+2. **`official` johdetaan, ei tallenneta.** Ottelun virallinen ennuste on viimeinen lokirivi, jonka `ts < start_utc`.
+3. **Alkaneet ottelut näytetään jäädytettyinä** tiedostosta `data/state/last_games.json` (edellisen ajon viedyt ottelo-objektit). Niitä ei lasketa uudelleen.
+4. **Lähteen tilan arvot ovat `ok | stale | failed | unavailable`.** `unavailable` tarkoittaa valinnaista lähdettä, joka ei tässä vaiheessa syötä mallia eikä sitä saatu haettua (ESPN:n loukkaantumiset). Se ei koskaan tee bannerista punaista.
+5. **Viritetyt parametrit** ovat tiedostossa `model/params.json` (versioidaan). Ne korvaavat `config.py`:n oletukset. Tiedosto sisältää myös julkaisuehdon tuloksen. `pipeline.run` kieltäytyy ajamasta verkossa, ellei `gate.passed` ole tosi.
+6. **Virityskausi on 2024-25 ja julkaisuehdon kausi 2025-26.** Parametrit jäädytetään ennen julkaisuehdon kautta, jotta ehto on otoksen ulkopuolinen.
+7. **`train_xg.yml` on vain manuaalinen.** Opetuskaudet eivät muutu kesken kauden.
+8. **Maalirivit välimuistissa sisältävät syöttäjien tunnisteet** (`a1`, `a2`). Näin myöhemmät vaiheet voivat johtaa ylivoimapisteet ilman uutta alkulatausta.
+9. **Maalivahtisäätö kuuluu MVP:hen, aloittaja päätellään.** Ilman vahvistettua aloittajalähdettä jokainen maalivahtitila on `projected` ("Arvio") ja kerroin on kahden todennäköisen aloittajan odotusarvo. `confirmed` ja `likely` pysyvät sopimuksessa myöhempää lähdettä varten. Backtest ajetaan kolmella maalivahtitilalla: ei maalivahtisäätöä (15.2 a), todellinen boxscore-aloittaja (15.2 b, jolla maalivahtivakio viritetään) ja projisoitu (tuotannon tila). Julkaisuehto arvioidaan projisoidulla tilalla.
