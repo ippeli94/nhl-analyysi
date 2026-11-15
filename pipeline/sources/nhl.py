@@ -31,7 +31,7 @@ class Team(TypedDict):
     abbr: str
     name: str
     logo: str
-    logo_dark: str
+    logo_dark: str | None
 
 
 class ScheduledGame(TypedDict):
@@ -169,9 +169,11 @@ def fetch_schedule_week(date: str) -> tuple[list[ScheduledGame], str | None]:
     for day in payload["gameWeek"]:
         require(day, ["date", "games"])
         for game in day["games"]:
-            # Non-regular games (All-Star, preseason) are not modelled; skip them unvalidated
+            # gameType is core: a game without it is a source failure. Non-regular games
+            # (All-Star, preseason) are not modelled; skip them before the rest of validation
             # so one malformed exhibition game cannot abort the week.
-            if game.get("gameType") not in config.CACHED_GAME_TYPES:
+            require(game, ["gameType"])
+            if game["gameType"] not in config.CACHED_GAME_TYPES:
                 continue
             require(game, SCHEDULE_GAME_FIELDS)
             games.append(

@@ -184,6 +184,14 @@ def test_regular_game_missing_dark_logo_gets_none(tmp_path, monkeypatch):
     assert games[0]["home"]["logo"].startswith("https://")
 
 
+def test_game_without_game_type_is_source_error(tmp_path, monkeypatch):
+    def mutate(games):
+        del games[0]["gameType"]
+
+    with pytest.raises(nhl.SourceError, match="gameType"):
+        _schedule_with(tmp_path, monkeypatch, mutate)
+
+
 def test_regular_game_missing_core_field_is_source_error(tmp_path, monkeypatch):
     def mutate(games):
         del games[0]["homeTeam"]["abbrev"]
