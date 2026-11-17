@@ -70,6 +70,7 @@ TRAIN_GAME_TYPES = (2,)
 N_SIMS = 10000
 TOTAL_LINES = (5.5, 6.5)
 EN_PROB_FALLBACK = {1: 0.30, 2: 0.15}
+EN_PROB_MIN_GAMES = 50
 
 # Shot features (spec 5.1)
 GOAL_X = 89.0
