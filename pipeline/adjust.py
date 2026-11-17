@@ -135,6 +135,8 @@ def goalie_block(
     starters: list[tuple[int, float]], team: str, gr: GoalieRatings, p: ModelParams,
     status: str = "projected",
 ) -> dict | None:
+    """The G object for the most probable starter; `mult` is the applied multiplier,
+    i.e. the expectation over all `starters` (plan decision 9)."""
     if not starters:
         return None
     g, prob = starters[0]
@@ -144,5 +146,5 @@ def goalie_block(
         "status": status,
         "gsax_per60": gr.gsax_per60.get(g),
         "p_start": prob,
-        "mult": goalie_mult([(g, 1.0)], team, gr, p),
+        "mult": goalie_mult(starters, team, gr, p),
     }

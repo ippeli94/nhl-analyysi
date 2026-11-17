@@ -57,6 +57,14 @@ def test_goalie_games_from_real_fixture(stub_score):
         goals = sum(1 for s in rec["shots"] if s["ev"] == "goal" and not s["empty_net"])
         assert rows["ga"].sum() == goals
         assert (rows["xg_faced"] > 0).all()
+        box_team = {g["id"]: g["team"] for g in rec["goalies"]}
+        game_rows = gg[gg["game_id"] == rec["id"]]
+        for r in game_rows.itertuples():
+            assert r.team == box_team[r.goalie]
+        for team in set(game_rows["team"]):
+            opp_goals = sum(1 for s in rec["shots"]
+                            if s["team"] != team and s["ev"] == "goal" and not s["empty_net"])
+            assert game_rows[game_rows["team"] == team]["ga"].sum() == opp_goals
 
 
 def test_delta_formula_and_shrinkage(unit_weights):
@@ -165,7 +173,8 @@ def test_goalie_block_fields():
     assert set(b) == {"id", "name", "status", "gsax_per60", "p_start", "mult"}
     assert b["status"] == "projected"
     assert b["id"] == 1 and b["name"] == "Netminder" and b["p_start"] == 0.7
-    assert b["mult"] == pytest.approx(0.976)
+    assert b["mult"] == pytest.approx(adjust.goalie_mult([(1, 0.7), (2, 0.3)], "A", gr, P))
+    assert b["mult"] != pytest.approx(adjust.goalie_mult([(1, 1.0)], "A", gr, P))
 
 
 def test_goalie_block_none_for_new_team():
