@@ -72,6 +72,11 @@ TOTAL_LINES = (5.5, 6.5)
 EN_PROB_FALLBACK = {1: 0.30, 2: 0.15}
 EN_PROB_MIN_GAMES = 50
 
+# Ratings (spec 6.2, 6.8)
+LEAGUE_GOALS_FALLBACK = 3.0
+MIN_FIT_ROWS = 20
+LEAGUE_PERIOD_SHARE_FALLBACK = (1 / 3, 1 / 3, 1 / 3)
+
 # Shot features (spec 5.1)
 GOAL_X = 89.0
 REBOUND_S = 3
