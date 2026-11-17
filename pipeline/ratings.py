@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import warnings
+from dataclasses import dataclass, field
 from datetime import date
 
 import numpy as np
