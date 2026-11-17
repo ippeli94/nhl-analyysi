@@ -142,7 +142,7 @@ def period_shares(tg: pd.DataFrame, asof: date, p: ModelParams) -> PeriodShares:
         sums = g[cols].sum()
         tot = g["target"].sum()
         shares = (sums.to_numpy(dtype=float) + prior * league) / (tot.to_numpy()[:, None] + prior)
-        return {str(t): [float(x) for x in row] for t, row in zip(sums.index, shares)}
+        return {str(t): [float(x) for x in row] for t, row in zip(sums.index, shares, strict=True)}
 
     return PeriodShares(
         league=[float(x) for x in league],
