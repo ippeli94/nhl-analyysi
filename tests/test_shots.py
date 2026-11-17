@@ -138,4 +138,18 @@ def test_goal_rows_carry_assists():
 def test_extract_penalties_minutes():
     pens = shots.extract_penalties(load("pbp", REG_GAME_ID))
     assert pens and all(p["min"] in (2, 4, 5, 10) for p in pens)
-    assert {p["team"] for p in pens} <= {"TOR", "COL"}
+    pbp = load("pbp", REG_GAME_ID)
+    assert {p["team"] for p in pens} <= {pbp["homeTeam"]["abbrev"], pbp["awayTeam"]["abbrev"]}
+
+
+def test_rush_false_when_previous_play_is_far_from_own_net():
+    plays = [_play("faceoff", 200, x=30, y=0), _play("shot-on-goal", 203, x=60)]
+    assert shots.extract_shots(_pbp(plays))[0]["rush"] is False
+
+
+def test_rush_for_away_shooter_uses_flipped_coordinates():
+    # away attacks left: raw -30 normalizes to +30 (no rush), raw +10 to -10 (rush)
+    far = [_play("faceoff", 200, owner=2, x=-30, y=0), _play("shot-on-goal", 203, owner=2, x=-60)]
+    near = [_play("faceoff", 200, owner=2, x=10, y=0), _play("shot-on-goal", 203, owner=2, x=-60)]
+    assert shots.extract_shots(_pbp(far))[0]["rush"] is False
+    assert shots.extract_shots(_pbp(near))[0]["rush"] is True

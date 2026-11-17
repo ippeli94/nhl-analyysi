@@ -19,7 +19,6 @@ SHOT_TYPES = {
 }
 MIN_SKATERS = 3
 FULL_STRENGTH = 5
-RUSH_MAX_X = 25.0
 
 
 def parse_situation(code: str, shooter_is_home: bool) -> tuple[str, bool, bool]:
@@ -121,7 +120,7 @@ def extract_shots(pbp: dict) -> list[dict]:
             prev_xy = _coords(prev_play)
             if prev_xy and t - _seconds(prev_play["timeInPeriod"]) < config.RUSH_S:
                 px, _ = normalize_xy(prev_xy[0], prev_xy[1], is_home, side, median)
-                rush = px < RUSH_MAX_X
+                rush = px < config.RUSH_MAX_X
 
         row = {
             "p": period, "t": t, "team": abbr[owner],

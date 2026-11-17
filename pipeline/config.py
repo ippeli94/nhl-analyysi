@@ -75,6 +75,7 @@ EN_PROB_FALLBACK = {1: 0.30, 2: 0.15}
 GOAL_X = 89.0
 REBOUND_S = 3
 RUSH_S = 4
+RUSH_MAX_X = 25.0
 
 # xG model and confidence
 XG_AUC_MIN = 0.70
