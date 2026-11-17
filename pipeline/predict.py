@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
+import numpy as np
+
 from pipeline import config
 from pipeline.adjust import GoalieRatings, goalie_block, goalie_mult
 from pipeline.config import ModelParams
@@ -25,6 +27,15 @@ NULL_KEYS = ("lineup_changes", "players", "form", "season_compare", "h2h", "insi
 def _clamp(x: float) -> float:
     lo, hi = config.FACTOR_PRODUCT_CLAMP
     return min(max(x, lo), hi)
+
+
+def _scaled(factors: tuple[float, ...], applied: float) -> tuple[float, ...]:
+    raw = float(np.prod(factors))
+    active = [f != 1.0 for f in factors]
+    if raw == applied or not any(active):
+        return factors
+    k = (applied / raw) ** (1 / sum(active))
+    return tuple(f * k if on else f for f, on in zip(factors, active, strict=True))
 
 
 def _team_block(t: dict) -> dict:
@@ -66,9 +77,10 @@ def predict_game(
     m_h = _clamp(ice_h * rest_h * gk_h)
     m_a = _clamp(1.0 * rest_a * gk_a)
     lam_h, lam_a = base_h * m_h, base_a * m_a
-    # displayed factors must multiply to the applied multiplier even when the clamp binds
-    s_h = (m_h / (ice_h * rest_h * gk_h)) ** (1 / 3)
-    s_a = (m_a / (rest_a * gk_a)) ** (1 / 3)
+    # displayed factors must multiply to the applied multiplier even when the clamp binds;
+    # only non-neutral factors are scaled
+    h_ice, h_rest, h_gk = _scaled((ice_h, rest_h, gk_h), m_h)
+    a_ice, a_rest, a_gk = _scaled((1.0, rest_a, gk_a), m_a)
 
     sim = simulate(
         split_lambda(lam_h, home, away, ps, p.use_periods),
@@ -93,9 +105,9 @@ def predict_game(
         "periods": sim["periods"],
         "factors": [
             _factor("base", "Joukkuevahvuus", base_h, base_a, "goals"),
-            _factor("home_ice", "Kotietu", ice_h * s_h, s_a, "mult"),
-            _factor("rest", "Lepo / back-to-back", rest_h * s_h, rest_a * s_a, "mult"),
-            _factor("goalie", "Maalivahti", gk_h * s_h, gk_a * s_a, "mult"),
+            _factor("home_ice", "Kotietu", h_ice, a_ice, "mult"),
+            _factor("rest", "Lepo / back-to-back", h_rest, a_rest, "mult"),
+            _factor("goalie", "Maalivahti", h_gk, a_gk, "mult"),
         ],
         "goalies": {
             "home": goalie_block(st_home, home, gr, p),

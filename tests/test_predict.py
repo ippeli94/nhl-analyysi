@@ -95,6 +95,7 @@ def test_factor_product_is_clamped():
     for k in ("home_ice", "rest", "goalie"):
         prod *= factor(g, k)["home"]
     assert prod == pytest.approx(1.25, abs=1e-9)
+    assert factor(g, "home_ice")["away"] == 1.0
 
 
 def test_b2b_only_when_played_yesterday():
