@@ -52,6 +52,34 @@ def _factor(key: str, label: str, home: float, away: float, unit: str) -> dict:
     return {"key": key, "label": label, "home": home, "away": away, "unit": unit}
 
 
+def game_lambdas(
+    r: Ratings,
+    home: str,
+    away: str,
+    home_b2b: bool,
+    away_b2b: bool,
+    st_home: list[tuple[int, float]],
+    st_away: list[tuple[int, float]],
+    gr: GoalieRatings,
+    p: ModelParams,
+) -> dict:
+    """Goal rates of one game: base x clamped product of home ice, rest and goalie.
+
+    Shared by predict_game and the backtest so both compose lambda identically."""
+    base_h, base_a = base_lambda(r, home, away), base_lambda(r, away, home)
+    ice_h = home_mult(r)
+    rest_h, rest_a = rest_mult(r, home_b2b, away_b2b), rest_mult(r, away_b2b, home_b2b)
+    gk_h = goalie_mult(st_away, away, gr, p)  # the away goalie's effect on the home lambda
+    gk_a = goalie_mult(st_home, home, gr, p)
+    m_h = _clamp(ice_h * rest_h * gk_h)
+    m_a = _clamp(1.0 * rest_a * gk_a)
+    return {
+        "base_h": base_h, "base_a": base_a, "ice_h": ice_h,
+        "rest_h": rest_h, "rest_a": rest_a, "gk_h": gk_h, "gk_a": gk_a,
+        "m_h": m_h, "m_a": m_a, "lam_h": base_h * m_h, "lam_a": base_a * m_a,
+    }
+
+
 def predict_game(
     game: ScheduledGame,
     r: Ratings,
@@ -68,19 +96,13 @@ def predict_game(
     away_b2b = last_played.get(away) == yesterday
     st_home, st_away = starters.get(home, []), starters.get(away, [])
 
-    base_h, base_a = base_lambda(r, home, away), base_lambda(r, away, home)
-    ice_h = home_mult(r)
-    rest_h, rest_a = rest_mult(r, home_b2b, away_b2b), rest_mult(r, away_b2b, home_b2b)
-    gk_h = goalie_mult(st_away, away, gr, p)  # the away goalie's effect on the home lambda
-    gk_a = goalie_mult(st_home, home, gr, p)
-
-    m_h = _clamp(ice_h * rest_h * gk_h)
-    m_a = _clamp(1.0 * rest_a * gk_a)
-    lam_h, lam_a = base_h * m_h, base_a * m_a
+    lm = game_lambdas(r, home, away, home_b2b, away_b2b, st_home, st_away, gr, p)
+    lam_h, lam_a = lm["lam_h"], lm["lam_a"]
     # displayed factors must multiply to the applied multiplier even when the clamp binds;
     # only non-neutral factors are scaled
-    h_ice, h_rest, h_gk = _scaled((ice_h, rest_h, gk_h), m_h)
-    a_ice, a_rest, a_gk = _scaled((1.0, rest_a, gk_a), m_a)
+    h_ice, h_rest, h_gk = _scaled((lm["ice_h"], lm["rest_h"], lm["gk_h"]), lm["m_h"])
+    a_ice, a_rest, a_gk = _scaled((1.0, lm["rest_a"], lm["gk_a"]), lm["m_a"])
+    base_h, base_a = lm["base_h"], lm["base_a"]
 
     sim = simulate(
         split_lambda(lam_h, home, away, ps, p.use_periods),
