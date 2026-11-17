@@ -131,6 +131,11 @@ def test_missing_scheduled_game_is_error(seeded):
     assert "[VIRHE] SCHED" in text and "2025020999" in text and "2025020321" not in text
 
 
+def test_missing_schedule_ids_is_warning_in_full_mode(seeded):
+    assert review.main(["--skip-tests"]) == 1
+    assert "[VAROITUS] SCHED" in report(seeded)
+
+
 def test_secret_shaped_string_is_error(seeded):
     (seeded / "pipeline").mkdir()
     (seeded / "pipeline/x.py").write_text('KEY = "' + "ab12" * 8 + '"\n', encoding="utf-8")
@@ -142,6 +147,9 @@ def test_secret_skips_fixtures_and_cache(seeded):
     for d in ("tests/fixtures", "data/cache"):
         (seeded / d).mkdir(parents=True)
         (seeded / d / "x.json").write_text("ab12" * 8, encoding="utf-8")
+    ids = seeded / "data/state/schedule_ids.json"
+    ids.parent.mkdir(parents=True, exist_ok=True)
+    ids.write_text("[2025020321]", encoding="utf-8")
     assert review.main(["--skip-tests"]) == 0
 
 

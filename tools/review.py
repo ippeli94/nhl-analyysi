@@ -236,8 +236,11 @@ def _has_result(game_id: int) -> bool:
 
 def check_sched(ctx: Ctx) -> list[Problem]:
     ids = _read_json(ctx.root / Path(*SCHEDULE_IDS), None)
-    if not ids:
-        return []
+    if ids is None:
+        if ctx.mode == "data":
+            return []
+        return [Problem(WARNING, "SCHED", "data/state/schedule_ids.json", "tiedosto puuttuu",
+                        "aja pipeline: python -m pipeline.run")]
     present = {g["id"] for g in _games(ctx)}
     return [
         Problem(ERROR, "SCHED", f"game {game_id}",

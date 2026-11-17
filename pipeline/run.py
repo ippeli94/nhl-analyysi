@@ -34,6 +34,7 @@ XG_COEFS = ("model", "xg_coefs.json")
 XG_COEFS_STUB = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "xg_coefs_stub.json"
 LAST_GAMES = ("data", "state", "last_games.json")
 SOURCES_FILE = ("data", "state", "sources.json")
+SCHEDULE_IDS = ("data", "state", "schedule_ids.json")
 
 
 def _iso(now: datetime) -> str:
@@ -303,6 +304,7 @@ def run(offline: Path | None, now: datetime, extra_if_early: bool) -> int:
         tracking.append_predictions(games, _iso(now))
         _write_json(LAST_GAMES, [_public(g) for g in games])
         _write_json(SOURCES_FILE, state)
+        _write_json(SCHEDULE_IDS, [g["id"] for g in selected])
         export.write_latest(latest)
     except (SourceError, FileNotFoundError) as exc:
         logger.error("run failed: %s", exc)

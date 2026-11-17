@@ -46,6 +46,7 @@ def assert_nothing_durable(root):
     assert not (root / "site/data/latest.json").exists()
     assert not (root / "data/history").exists()
     assert not (root / "data/state").exists()
+    assert not (root / "data/state/schedule_ids.json").exists()
 
 
 def online_with_gate(root, monkeypatch):
@@ -72,6 +73,8 @@ def test_offline_run_end_to_end(seeded):
     }
     assert tracking.read_log("predictions", SEASON)
     assert (seeded / "data/state/last_games.json").exists()
+    ids = json.loads((seeded / "data/state/schedule_ids.json").read_text(encoding="utf-8"))
+    assert sorted(ids) == sorted(g["id"] for g in latest["games"])
     assert all(set(g["goalies"]) == {"home", "away"} for g in latest["games"])
     assert all("_internal" not in g for g in latest["games"])
     assert latest["next_game_date"] is None
