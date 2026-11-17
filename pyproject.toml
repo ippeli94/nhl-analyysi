@@ -12,3 +12,4 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+filterwarnings = ["ignore:Unknown solver options:scipy.optimize.OptimizeWarning"]
