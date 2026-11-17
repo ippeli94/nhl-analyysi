@@ -22,7 +22,7 @@ def score(p_home: np.ndarray, y_home: np.ndarray, base_rate: float) -> dict:
         return {"n": 0, "brier": None, "logloss": None, "accuracy": None,
                 "brier_base": None, "logloss_base": None, "calibration": []}
     base = np.full(n, base_rate, dtype=float)
-    idx = np.minimum((p / BIN_WIDTH).astype(int), N_BINS - 1)
+    idx = np.minimum(np.floor(np.clip(p, 0.0, 1.0) / BIN_WIDTH + 1e-9).astype(int), N_BINS - 1)
     calibration = []
     for b in range(N_BINS):
         mask = idx == b

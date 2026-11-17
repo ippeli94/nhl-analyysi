@@ -62,7 +62,7 @@ def test_factors_multiply_to_lambda():
     g = run(r, last_played={"CAR": date(2025, 11, 14), "SEA": date(2025, 11, 14)})
     f = {k: factor(g, k) for k in ("base", "home_ice", "rest", "goalie")}
     product = f["base"]["home"] * f["home_ice"]["home"] * f["rest"]["home"] * f["goalie"]["home"]
-    assert product == pytest.approx(g["xg"]["home"], abs=0.005)
+    assert product == pytest.approx(g["_internal"]["lam_home"], abs=1e-6)
     assert f["base"]["home"] == pytest.approx(BASE, abs=1e-9)
     assert f["rest"]["home"] == pytest.approx(np.exp(-0.04 + 0.03))
 
@@ -90,8 +90,11 @@ def test_factor_product_is_clamped():
     r = ratings(home=float(np.log(1.1)), b2b_def=float(np.log(1.1)))
     gr = GoalieRatings(delta={1: -0.5}, team_delta={"SEA": 0.0})  # clamps to 1.10
     g = run(r, last_played={"SEA": date(2025, 11, 14)}, gr=gr, starters={"SEA": [(1, 1.0)]})
-    assert factor(g, "goalie")["home"] == pytest.approx(1.10)
     assert g["xg"]["home"] == round(BASE * 1.25, 2)
+    prod = 1.0
+    for k in ("home_ice", "rest", "goalie"):
+        prod *= factor(g, k)["home"]
+    assert prod == pytest.approx(1.25, abs=1e-9)
 
 
 def test_b2b_only_when_played_yesterday():
@@ -147,3 +150,8 @@ def test_calibration_bins_cover_all_rows():
     top = m["calibration"][-1]
     assert (top["lo"], top["hi"], top["n"]) == (0.95, 1.0, 2)
     assert top["y_mean"] == 1.0
+
+
+def test_bin_edge_is_robust_to_float_error():
+    m = score(np.array([0.30, 0.3499]), np.array([1, 0]), 0.5)
+    assert [(b["lo"], b["n"]) for b in m["calibration"]] == [(0.3, 2)]

@@ -63,8 +63,12 @@ def predict_game(
     gk_h = goalie_mult(st_away, away, gr, p)  # the away goalie's effect on the home lambda
     gk_a = goalie_mult(st_home, home, gr, p)
 
-    lam_h = base_h * _clamp(ice_h * rest_h * gk_h)
-    lam_a = base_a * _clamp(rest_a * gk_a)
+    m_h = _clamp(ice_h * rest_h * gk_h)
+    m_a = _clamp(1.0 * rest_a * gk_a)
+    lam_h, lam_a = base_h * m_h, base_a * m_a
+    # displayed factors must multiply to the applied multiplier even when the clamp binds
+    s_h = (m_h / (ice_h * rest_h * gk_h)) ** (1 / 3)
+    s_a = (m_a / (rest_a * gk_a)) ** (1 / 3)
 
     sim = simulate(
         split_lambda(lam_h, home, away, ps, p.use_periods),
@@ -89,13 +93,15 @@ def predict_game(
         "periods": sim["periods"],
         "factors": [
             _factor("base", "Joukkuevahvuus", base_h, base_a, "goals"),
-            _factor("home_ice", "Kotietu", ice_h, 1.0, "mult"),
-            _factor("rest", "Lepo / back-to-back", rest_h, rest_a, "mult"),
-            _factor("goalie", "Maalivahti", gk_h, gk_a, "mult"),
+            _factor("home_ice", "Kotietu", ice_h * s_h, s_a, "mult"),
+            _factor("rest", "Lepo / back-to-back", rest_h * s_h, rest_a * s_a, "mult"),
+            _factor("goalie", "Maalivahti", gk_h * s_h, gk_a * s_a, "mult"),
         ],
         "goalies": {
             "home": goalie_block(st_home, home, gr, p),
             "away": goalie_block(st_away, away, gr, p),
         },
         **{k: None for k in NULL_KEYS},
+        # private: stripped by export (keys starting with "_"); read by tracking.log_row
+        "_internal": {"lam_home": lam_h, "lam_away": lam_a},
     }

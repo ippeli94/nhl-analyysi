@@ -70,4 +70,9 @@ def test_log_rows_are_valid_single_line_json(root):
     assert set(r) == {"ts", "model_version", "game_id", "nhl_date", "start_utc", "home", "away",
                       "p_home_win", "p_reg", "lam_home", "lam_away", "total_mean", "most_likely",
                       "confidence", "goalie_home", "goalie_away", "market", "picks"}
+    assert r["lam_home"] == g_lam(r)
     assert len(r["p_reg"]) == 3 and r["market"] is None and r["goalie_home"] is None
+
+
+def g_lam(r):
+    return game_obj()["_internal"]["lam_home"]
