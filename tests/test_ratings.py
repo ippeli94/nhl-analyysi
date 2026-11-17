@@ -152,3 +152,25 @@ def test_period_shares_shrink_to_league_with_few_games():
     for k in range(3):
         assert abs(ps.scored["Z"][k] - ps.league[k]) < 0.02
     assert sum(ps.scored["Z"]) == pytest.approx(1.0)
+
+
+def test_opener_with_explicit_season_uses_prev_season_weighting():
+    tg = make_team_games(seasons=("20242025",), games_per_team=30, strengths=STRENGTHS)
+    asof = date(2025, 10, 8)
+    assert (tg["date"] < pd.Timestamp(asof)).all()
+    w = ratings.weights(tg, asof, P, season="20252026")
+    end = tg["date"].max()
+    expected = 0.7 * 0.5 ** ((60 + (end - tg["date"]).dt.days.to_numpy()) / 40)
+    np.testing.assert_allclose(w, expected)
+    r = ratings.fit(tg, asof, P, season="20252026")
+    assert r.attack["A"] > r.attack["H"]
+    assert set(r.n_games) == set(r.attack) and all(v == 0 for v in r.n_games.values())
+    ps = ratings.period_shares(tg, asof, P, season="20252026")
+    assert ps.scored == {} and ps.league == pytest.approx([1 / 3] * 3)
+
+
+def test_split_lambda_unknown_opponent_uses_league_allowed_share():
+    ps = _ps()
+    got = ratings.split_lambda(3.0, "A", "NEW", ps, True)
+    scored = np.array(ps.scored["A"])
+    np.testing.assert_allclose(got, 3.0 * scored / scored.sum())

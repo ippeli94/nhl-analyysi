@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import warnings
 from datetime import date
 
 import numpy as np
@@ -19,7 +20,7 @@ PERIOD_COLS = ("target_p1", "target_p2", "target_p3")
 class Ratings:
     intercept: float
     attack: dict[str, float] = field(default_factory=dict)
-    defense: dict[str, float] = field(default_factory=dict)
+    defense: dict[str, float] = field(default_factory=dict)  # larger = weaker defence
     home: float = 0.0
     b2b_att: float = 0.0
     b2b_def: float = 0.0
@@ -33,7 +34,9 @@ class PeriodShares:
     allowed: dict[str, list[float]]
 
 
-def weights(tg: pd.DataFrame, asof: date, p: ModelParams) -> np.ndarray:
+def weights(
+    tg: pd.DataFrame, asof: date, p: ModelParams, season: str | None = None
+) -> np.ndarray:
     """Per-row weight for a fit as of `asof`; rows on or after `asof` get 0."""
     asof_ts = pd.Timestamp(asof)
     dates = tg["date"]
@@ -42,9 +45,9 @@ def weights(tg: pd.DataFrame, asof: date, p: ModelParams) -> np.ndarray:
     if not before.any():
         return w
     seasons = tg["season"].to_numpy()
-    asof_season = seasons[before].max()
+    asof_season = season if season is not None else seasons[before].max()
     cur = seasons == asof_season
-    current_start = dates[before & cur].min()
+    current_start = dates[before & cur].min() if (before & cur).any() else asof_ts
     age = np.full(len(tg), np.nan)
     mult = np.ones(len(tg))
 
@@ -68,8 +71,8 @@ def weights(tg: pd.DataFrame, asof: date, p: ModelParams) -> np.ndarray:
     return w
 
 
-def fit(tg: pd.DataFrame, asof: date, p: ModelParams) -> Ratings:
-    w = weights(tg, asof, p)
+def fit(tg: pd.DataFrame, asof: date, p: ModelParams, season: str | None = None) -> Ratings:
+    w = weights(tg, asof, p, season)
     keep = (w > 0) & tg["game_type"].isin(config.TRAIN_GAME_TYPES).to_numpy()
     rows = tg[keep]
     w = w[keep]
@@ -95,11 +98,13 @@ def fit(tg: pd.DataFrame, asof: date, p: ModelParams) -> Ratings:
     X[:, 2 * k + 2] = rows["opp_b2b"].to_numpy(dtype=float)
 
     model = PoissonRegressor(alpha=p.alpha, max_iter=300)
-    model.fit(X, rows["target"].to_numpy(dtype=float), sample_weight=w)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="Unknown solver options")
+        model.fit(X, rows["target"].to_numpy(dtype=float), sample_weight=w)
     c = model.coef_
 
-    cur_rows = rows[rows["season"] == rows["season"].max()]
-    counts = cur_rows["team"].value_counts()
+    cur_season = season if season is not None else rows["season"].max()
+    counts = rows[rows["season"] == cur_season]["team"].value_counts()
     return Ratings(
         intercept=float(model.intercept_),
         attack={t: float(c[i]) for t, i in index.items()},
@@ -107,7 +112,7 @@ def fit(tg: pd.DataFrame, asof: date, p: ModelParams) -> Ratings:
         home=float(c[2 * k]),
         b2b_att=float(c[2 * k + 1]),
         b2b_def=float(c[2 * k + 2]),
-        n_games={str(t): int(v) for t, v in counts.items()},
+        n_games={t: int(counts.get(t, 0)) for t in teams},
     )
 
 
@@ -123,13 +128,18 @@ def rest_mult(r: Ratings, b2b: bool, opp_b2b: bool) -> float:
     return float(np.exp(r.b2b_att * bool(b2b) + r.b2b_def * bool(opp_b2b)))
 
 
-def period_shares(tg: pd.DataFrame, asof: date, p: ModelParams) -> PeriodShares:
+def period_shares(
+    tg: pd.DataFrame, asof: date, p: ModelParams, season: str | None = None
+) -> PeriodShares:
     """League and shrunk team period shares from current-season rows before `asof`."""
     fallback = PeriodShares(list(config.LEAGUE_PERIOD_SHARE_FALLBACK), {}, {})
     before = tg[(tg["date"] < pd.Timestamp(asof)) & tg["game_type"].isin(config.TRAIN_GAME_TYPES)]
     if before.empty:
         return fallback
-    rows = before[before["season"] == before["season"].max()]
+    cur_season = season if season is not None else before["season"].max()
+    rows = before[before["season"] == cur_season]
+    if rows.empty:
+        return fallback
     cols = list(PERIOD_COLS)
     period_sums = rows[cols].sum().to_numpy(dtype=float)
     if period_sums.sum() <= 0:
