@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from pipeline import cache, export, run, tracking, xg
-from pipeline.sources import injuries
+from pipeline import cache, config, export, predict, run, tracking, xg
+from pipeline.sources import injuries, nhl
 from pipeline.sources.nhl import SourceError
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -42,6 +42,23 @@ def latest_of(root):
     return json.loads((root / "site/data/latest.json").read_text(encoding="utf-8"))
 
 
+def assert_nothing_durable(root):
+    assert not (root / "site/data/latest.json").exists()
+    assert not (root / "data/history").exists()
+    assert not (root / "data/state").exists()
+
+
+def online_with_gate(root, monkeypatch):
+    """Online path (gate passed) with a stubbed schedule and no model/xg_coefs.json."""
+    (root / "model").mkdir()
+    (root / "model/params.json").write_text('{"gate": {"passed": true}}', encoding="utf-8")
+    with monkeypatch.context() as m:
+        m.setattr(config, "OFFLINE_DIR", FIXTURES)
+        week, _ = nhl.fetch_schedule_week("2026-11-17")
+    monkeypatch.setattr(run, "_fetch_week", lambda today: week)
+    monkeypatch.setattr(cache, "cache_finished", lambda games: ([], []))
+
+
 def game(game_id, state="FUT", date="2026-11-17", start="2026-11-18T00:00:00Z"):
     return {"id": game_id, "state": state, "nhl_date": date, "start_utc": start, "season": SEASON}
 
@@ -64,7 +81,7 @@ def test_core_source_failure_publishes_nothing(root, tmp_path):
     empty = tmp_path / "empty"
     empty.mkdir()
     assert run.main(["--offline", str(empty), "--now", NOW]) == 1
-    assert not (root / "site/data/latest.json").exists()
+    assert_nothing_durable(root)
 
 
 def test_optional_source_failure_does_not_fail_run():
@@ -197,3 +214,28 @@ def test_stub_coefficients_shape():
     stub = json.loads((FIXTURES / "xg_coefs_stub.json").read_text(encoding="utf-8"))
     assert len(stub["coef"]) == 16 and stub["features"] == xg.FEATURES
     assert stub["coef"][xg.FEATURES.index("dist")] < 0
+
+
+def test_model_failure_publishes_nothing_durable(seeded, monkeypatch):
+    online_with_gate(seeded, monkeypatch)
+    assert run.main(["--now", NOW]) == 1  # model/xg_coefs.json is missing
+    assert_nothing_durable(seeded)
+
+
+def test_unexpected_exception_publishes_nothing_durable(seeded, monkeypatch):
+    def boom(*args, **kwargs):
+        raise ZeroDivisionError("bug")
+
+    monkeypatch.setattr(predict, "predict_game", boom)
+    assert go() == 1
+    assert_nothing_durable(seeded)
+
+
+def test_cached_game_without_result_row_is_recorded_next_run(seeded):
+    assert tracking.read_log("results", SEASON) == []
+    assert go() == 0
+    assert {r["game_id"] for r in tracking.read_log("results", SEASON)} == {
+        2026020286, 2026020298,
+    }
+    assert go() == 0  # idempotent
+    assert len(tracking.read_log("results", SEASON)) == 2

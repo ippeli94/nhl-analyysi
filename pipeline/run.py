@@ -9,6 +9,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import sys
 from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
@@ -144,8 +145,7 @@ def _fetch_week(today: date) -> list[ScheduledGame]:
     return list(games.values())
 
 
-def _result_record(game_id: int) -> dict:
-    rec = cache.read(cache.game_path(tracking.season_of(game_id), game_id))
+def _result_record(rec: dict) -> dict:
     return {
         "game_id": rec["id"],
         "date": rec["date"],
@@ -170,6 +170,7 @@ def _current_season(selected: list[ScheduledGame], week: list[ScheduledGame]) ->
         return selected[0]["season"]
     folder = config.path(*cache.GAMES_DIR)
     seasons = sorted(p.name for p in folder.iterdir() if p.is_dir()) if folder.is_dir() else []
+    seasons = [name for name in seasons if re.fullmatch(r"\d{8}", name)]
     if seasons:
         return seasons[-1]
     if week:
@@ -221,11 +222,10 @@ def _load_coefs() -> dict:
 
 
 def _predict_all(
-    selected: list[ScheduledGame], season: str, today: date, now: datetime
+    selected: list[ScheduledGame], records: list[dict], season: str, today: date, now: datetime
 ) -> list[dict]:
     p = config.load_params()
     coefs = _load_coefs()
-    records = cache.load_seasons([_season_before(season), season])
     tg = features.team_games(records, coefs, p.xg_weight)
     r = ratings.fit(tg, today, p, season=season)
     ps = ratings.period_shares(tg, today, p, season=season)
@@ -271,34 +271,45 @@ def run(offline: Path | None, now: datetime, extra_if_early: bool) -> int:
         return 0
 
     try:
+        # Cache files are immutable and idempotent, so writing them early is safe.
         written, skipped = cache.cache_finished(week)
         logger.info("cache: %d written, %d skipped", len(written), len(skipped))
-        tracking.record_results([_result_record(i) for i in written])
         season = _current_season(selected, week)
-        games = _predict_all(selected, season, today, now)
+        records = cache.load_seasons([_season_before(season), season])
+        games = _predict_all(selected, records, season, today, now)
+
+        state: dict = {
+            "nhl": {
+                "status": "ok", "fetched_at": _iso(now), "last_ok_at": _iso(now), "note": None,
+            },
+            "injuries": sources.get("injuries") or {},
+        }
+
+        def offline_injuries() -> list[dict]:
+            raise SourceError("offline mode")
+
+        optional_source(
+            "injuries", offline_injuries if offline is not None else injuries.fetch, state, now,
+            failed_status="unavailable", note_on_fail=INJURIES_NOTE,
+        )
+        latest = export.build_latest(games, state, next_game_date, now)
+        errors = export.validate(latest)
+        if errors:
+            logger.error("latest.json is invalid: %s", "; ".join(errors))
+            return 1
+
+        # Everything above can fail without leaving anything durable behind.
+        tracking.record_results([_result_record(rec) for rec in records])
+        tracking.append_predictions(games, _iso(now))
+        _write_json(LAST_GAMES, [_public(g) for g in games])
+        _write_json(SOURCES_FILE, state)
+        export.write_latest(latest)
     except (SourceError, FileNotFoundError) as exc:
         logger.error("run failed: %s", exc)
         return 1
-    tracking.append_predictions(games, _iso(now))
-
-    state: dict = {}
-    state["nhl"] = {
-        "status": "ok", "fetched_at": _iso(now), "last_ok_at": _iso(now), "note": None,
-    }
-    state["injuries"] = sources.get("injuries") or {}
-
-    def offline_injuries() -> list[dict]:
-        raise SourceError("offline mode")
-
-    optional_source(
-        "injuries", offline_injuries if offline is not None else injuries.fetch, state, now,
-        failed_status="unavailable", note_on_fail=INJURIES_NOTE,
-    )
-
-    latest = export.build_latest(games, state, next_game_date, now)
-    export.write_latest(latest)
-    _write_json(LAST_GAMES, [_public(g) for g in games])
-    _write_json(SOURCES_FILE, state)
+    except Exception:
+        logger.exception("run failed unexpectedly")
+        return 1
     _github_output(True)
     logger.info("wrote latest.json with %d games", len(latest["games"]))
     return 0
@@ -323,6 +334,9 @@ def main(argv: list[str] | None = None) -> int:
     config.OFFLINE_DIR = offline
     try:
         return run(offline, now, args.extra_if_early)
+    except Exception:
+        logger.exception("run failed unexpectedly")
+        return 1
     finally:
         config.OFFLINE_DIR = previous_dir
 
