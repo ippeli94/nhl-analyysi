@@ -135,3 +135,153 @@ def test_backfill_is_resumable(root, offline, monkeypatch):
 
     second = backfill.run([SEASON])
     assert second == {"written": 0, "skipped": 0, "already": 2}
+
+
+EARLY_MISSING_ID = 2026000001  # sorts before the fixture games
+
+
+def stub_weeks(monkeypatch, weeks):
+    """Schedule stub: weeks maps a start date to (games, nextStartDate). Records the calls."""
+    calls: list[str] = []
+
+    def fake(date):
+        calls.append(date)
+        return weeks[date]
+
+    monkeypatch.setattr(nhl, "fetch_schedule_week", fake)
+    return calls
+
+
+def test_walk_never_fetches_week_past_season_end(root, offline, monkeypatch):
+    calls = stub_weeks(monkeypatch, {
+        "2026-09-25": ([], "2026-10-02"),
+        "2026-10-02": ([], "2027-06-25"),
+        "2027-06-25": ([], "2027-07-02"),  # next week starts after 2027-06-30
+        "2027-07-02": ([], None),
+    })
+    assert backfill.run([SEASON]) == {"written": 0, "skipped": 0, "already": 0}
+    assert calls == ["2026-09-25", "2026-10-02", "2027-06-25"]
+
+
+@pytest.mark.parametrize("weeks", [
+    {"2026-09-25": ([], "2026-10-02"), "2026-10-02": ([], "2026-09-25")},  # two-week cycle
+    {"2026-09-25": ([], "2026-09-25")},  # week points at itself
+])
+def test_repeating_next_start_date_terminates(root, offline, monkeypatch, weeks):
+    calls = stub_weeks(monkeypatch, weeks)
+    backfill.run([SEASON])
+    assert len(calls) <= 2
+
+
+def test_overlapping_weeks_are_deduplicated(root, offline, monkeypatch):
+    fetched: list[int] = []
+    real_fetch = nhl.fetch_pbp
+
+    def counting(game_id):
+        fetched.append(game_id)
+        return real_fetch(game_id)
+
+    monkeypatch.setattr(nhl, "fetch_pbp", counting)
+    stub_weeks(monkeypatch, {
+        "2026-09-25": ([scheduled(REG_GAME_ID), scheduled(SO_GAME_ID)], "2026-10-02"),
+        "2026-10-02": ([scheduled(REG_GAME_ID)], None),
+    })
+    assert backfill.run([SEASON]) == {"written": 2, "skipped": 0, "already": 0}
+    assert fetched == [REG_GAME_ID, SO_GAME_ID]
+
+
+def test_limit_counts_written_games_not_attempts(root, offline, monkeypatch):
+    stub_weeks(monkeypatch, {
+        "2026-09-25": ([scheduled(EARLY_MISSING_ID), scheduled(REG_GAME_ID),
+                        scheduled(SO_GAME_ID)], None),
+    })
+    first = backfill.run([SEASON], limit=1)
+    assert first == {"written": 1, "skipped": 1, "already": 0}
+    assert cache.cached_ids(SEASON) == {REG_GAME_ID}
+
+    second = backfill.run([SEASON])
+    assert second == {"written": 1, "skipped": 1, "already": 1}
+    assert cache.cached_ids(SEASON) == {REG_GAME_ID, SO_GAME_ID}
+
+
+def test_main_exit_code_depends_on_skipped_count(root, monkeypatch, capsys):
+    monkeypatch.setattr(backfill, "run", lambda seasons, limit=None: {
+        "written": 0, "skipped": 11, "already": 0})
+    assert backfill.main(["--seasons", SEASON]) == 1
+    assert '"skipped": 11' in capsys.readouterr().out
+
+    monkeypatch.setattr(backfill, "run", lambda seasons, limit=None: {
+        "written": 0, "skipped": 10, "already": 0})
+    assert backfill.main(["--seasons", SEASON]) == 0
+
+
+def test_main_exits_1_on_source_error(root, monkeypatch):
+    def outage(date):
+        raise nhl.SourceError("HTTP 503")
+
+    monkeypatch.setattr(nhl, "fetch_schedule_week", outage)
+    assert backfill.main(["--seasons", SEASON]) == 1
+
+
+def test_five_consecutive_outages_raise(root, monkeypatch):
+    attempts: list[int] = []
+
+    def outage(game_id):
+        attempts.append(game_id)
+        raise nhl.SourceError("HTTP 503")
+
+    monkeypatch.setattr(nhl, "fetch_pbp", outage)
+    games = [scheduled(EARLY_MISSING_ID + i) for i in range(7)]
+    with pytest.raises(nhl.SourceError):
+        cache.cache_finished(games)
+    assert len(attempts) == 5
+
+
+def test_success_resets_outage_count(root, offline, monkeypatch):
+    real_fetch = nhl.fetch_pbp
+
+    def flaky(game_id):
+        if game_id == REG_GAME_ID:
+            return real_fetch(game_id)
+        raise nhl.SourceError("HTTP 503")
+
+    monkeypatch.setattr(nhl, "fetch_pbp", flaky)
+    games = [scheduled(EARLY_MISSING_ID + i) for i in range(4)]
+    games += [scheduled(REG_GAME_ID)]
+    games += [scheduled(EARLY_MISSING_ID + 10 + i) for i in range(4)]
+    written, skipped = cache.cache_finished(games)
+    assert written == [REG_GAME_ID] and len(skipped) == 8
+
+
+def test_not_found_games_are_skipped_without_outage_count(root, monkeypatch):
+    def not_found(game_id):
+        raise nhl.NotFoundError(f"not found: {game_id}")
+
+    monkeypatch.setattr(nhl, "fetch_pbp", not_found)
+    games = [scheduled(EARLY_MISSING_ID + i) for i in range(6)]
+    written, skipped = cache.cache_finished(games)
+    assert written == [] and len(skipped) == 6
+
+
+def test_unexpected_error_skips_one_game_and_continues(root, offline, monkeypatch, caplog):
+    real_build = cache.build_record
+
+    def broken_for_reg(pbp, box):
+        if pbp["id"] == REG_GAME_ID:
+            raise AttributeError("odd payload")
+        return real_build(pbp, box)
+
+    monkeypatch.setattr(cache, "build_record", broken_for_reg)
+    with caplog.at_level(logging.ERROR):
+        written, skipped = cache.cache_finished([scheduled(REG_GAME_ID), scheduled(SO_GAME_ID)])
+    assert written == [SO_GAME_ID] and skipped == [REG_GAME_ID]
+    errors = [r for r in caplog.records if r.levelno == logging.ERROR]
+    assert errors and str(REG_GAME_ID) in errors[0].getMessage() and errors[0].exc_info
+
+
+def test_write_twice_gives_identical_bytes(root, reg_record):
+    p = cache.write(reg_record)
+    first = p.read_bytes()
+    p.unlink()
+    cache.write(reg_record)
+    assert p.read_bytes() == first

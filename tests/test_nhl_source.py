@@ -207,3 +207,31 @@ def test_name_falls_back_to_abbreviation(tmp_path, monkeypatch):
 
     games, _ = _schedule_with(tmp_path, monkeypatch, mutate)
     assert games[0]["away"]["name"] == games[0]["away"]["abbr"]
+
+
+def test_offline_missing_fixture_is_not_found(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "OFFLINE_DIR", tmp_path)
+    with pytest.raises(nhl.NotFoundError):
+        nhl.fetch_pbp(2026029999)
+
+
+def test_online_404_is_not_found(monkeypatch):
+    monkeypatch.setattr(config, "OFFLINE_DIR", None)
+
+    def fake_request(self, method, url, **kwargs):
+        return _Response(404)
+
+    monkeypatch.setattr(requests.Session, "request", fake_request)
+    monkeypatch.setattr(nhl, "_throttle", lambda: None)
+    with pytest.raises(nhl.NotFoundError):
+        nhl.fetch_pbp(2026029999)
+
+
+def test_pbp_with_non_list_plays_is_source_error(tmp_path, monkeypatch):
+    name = nhl.fixture_name("/gamecenter/2026020286/play-by-play")
+    payload = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+    payload["plays"] = {}
+    monkeypatch.setattr(config, "OFFLINE_DIR", tmp_path)
+    (tmp_path / name).write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(nhl.SourceError, match="plays"):
+        nhl.fetch_pbp(2026020286)

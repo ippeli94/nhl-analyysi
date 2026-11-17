@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 SEASON_START_MD = "09-25"
 SEASON_END_MD = "06-30"
+MAX_SKIPPED = 10  # more skipped games than this in one run exits 1 (the cache is still written)
 
 
 def season_dates(season: str) -> tuple[str, str]:
@@ -42,8 +43,8 @@ def _season_games(season: str) -> list[nhl.ScheduledGame]:
 def run(seasons: list[str], limit: int | None = None) -> dict:
     """Cache the finished games of `seasons`.
 
-    `limit` caps how many uncached games are fetched in this run, so a long backfill can be
-    split over several runs.
+    `limit` caps how many games are written in this run, so a long backfill can be split
+    over several runs. Failing games do not count against it.
     """
     by_id: dict[int, nhl.ScheduledGame] = {}
     for season in seasons:
@@ -57,9 +58,7 @@ def run(seasons: list[str], limit: int | None = None) -> dict:
     cached = {s: cache.cached_ids(s) for s in {g["season"] for g in finished}}
     pending = [g for g in finished if g["id"] not in cached[g["season"]]]
     already = len(finished) - len(pending)
-    if limit is not None:
-        pending = pending[:limit]
-    written, skipped = cache.cache_finished(pending)
+    written, skipped = cache.cache_finished(pending, limit=limit)
     return {"written": len(written), "skipped": len(skipped), "already": already}
 
 
@@ -76,6 +75,9 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("NHL source failed, run aborted: %s", exc)
         return 1
     print(json.dumps(result))
+    if result["skipped"] > MAX_SKIPPED:
+        logger.error("%d games skipped (limit %d)", result["skipped"], MAX_SKIPPED)
+        return 1
     return 0
 
 

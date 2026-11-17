@@ -26,6 +26,10 @@ class SourceError(Exception):
     """A required NHL source is missing, malformed or unreachable."""
 
 
+class NotFoundError(SourceError):
+    """The resource does not exist (HTTP 404, or no offline fixture): not an outage."""
+
+
 class Team(TypedDict):
     id: int
     abbr: str
@@ -101,7 +105,7 @@ def _throttle() -> None:
 def _read_offline(path: str) -> dict:
     fixture = config.OFFLINE_DIR / fixture_name(path)
     if not fixture.exists():
-        raise SourceError(f"offline fixture missing: {fixture.name}")
+        raise NotFoundError(f"offline fixture missing: {fixture.name}")
     try:
         payload = json.loads(fixture.read_text(encoding="utf-8"))
     except ValueError as exc:
@@ -124,7 +128,7 @@ def _get_online(path: str) -> dict:
             last_error = type(exc).__name__
             continue
         if response.status_code == 404:
-            raise SourceError(f"not found: {path}")
+            raise NotFoundError(f"not found: {path}")
         if not response.ok:
             last_error = f"HTTP {response.status_code}"
             continue
@@ -194,6 +198,8 @@ def fetch_schedule_week(date: str) -> tuple[list[ScheduledGame], str | None]:
 def fetch_pbp(game_id: int) -> dict:
     payload = get_json(f"/gamecenter/{game_id}/play-by-play")
     require(payload, PBP_FIELDS)
+    if not isinstance(payload["plays"], list):
+        raise SourceError(f"plays is not a list: {game_id}")
     for play in payload["plays"]:
         require(play, PLAY_FIELDS)
     return payload

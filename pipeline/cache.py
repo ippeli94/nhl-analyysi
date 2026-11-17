@@ -22,6 +22,8 @@ FINISHED_STATES = ("OFF", "FINAL")
 DECIDED_TYPES = ("REG", "OT", "SO")
 GAMES_DIR = ("data", "cache", "games")
 SUFFIX = ".json.gz"
+MAX_CONSECUTIVE_OUTAGES = 5
+PROGRESS_EVERY = 100
 
 
 def is_finished(game: nhl.ScheduledGame) -> bool:
@@ -148,16 +150,25 @@ def load_seasons(seasons: list[str]) -> list[dict]:
     return sorted(records, key=lambda r: (r["date"], r["id"]))
 
 
-def cache_finished(games: list[nhl.ScheduledGame]) -> tuple[list[int], list[int]]:
+def cache_finished(
+    games: list[nhl.ScheduledGame], limit: int | None = None,
+) -> tuple[list[int], list[int]]:
     """Cache finished games of a cached game type that are not cached yet.
 
-    Returns (written_ids, skipped_ids). A game whose play-by-play or boxscore is missing,
-    empty or malformed is logged and skipped; it does not stop the others.
+    Returns (written_ids, skipped_ids). `limit` caps the number of games written, so
+    failing games do not use up the budget. A game that is not found (404, missing
+    fixture), has no usable data (ValueError), or fails unexpectedly is logged with its id
+    and skipped. Other source errors are outages: after MAX_CONSECUTIVE_OUTAGES in a row,
+    the last SourceError is re-raised and the run stops. A successful game resets the count.
     """
     written: list[int] = []
     skipped: list[int] = []
     known: dict[str, set[int]] = {}
+    outages = 0
+    attempts = 0
     for game in games:
+        if limit is not None and len(written) >= limit:
+            break
         if not is_finished(game) or game["game_type"] not in config.CACHED_GAME_TYPES:
             continue
         season = game["season"]
@@ -165,14 +176,31 @@ def cache_finished(games: list[nhl.ScheduledGame]) -> tuple[list[int], list[int]
             known[season] = cached_ids(season)
         if game["id"] in known[season]:
             continue
+        attempts += 1
+        if attempts % PROGRESS_EVERY == 0:
+            logger.info("cache: %d games attempted, %d written, %d skipped",
+                        attempts, len(written), len(skipped))
         try:
             pbp = nhl.fetch_pbp(game["id"])
             box = nhl.fetch_boxscore(game["id"])
             record = build_record(pbp, box)
-        except (nhl.SourceError, ValueError) as exc:
+        except (nhl.NotFoundError, ValueError) as exc:
             logger.warning("skipping game %s: %s", game["id"], exc)
             skipped.append(game["id"])
             continue
+        except nhl.SourceError as exc:
+            outages += 1
+            logger.warning("source error for game %s (%d in a row): %s",
+                           game["id"], outages, exc)
+            if outages >= MAX_CONSECUTIVE_OUTAGES:
+                raise
+            skipped.append(game["id"])
+            continue
+        except Exception:
+            logger.exception("skipping game %s: unexpected error", game["id"])
+            skipped.append(game["id"])
+            continue
+        outages = 0
         write(record)
         known[season].add(game["id"])
         written.append(game["id"])
