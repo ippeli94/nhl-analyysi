@@ -76,3 +76,30 @@ def make_team_games(
             last_day = day
             day = day + timedelta(days=int(rng.integers(1, 3)))
     return pd.DataFrame(rows)
+
+
+def make_goalie_games(
+    tg: pd.DataFrame,
+    seed: int = 1,
+    deltas: dict[str, tuple[float, float]] | None = None,
+) -> pd.DataFrame:
+    """Two goalies per team (ids team_index*10 + 1 and + 2); the first starts 70 % of games.
+
+    xg_faced = 28, ga ~ Poisson(28 * (1 - delta)), toi = 3600 (the starter plays the game).
+    `deltas` maps team -> (delta of goalie 1, delta of goalie 2).
+    """
+    rng = np.random.default_rng(seed)
+    deltas = deltas or {}
+    teams = sorted(tg["team"].unique())
+    rows = []
+    for r in tg.itertuples():
+        idx = teams.index(r.team)
+        slot = 0 if rng.random() < 0.7 else 1
+        delta = deltas.get(r.team, (0.0, 0.0))[slot]
+        rows.append({
+            "game_id": r.game_id, "season": r.season, "game_type": r.game_type,
+            "date": r.date, "team": r.team, "goalie": idx * 10 + 1 + slot,
+            "name": f"G{idx * 10 + 1 + slot}", "started": True, "toi": 3600,
+            "xg_faced": 28.0, "ga": int(rng.poisson(28 * (1 - delta))),
+        })
+    return pd.DataFrame(rows)
