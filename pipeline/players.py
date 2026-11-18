@@ -165,3 +165,39 @@ def baseline_probs(
             float(1.0 - np.exp(-g60 * hours)),
         )
     return out
+
+
+def project_lineup(pg: pd.DataFrame, team: str, asof: date, season: str) -> list[Slot]:
+    """Skaters of the team's latest cached game before `asof`, minus players who have since
+    dressed for another team (plan decision 20). Sorted by projected TOI, then id."""
+    d = pg[pg["date"] < pd.Timestamp(asof)]
+    mine = d[d["team"] == team]
+    if mine.empty:
+        return []
+    cur = mine[mine["season"] == season]
+    pool = cur if len(cur) else mine
+    last = pool.sort_values(["date", "game_id"], kind="stable").iloc[-1]
+    last_key = (last["date"], int(last["game_id"]))
+    dressed = pool[pool["game_id"] == last["game_id"]]
+    dressed = dressed[dressed["team"] == team]
+    ids = dressed["player"].unique()
+
+    hist = d[d["player"].isin(ids)].sort_values(["date", "game_id"], kind="stable")
+    latest = hist.groupby("player").tail(1).set_index("player")
+    moved = [
+        pid for pid, r in latest.iterrows()
+        if r["team"] != team and (r["date"], int(r["game_id"])) > last_key
+    ]
+    hist = hist[~hist["player"].isin(moved)]
+    if hist.empty:
+        return []
+    recent = hist.groupby("player").tail(config.PLAYER_TOI_GAMES)
+    toi = recent.groupby("player")["toi"].mean() / 60.0
+    info = hist.groupby("player").tail(1).set_index("player")
+    slots = [
+        {"id": int(pid), "name": (None if pd.isna(info.at[pid, "name"]) else info.at[pid, "name"]),
+         "pos": str(info.at[pid, "pos"]), "toi_proj": round(float(t), 1)}
+        for pid, t in toi.items()
+    ]
+    slots.sort(key=lambda s: (-s["toi_proj"], s["id"]))
+    return slots

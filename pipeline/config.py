@@ -170,6 +170,7 @@ ODDS_FIXTURE = "odds__icehockey_nhl.json"
 PLAYER_PRIOR_FALLBACK = {"F": (0.85, 2.1), "D": (0.25, 1.1)}  # (goals/60, points/60)
 PLAYER_PPG_FALLBACK = 2.7
 PLAYER_PPG_MAX = 3.0
+PLAYER_TOI_GAMES = 5
 PLAYER_MODEL_VERSION = "1.0.0"
 PLAYER_LOG_COLUMNS = (
     "id", "pos", "toi", "pts1", "pts2", "pts3", "g1", "g2", "g3", "base_pts1", "base_g1",

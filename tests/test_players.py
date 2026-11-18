@@ -234,3 +234,68 @@ def test_load_player_params_overlay_and_unknown_key(root):
     f.write_text(json.dumps({"x": 1}), encoding="utf-8")
     with pytest.raises(ValueError):
         config.load_player_params()
+
+
+def lineup_pg(games):
+    recs = make_records(games, ROSTERS, seed=5)
+    return players.player_games(recs, COEFS), recs
+
+
+def test_lineup_is_last_game_dressed_sorted_by_toi(stub_score):
+    pg, _ = lineup_pg([("2025-11-01", "AAA", "BBB"), ("2025-11-03", "BBB", "AAA")])
+    slots = players.project_lineup(pg, "AAA", ASOF, "20252026")
+    assert len(slots) == 10
+    assert [s["toi_proj"] for s in slots] == sorted((s["toi_proj"] for s in slots), reverse=True)
+    assert set(slots[0]) == {"id", "name", "pos", "toi_proj"}
+    ids = [s["id"] for s in slots]
+    assert set(ids) == {pid for pid, _ in ROSTERS["AAA"]}
+
+
+def test_absent_from_last_game_excluded(stub_score):
+    games = [(f"2025-11-{d:02d}", "AAA", "BBB") for d in range(1, 11)]
+    pg, recs = lineup_pg(games)
+    gone = ROSTERS["AAA"][0][0]
+    last = recs[-1]["id"]
+    pg = pg[~((pg.game_id == last) & (pg.player == gone))]
+    slots = players.project_lineup(pg, "AAA", ASOF, "20252026")
+    assert gone not in {s["id"] for s in slots} and len(slots) == 9
+
+
+def test_toi_proj_mean_of_last_five_any_team():
+    rows = [(1, "F", f"2025-11-0{i + 1}", (10 + i) * 60, 0, 0, 0.0) for i in range(6)]
+    pg = pg_rows(rows)
+    pg.loc[pg.date >= pd.Timestamp("2025-11-05"), ["team", "opp"]] = ["BBB", "AAA"]
+    # last five rows: 11..15 min -> 13.0; AAA's last game is 2025-11-04 and he left afterwards
+    assert players.project_lineup(pg, "BBB", ASOF, "20252026")[0]["toi_proj"] == 13.0
+
+
+def test_traded_away_player_dropped():
+    rows = [
+        (1, "F", "2025-11-01", 1200, 0, 0, 0.0),
+        (2, "F", "2025-11-01", 1000, 0, 0, 0.0),
+        (1, "F", "2025-11-05", 1100, 0, 0, 0.0),
+    ]
+    pg = pg_rows(rows)
+    pg.loc[pg.date == pd.Timestamp("2025-11-05"), ["team", "opp"]] = ["BBB", "AAA"]
+    assert [s["id"] for s in players.project_lineup(pg, "AAA", ASOF, "20252026")] == [2]
+    assert [s["id"] for s in players.project_lineup(pg, "BBB", ASOF, "20252026")] == [1]
+
+
+def test_team_without_games_returns_empty():
+    pg = pg_rows([(1, "F", "2025-11-01", 1200, 0, 0, 0.0)])
+    assert players.project_lineup(pg, "ZZZ", ASOF, "20252026") == []
+    assert players.project_lineup(pg_rows([]), "AAA", ASOF, "20252026") == []
+
+
+def test_previous_season_used_when_no_current_games():
+    pg = pg_rows([(1, "F", "2025-03-01", 1200, 0, 0, 0.0, "20242025")])
+    slots = players.project_lineup(pg, "AAA", ASOF, "20252026")
+    assert [s["id"] for s in slots] == [1] and slots[0]["toi_proj"] == 20.0
+
+
+def test_only_rows_before_asof():
+    pg = pg_rows([
+        (1, "F", "2025-11-01", 1200, 0, 0, 0.0),
+        (2, "F", "2025-12-01", 1200, 0, 0, 0.0),
+    ])
+    assert [s["id"] for s in players.project_lineup(pg, "AAA", ASOF, "20252026")] == [1]
