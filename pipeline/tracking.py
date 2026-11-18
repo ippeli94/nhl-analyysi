@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from pipeline import config
+from pipeline import config, value
 
 
 def season_of(game_id: int) -> str:
@@ -33,6 +33,7 @@ def log_row(game_obj: dict, ts: str) -> dict:
     prob = game_obj["prob"]
     goalies = game_obj["goalies"]
     ml = game_obj["score"]["most_likely"]
+    odds = game_obj.get("odds")
     return {
         "ts": ts,
         "model_version": config.MODEL_VERSION,
@@ -50,8 +51,8 @@ def log_row(game_obj: dict, ts: str) -> dict:
         "confidence": prob["confidence"],
         "goalie_home": goalies["home"]["id"] if goalies["home"] else None,
         "goalie_away": goalies["away"]["id"] if goalies["away"] else None,
-        "market": None,
-        "picks": None,
+        "market": value.market_summary(odds),
+        "picks": (odds or {}).get("picks"),
     }
 
 
@@ -65,8 +66,37 @@ def append_predictions(game_objs: list[dict], ts: str) -> int:
     return sum(len(rows) for rows in by_season.values())
 
 
+def odds_rows(snapshot: dict, games: list[dict]) -> list[dict]:
+    """One odds history row per snapshot game that is also among the exported games."""
+    by_id = {str(g["id"]): g for g in games}
+    rows = []
+    for gid, books in snapshot["games"].items():
+        game = by_id.get(gid)
+        if game is None:
+            continue
+        rows.append({
+            "ts": snapshot["fetched_at"],
+            "game_id": game["id"],
+            "start_utc": game["start_utc"],
+            "home": game["home"]["abbr"],
+            "away": game["away"]["abbr"],
+            "books": books,
+            "ref": value.ref_summary(books),
+        })
+    return rows
+
+
+def append_odds(rows: list[dict]) -> int:
+    by_season: dict[str, list[dict]] = {}
+    for row in rows:
+        by_season.setdefault(season_of(row["game_id"]), []).append(row)
+    for season, season_rows in by_season.items():
+        _append("odds", season, season_rows)
+    return len(rows)
+
+
 def read_log(kind: str, season: str) -> list[dict]:
-    if kind not in ("predictions", "results"):
+    if kind not in ("predictions", "results", "odds"):
         raise ValueError(f"unknown log kind: {kind}")
     f = _file(kind, season)
     if not f.exists():

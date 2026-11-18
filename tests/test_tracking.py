@@ -1,6 +1,9 @@
 import json
+import re
 
-from pipeline import config, tracking
+import pytest
+
+from pipeline import config, tracking, value
 from tests.test_predict import GAME, run
 
 
@@ -76,3 +79,60 @@ def test_log_rows_are_valid_single_line_json(root):
 
 def g_lam(r):
     return game_obj()["_internal"]["lam_home"]
+
+
+TS_ODDS = "2025-11-15T21:37:40Z"
+HEX32 = re.compile(r"\b[0-9a-f]{32}\b")
+
+
+def odds_books(home_pinn=1.58, away_pinn=2.52, home_cool=1.66, away_cool=2.35):
+    return {
+        "pinnacle": {"h2h": [home_pinn, away_pinn], "h2h3": None, "totals": [], "spreads": []},
+        "coolbet": {"h2h": [home_cool, away_cool], "h2h3": None, "totals": [], "spreads": []},
+    }
+
+
+def test_log_row_market_and_picks_from_odds():
+    g = game_obj()
+    g["odds"] = value.game_odds(g, odds_books(), TS_ODDS)
+    r = tracking.log_row(g, "2025-11-15T15:17:00Z")
+    assert r["market"]["ref"] == "pinnacle"
+    assert r["market"]["best_h2h"]["home"]["book"] == "coolbet"
+    assert len(g["odds"]["picks"]) > 0
+    assert r["picks"] == g["odds"]["picks"]
+
+
+def test_log_row_without_odds_keeps_nulls():
+    g = game_obj()
+    g["odds"] = None
+    r = tracking.log_row(g, "2025-11-15T15:17:00Z")
+    assert r["market"] is None and r["picks"] is None
+
+
+def test_odds_rows_and_append_roundtrip(root):
+    g = game_obj(2025020321)
+    snapshot = {"fetched_at": TS_ODDS, "remaining": 100, "unknown_teams": [], "unmatched": [],
+                "games": {"2025020321": odds_books(), "2025020322": odds_books()}}
+    rows = tracking.odds_rows(snapshot, [g])
+    assert len(rows) == 1
+    assert rows[0]["ts"] == TS_ODDS and rows[0]["game_id"] == 2025020321
+    assert rows[0]["home"] == "CAR" and rows[0]["away"] == "SEA"
+    assert rows[0]["ref"]["source"] == "pinnacle"
+    assert tracking.append_odds(rows) == 1
+    assert tracking.read_log("odds", "20252026") == rows
+
+
+def test_odds_history_has_no_hex_ids_or_key(root):
+    # the pattern must match a runtime-built 32-hex string, or the negative check is vacuous
+    runtime_hex = f"{0xABCDEF0123456789ABCDEF0123456789:032x}"
+    assert HEX32.search(" " + runtime_hex + " ") is not None
+    g = game_obj(2025020321)
+    snapshot = {"fetched_at": TS_ODDS, "games": {"2025020321": odds_books()}}
+    tracking.append_odds(tracking.odds_rows(snapshot, [g]))
+    text = (root / "data" / "history" / "odds" / "20252026.jsonl").read_text(encoding="utf-8")
+    assert text.strip() and HEX32.search(text) is None
+
+
+def test_read_log_rejects_unknown_kind():
+    with pytest.raises(ValueError):
+        tracking.read_log("picks", "20252026")
