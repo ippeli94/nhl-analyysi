@@ -4,6 +4,7 @@ import {
   fmtTime, fmtDate, fmtPct, fmtNum, fmtScore, fmtSignedPct, ageText,
   freshness, groupByDate, fmtDateTime, SUPPORTED_SCHEMA,
   fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
+  playerName, fmtToi, pKey, topOf, gamePlayers, tonightPlayers,
 } from "../format.js";
 
 const NOW = new Date("2026-11-16T12:00:00Z");
@@ -136,3 +137,45 @@ test("oddsFetchedAt picks the newest game block, else the fallback", () => {
 test("fmtSeason", () => assert.equal(fmtSeason("20262027"), "2026–27"));
 test("drawGapLine", () => assert.equal(
   drawGapLine({ model: 0.249, actual: 0.223, gap: 0.026 }), "Malli 24,9 % · toteutunut 22,3 % · ero +2,6 %-yks."));
+
+/* ---------- player helpers ---------- */
+const P = (id, pts, goals, name = `P${id}`) => ({ id, name, team: "BOS", pos: "C", toi_proj: 18, p_points: pts, p_goals: goals });
+const teamBlock = (top) => ({ team: "BOS", top });
+
+test("playerName fallback", () => {
+  assert.equal(playerName({ id: 7, name: null }), "#7");
+  assert.equal(playerName({ id: 7, name: "A <b>" }), "A <b>");
+});
+test("fmtToi", () => assert.equal(fmtToi(19.4), "19,4 min"));
+test("pKey", () => { assert.equal(pKey("points"), "p_points"); assert.equal(pKey("goals"), "p_goals"); });
+test("topOf sorts by kind and cuts", () => {
+  const l = [P(1, [0.5], [0.1]), P(2, [0.4], [0.3]), P(3, [0.6], [0.2]), P(4, [0.4], [0.3], "A")];
+  assert.deepEqual(topOf(l, "points").map((p) => p.id), [3, 1, 4, 2]);
+  assert.deepEqual(topOf(l, "goals", 2).map((p) => p.id), [4, 2]);
+  assert.equal(topOf(l, "points", 3).length, 3);
+});
+test("gamePlayers scopes", () => {
+  const g = { players: { home: teamBlock([P(1, [0.5], [0.1])]), away: teamBlock([P(2, [0.4], [0.2])]) } };
+  assert.deepEqual(gamePlayers(g, "game").map((p) => p.id), [2, 1]);
+  assert.deepEqual(gamePlayers(g, "home").map((p) => p.id), [1]);
+  const g2 = { players: { home: teamBlock([P(1, [0.5], [0.1])]), away: null } };
+  assert.deepEqual(gamePlayers(g2, "away"), []);
+  assert.deepEqual(gamePlayers(g2, "game").map((p) => p.id), [1]);
+  assert.deepEqual(gamePlayers({ players: null }, "game"), []);
+  assert.deepEqual(gamePlayers({}, "home"), []);
+});
+test("tonightPlayers uses earliest date and upcoming only", () => {
+  const mk = (id, date, state, pts) => ({ id, nhl_date: date, state, players: { home: teamBlock([P(id, [pts], [pts / 2])]), away: null } });
+  const l = { games: [
+    mk(1, "2026-11-17", "started", 0.9),
+    mk(2, "2026-11-17", "upcoming", 0.4),
+    mk(3, "2026-11-17", "upcoming", 0.6),
+    mk(4, "2026-11-18", "upcoming", 0.8),
+    { id: 5, nhl_date: "2026-11-17", state: "upcoming", players: null },
+  ] };
+  const r = tonightPlayers(l, "points", 10);
+  assert.deepEqual(r.map((x) => x.player.id), [3, 2]);
+  assert.equal(r[0].game.id, 3);
+  assert.equal(tonightPlayers(l, "points", 1).length, 1);
+  assert.deepEqual(tonightPlayers({ games: [] }, "points"), []);
+});

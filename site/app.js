@@ -2,6 +2,7 @@ import {
   SUPPORTED_SCHEMA, fmtTime, fmtDate, fmtDateTime, fmtPct, fmtNum, fmtScore,
   fmtSignedPct, ageText, freshness, groupByDate,
   fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
+  playerName, fmtToi, topOf, gamePlayers, tonightPlayers,
 } from "./format.js";
 
 const DATA_URL = "data/latest.json";
@@ -17,8 +18,12 @@ const ICON_BALL =
   '<path d="M3.5 12h17M12 3.5c3 2.6 3 14.4 0 17M12 3.5c-3 2.6-3 14.4 0 17"/></svg>';
 const ICON_STAR =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/></svg>';
+const ICON_PERSON =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/>' +
+  '<path d="M4.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg>';
 const TABS = [
   { id: "games", label: "Ottelut", href: "#/", icon: ICON_BALL },
+  { id: "players", label: "Pelaajat", href: "#/pelaajat", icon: ICON_PERSON },
   { id: "value", label: "Ylikertoimet", href: "#/ylikertoimet", icon: ICON_STAR },
 ];
 
@@ -101,7 +106,7 @@ function renderChrome(route) {
       : "";
   }
   $("nav").innerHTML = TABS.map((t) => {
-    const tab = route.name === "value" ? "value" : (route.name === "list" || route.name === "game") ? "games" : null;
+    const tab = route.name === "value" ? "value" : route.name === "players" ? "players" : (route.name === "list" || route.name === "game") ? "games" : null;
     const active = t.id === tab;
     return `<a href="${esc(t.href)}" class="${active ? "active" : ""}"${active ? ' aria-current="page"' : ""}>${t.icon}<span>${esc(t.label)}</span></a>`;
   }).join("");
@@ -184,6 +189,65 @@ function valueView(latest) {
   return head + fetched + valueControls() + body +
     `<p class="note foot">Markkina = Pinnaclen marginaaliton todennäköisyys, tai välittäjien mediaani jos Pinnacle puuttuu. ` +
     `Ylikerroin: EV vähintään 3 % ja ero markkinaan vähintään 2 prosenttiyksikköä.</p>`;
+}
+
+/* ---------- players ---------- */
+let playerFilter = { kind: "points", scope: "game" };
+const PLAYER_KINDS = [["points", "Pisteet"], ["goals", "Maalit"]];
+
+function playerRow(p, kind) {
+  const k = kind === "goals" ? p.p_goals : p.p_points;
+  return `<tr><th scope="row"><span class="pname">${esc(playerName(p))}</span>` +
+    `<span class="psub">${esc(p.team)} · ${esc(p.pos)} · ${esc(fmtToi(p.toi_proj))}</span></th>` +
+    `<td>${esc(fmtPct(k[0]))}</td><td>${esc(fmtPct(k[1]))}</td><td>${esc(fmtPct(k[2]))}</td></tr>`;
+}
+
+function playersSection(g) {
+  if (!g.players) return null;
+  const { kind, scope } = playerFilter;
+  const scopes = [["game", "Ottelu"], ["away", g.away.abbr], ["home", g.home.abbr]];
+  const kinds = PLAYER_KINDS.map(([id, label]) =>
+    `<button type="button" class="seg-btn" data-pkind="${esc(id)}" aria-pressed="${kind === id}">${esc(label)}</button>`).join("");
+  const scs = scopes.map(([id, label]) =>
+    `<button type="button" class="seg-btn" data-pscope="${esc(id)}" aria-pressed="${scope === id}">${esc(label)}</button>`).join("");
+  let body;
+  if (scope !== "game" && !g.players[scope]) {
+    body = `<p class="note">Ei pelaajadataa: joukkueella ei ole vielä pelattuja otteluita tällä kaudella.</p>`;
+  } else {
+    const list = topOf(gamePlayers(g, scope), kind, Infinity);
+    const head = `<thead><tr><th scope="col">Pelaaja</th><th scope="col">1+</th><th scope="col">2+</th><th scope="col">3+</th></tr></thead>`;
+    const table = (rows) => `<div class="twrap"><table class="otable ptable">${head}<tbody>${rows.map((p) => playerRow(p, kind)).join("")}</tbody></table></div>`;
+    const rest = list.slice(5);
+    body = table(list.slice(0, 5)) +
+      (rest.length ? `<details class="books"><summary>Näytä kaikki (${esc(list.length)})</summary>${table(rest)}</details>` : "");
+  }
+  return `<div class="seg" role="group" aria-label="Pelaajaennuste">${kinds}</div>` +
+    `<div class="seg" role="group" aria-label="Rajaus">${scs}</div>` +
+    `<div class="pbadge">${badge("Kokoonpano: arvio", "muted")}</div>` + body +
+    `<p class="note foot">Kokoonpano ja peliajat on arvioitu joukkueen viimeisimmästä ottelusta. ` +
+    `Luvut ovat todennäköisyyksiä saada ottelussa vähintään 1, 2 tai 3 pistettä (tai maalia), jatkoaika mukaan lukien.</p>`;
+}
+
+function playersView(latest) {
+  const first = groupByDate((latest.games || []).filter((g) => g.state !== "started"))[0];
+  const head = `<h1 class="day-title">Pelaajat</h1>` +
+    (first ? `<p class="note fetched">Ensi yön ottelut · ${esc(fmtDate(first.nhl_date))}</p>` : "");
+  const card = (title, sub, kind) => {
+    const rows = tonightPlayers(latest, kind, 10);
+    const list = rows.length
+      ? `<ol class="plist">${rows.map(({ game, player }, i) => {
+        const k = kind === "goals" ? player.p_goals : player.p_points;
+        return `<li><a href="#/ottelu/${esc(game.id)}"><span class="prank">${i + 1}.</span>` +
+          `<span class="pmain"><span class="pname">${esc(playerName(player))}</span>` +
+          `<span class="psub">${esc(player.team)} · ${esc(game.away.abbr)} @ ${esc(game.home.abbr)} · ${esc(fmtTime(game.start_utc))}</span></span>` +
+          `<span class="ppct">${esc(fmtPct(k[0]))}</span></a></li>`;
+      }).join("")}</ol>`
+      : `<p class="note">Pelaajaennusteita ei ole vielä saatavilla.</p>`;
+    return `<section class="pcard"><h2 class="ptitle">${esc(title)}</h2><p class="psub">${esc(sub)}</p>${list}</section>`;
+  };
+  return head + card("Todennäköisimmät pistemiehet", "vähintään 1 piste", "points") +
+    card("Todennäköisimmät maalintekijät", "vähintään 1 maali", "goals") +
+    `<p class="note foot">Kokoonpanot ovat arvioita. Pelaajavetojen kertoimia ei vertailla — ilmainen kerroinlähde ei tarjoa niitä.</p>`;
 }
 
 /* ---------- detail sections ---------- */
@@ -357,6 +421,7 @@ const SECTIONS = [
   { id: "score", title: "xG ja tulos", render: scoreSection },
   { id: "factors", title: "Mistä ennuste koostuu", render: (g) => (g.factors?.length ? factorsSection(g) : null) },
   { id: "periods", title: "Erät", render: (g) => (g.periods?.length ? periodsSection(g) : null) },
+  { id: "players", title: "Pelaajat", render: playersSection },
   {
     id: "goalies", title: "Maalivahdit",
     render: (g) => (g.goalies
@@ -404,6 +469,7 @@ function parseRoute() {
   const m = h.match(/^#\/ottelu\/(\d+)$/);
   if (m) return { name: "game", id: Number(m[1]) };
   if (h === "#/tila") return { name: "status" };
+  if (h === "#/pelaajat") return { name: "players" };
   if (h === "#/ylikertoimet") return { name: "value" };
   return { name: "list" };
 }
@@ -430,6 +496,9 @@ function render() {
   } else if (route.name === "value") {
     html = valueView(state.latest);
     title = "Ylikertoimet · NHL-analyysi";
+  } else if (route.name === "players") {
+    html = playersView(state.latest);
+    title = "Pelaajat · NHL-analyysi";
   } else if (route.name === "status") {
     html = statusView(state.latest);
   } else {
@@ -452,9 +521,11 @@ function render() {
 
 window.addEventListener("hashchange", render);
 $("view").addEventListener("click", (ev) => {
-  const btn = ev.target instanceof Element ? ev.target.closest("[data-vmarket], [data-vtoggle]") : null;
+  const btn = ev.target instanceof Element ? ev.target.closest("[data-vmarket], [data-vtoggle], [data-pkind], [data-pscope]") : null;
   if (!btn) return;
-  if (btn.dataset.vmarket) valueFilter = { ...valueFilter, market: btn.dataset.vmarket };
+  if (btn.dataset.pkind) playerFilter = { ...playerFilter, kind: btn.dataset.pkind };
+  else if (btn.dataset.pscope) playerFilter = { ...playerFilter, scope: btn.dataset.pscope };
+  else if (btn.dataset.vmarket) valueFilter = { ...valueFilter, market: btn.dataset.vmarket };
   else valueFilter = { ...valueFilter, [btn.dataset.vtoggle]: !valueFilter[btn.dataset.vtoggle] };
   render();
 });

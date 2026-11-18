@@ -159,3 +159,35 @@ export function oddsFetchedAt(latest, fallback) {
   }
   return best ?? fallback ?? null;
 }
+
+/* ---------- player helpers ---------- */
+export const playerName = (p) => p.name || `#${p.id}`;
+export const fmtToi = (min) => `${fmtNum(min, 1)} min`;
+export const pKey = (kind) => (kind === "goals" ? "p_goals" : "p_points");
+
+export function topOf(list, kind, n = 5) {
+  const k = pKey(kind);
+  return [...list]
+    .sort((a, b) => (b[k][0] - a[k][0]) || playerName(a).localeCompare(playerName(b), "fi"))
+    .slice(0, n);
+}
+
+export function gamePlayers(game, scope) {
+  const pl = game?.players;
+  if (!pl) return [];
+  const top = (t) => pl[t]?.top ?? [];
+  if (scope === "away") return top("away");
+  if (scope === "home") return top("home");
+  return top("away").concat(top("home"));
+}
+
+export function tonightPlayers(latest, kind, n = 10) {
+  const upcoming = (latest.games || []).filter((g) => g.state !== "started");
+  if (!upcoming.length) return [];
+  const first = groupByDate(upcoming)[0];
+  const rows = [];
+  for (const game of first.games) for (const player of gamePlayers(game, "game")) rows.push({ game, player });
+  const k = pKey(kind);
+  rows.sort((a, b) => (b.player[k][0] - a.player[k][0]) || playerName(a.player).localeCompare(playerName(b.player), "fi"));
+  return rows.slice(0, n);
+}
