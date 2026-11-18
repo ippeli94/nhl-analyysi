@@ -52,7 +52,7 @@ def test_build_latest_validates(g1, g2):
 def test_top_level_keys_and_values(g1):
     obj = latest([g1], "2025-11-17")
     assert set(obj) == {"schema_version", "generated_at", "model_version", "sources",
-                        "review", "games", "next_game_date"}
+                        "review", "games", "next_game_date", "calibration"}
     assert obj["schema_version"] == 1
     assert obj["model_version"] == config.MODEL_VERSION
     assert obj["next_game_date"] == "2025-11-17"
@@ -178,3 +178,15 @@ def test_odds_bad_flag_rejected(g1):
     obj["games"][0]["odds"]["markets"][0]["outcomes"][0]["flag"] = "maybe"
     errors = export.validate(obj)
     assert errors and any("flag" in e or "maybe" in e for e in errors)
+
+
+def test_calibration_block_validates_and_defaults(g1):
+    now = datetime(2025, 11, 15, 12, 0, tzinfo=UTC)
+    obj = export.build_latest([g1], {}, None, now)
+    assert obj["calibration"] == {"draw": None} and export.validate(obj) == []
+    draw = {"season": "20262027", "model_version": "1.1.0", "n": 120, "model": 0.25,
+            "actual": 0.22, "gap": 0.03, "warn": True}
+    obj = export.build_latest([g1], {}, None, now, {"draw": draw})
+    assert obj["calibration"]["draw"] == draw and export.validate(obj) == []
+    draw["warn"] = "yes"
+    assert export.validate(export.build_latest([g1], {}, None, now, {"draw": draw}))

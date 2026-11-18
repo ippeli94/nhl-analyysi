@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from test_export import make_game
 
-from pipeline import export
+from pipeline import config, export
 from tools import review
 
 ARGS = ["--data-only", "--skip-tests"]
@@ -262,6 +262,46 @@ def test_does_not_mutate_when_latest_unreadable(root):
     (root / "site/data").mkdir(parents=True)
     (root / "site/data/latest.json").write_text("{", encoding="utf-8")
     assert review.main(ARGS) == 2
+
+
+def seed_draws(root, n, model, actual):
+    ties = round(n * actual)
+    now = datetime.now(UTC)
+    preds, results = [], []
+    for i in range(n):
+        gid = 2025020500 + i
+        start = now - timedelta(hours=6) + timedelta(seconds=i)
+        preds.append({"ts": iso(start - timedelta(hours=5)), "game_id": gid,
+                      "start_utc": iso(start), "model_version": config.MODEL_VERSION,
+                      "p_reg": [(1 - model) / 2, model, (1 - model) / 2]})
+        results.append({"game_id": gid, "reg_home_goals": 2,
+                        "reg_away_goals": 2 if i < ties else 1})
+    for kind, rows in (("predictions", preds), ("results", results)):
+        f = root / f"data/history/{kind}/20252026.jsonl"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+
+def test_draw_gap_warning(root):
+    write(root, make_latest())
+    seed_draws(root, 150, 0.25, 0.22)
+    assert review.main(ARGS) == 1
+    text = report(root)
+    assert "[VAROITUS] CALIB" in text and "+3.0 %-yks." in text
+
+
+def test_no_draw_warning_under_100_games(root):
+    write(root, make_latest())
+    seed_draws(root, 60, 0.25, 0.20)
+    review.main(ARGS)
+    assert "CALIB" not in report(root)
+
+
+def test_no_draw_warning_small_gap(root):
+    write(root, make_latest())
+    seed_draws(root, 120, 0.25, 0.24)
+    review.main(ARGS)
+    assert "CALIB" not in report(root)
 
 
 # --- odds ---------------------------------------------------------------------------------

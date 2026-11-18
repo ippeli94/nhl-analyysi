@@ -138,3 +138,30 @@ def official(rows: list[dict]) -> dict[int, dict]:
         if cur is None or ts > _parse(cur["ts"]):
             best[row["game_id"]] = row
     return best
+
+
+def draw_gap(pred_rows: list[dict], result_rows: list[dict], season: str) -> dict | None:
+    """Model regulation-draw probability vs actual draw rate (plan decision 26)."""
+    results = {}
+    for r in result_rows:
+        results.setdefault(r["game_id"], r)
+    rows = [
+        (row, results[gid])
+        for gid, row in official(pred_rows).items()
+        if gid in results and row.get("model_version") == config.MODEL_VERSION
+        and season_of(gid) == season
+    ]
+    rows.sort(key=lambda pair: (pair[0]["start_utc"], pair[0]["game_id"]))
+    rows = rows[-config.DRAW_MONITOR_WINDOW:]
+    if not rows:
+        return None
+    n = len(rows)
+    model = sum(p["p_reg"][1] for p, _ in rows) / n
+    actual = sum(r["reg_home_goals"] == r["reg_away_goals"] for _, r in rows) / n
+    model, actual = round(model, 4), round(actual, 4)
+    gap = round(model - actual, 4)
+    return {
+        "season": season, "model_version": config.MODEL_VERSION, "n": n,
+        "model": model, "actual": actual, "gap": gap,
+        "warn": n >= config.DRAW_MONITOR_MIN_GAMES and abs(gap) > config.DRAW_MONITOR_GAP,
+    }

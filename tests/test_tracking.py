@@ -136,3 +136,52 @@ def test_odds_history_has_no_hex_ids_or_key(root):
 def test_read_log_rejects_unknown_kind():
     with pytest.raises(ValueError):
         tracking.read_log("picks", "20252026")
+
+
+def _pred(gid, ts, start, draw, version=None):
+    return {"ts": ts, "game_id": gid, "start_utc": start,
+            "model_version": version or config.MODEL_VERSION,
+            "p_reg": [(1 - draw) / 2, draw, (1 - draw) / 2]}
+
+
+def _res(gid, tie):
+    return {"game_id": gid, "reg_home_goals": 2, "reg_away_goals": 2 if tie else 1}
+
+
+def _games(n, draw, ties):
+    preds = [_pred(2026020000 + i, f"2026-10-{1 + i // 20:02d}T00:00:00Z",
+                   f"2026-10-{1 + i // 20:02d}T12:00:{i % 20:02d}Z", draw) for i in range(n)]
+    return preds, [_res(2026020000 + i, i < ties) for i in range(n)]
+
+
+def test_draw_gap_counts_official_current_version_only():
+    preds = [
+        _pred(2026020001, "2026-10-01T00:00:00Z", "2026-10-01T12:00:00Z", 0.40),
+        _pred(2026020001, "2026-10-01T06:00:00Z", "2026-10-01T12:00:00Z", 0.25),
+        _pred(2026020002, "2026-10-02T06:00:00Z", "2026-10-02T12:00:00Z", 0.25),
+        _pred(2026020003, "2026-10-03T06:00:00Z", "2026-10-03T12:00:00Z", 0.25, "1.0.0"),
+    ]
+    results = [_res(2026020001, True), _res(2026020002, False), _res(2026020003, True)]
+    d = tracking.draw_gap(preds, results, "20262027")
+    assert d["n"] == 2 and d["model"] == pytest.approx(0.25) and d["actual"] == pytest.approx(0.5)
+    assert d["gap"] == pytest.approx(-0.25) and d["warn"] is False
+
+
+def test_draw_gap_window_keeps_latest_300():
+    preds, results = _games(350, 0.25, 0)
+    results = [_res(r["game_id"], r["game_id"] < 2026020050) for r in results]
+    d = tracking.draw_gap(preds, results, "20262027")
+    assert d["n"] == 300 and d["actual"] == 0.0
+
+
+def test_draw_gap_warn_threshold():
+
+    # n 120 with 24 draws of 120 = 0.20 actual, model 0.221 -> gap 0.021
+    preds, results = _games(120, 0.221, 24)
+    assert tracking.draw_gap(preds, results, "20262027")["warn"] is True
+    preds, results = _games(120, 0.219, 24)
+    assert tracking.draw_gap(preds, results, "20262027")["warn"] is False
+
+
+def test_draw_gap_none_without_matches():
+    assert tracking.draw_gap([], [], "20262027") is None

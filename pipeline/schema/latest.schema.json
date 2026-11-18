@@ -17,10 +17,30 @@
       }
     },
     "games": {"type": "array", "items": {"$ref": "#/$defs/game"}},
-    "next_game_date": {"type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$"}
+    "next_game_date": {"type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "calibration": {
+      "type": "object",
+      "required": ["draw"],
+      "properties": {
+        "draw": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/drawGap"}]}
+      }
+    }
   },
   "$defs": {
     "prob": {"type": "number", "minimum": 0, "maximum": 1},
+    "drawGap": {
+      "type": "object",
+      "required": ["season", "model_version", "n", "model", "actual", "gap", "warn"],
+      "properties": {
+        "season": {"type": "string", "pattern": "^\\d{8}$"},
+        "model_version": {"type": "string"},
+        "n": {"type": "integer", "minimum": 1},
+        "model": {"$ref": "#/$defs/prob"},
+        "actual": {"$ref": "#/$defs/prob"},
+        "gap": {"type": "number"},
+        "warn": {"type": "boolean"}
+      }
+    },
     "nonneg": {"type": "number", "minimum": 0},
     "source": {
       "type": "object",

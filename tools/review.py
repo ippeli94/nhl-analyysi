@@ -471,6 +471,26 @@ def check_track(ctx: Ctx) -> list[Problem]:
     return found
 
 
+def check_calibration(ctx: Ctx) -> list[Problem]:
+    folder = ctx.root / "data" / "history" / "predictions"
+    seasons = sorted(f.stem for f in folder.glob("*.jsonl")) if folder.is_dir() else []
+    if not seasons:
+        return []
+    season = seasons[-1]
+    draw = tracking.draw_gap(
+        _history(ctx, "predictions", season)[0], _history(ctx, "results", season)[0], season
+    )
+    if not draw or not draw["warn"]:
+        return []
+    return [Problem(
+        WARNING, "CALIB", f"data/history/predictions/{season}.jsonl",
+        f"tasapelien ero malli − toteutunut {draw['gap'] * 100:+.1f} %-yks. "
+        f"({draw['n']} ottelua, malli {draw['model']:.1%}, toteutunut {draw['actual']:.1%})",
+        "seuraa; ei uudelleensovitusta vaiheessa 3 — draw_kappa sovitetaan: "
+        "python -m pipeline.backtest --refit-draw",
+    )]
+
+
 def _season_files(ctx: Ctx) -> list[tuple[Path, dict | None]]:
     """Cache files of the current (newest) season, read once; None marks an unreadable one."""
 
@@ -562,7 +582,7 @@ def check_secret(ctx: Ctx) -> list[Problem]:
 
 CHECKS: list[Callable[[Ctx], list[Problem]]] = [
     check_lint, check_test, check_site, check_prob, check_roster, check_sched, check_fresh,
-    check_source, check_odds, check_track, check_cache, check_xg, check_secret,
+    check_source, check_odds, check_track, check_calibration, check_cache, check_xg, check_secret,
 ]
 
 

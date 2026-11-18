@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   fmtTime, fmtDate, fmtPct, fmtNum, fmtScore, fmtSignedPct, ageText,
   freshness, groupByDate, fmtDateTime, SUPPORTED_SCHEMA,
-  fmtOdds, fmtPct1, fmtPp, fmtEv, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
+  fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
 } from "../format.js";
 
 const NOW = new Date("2026-11-16T12:00:00Z");
@@ -132,3 +132,7 @@ test("oddsFetchedAt picks the newest game block, else the fallback", () => {
   assert.equal(oddsFetchedAt({ games: [{ odds: null }] }, "2026-11-15T00:00:00Z"), "2026-11-15T00:00:00Z");
   assert.equal(oddsFetchedAt({}, undefined), null);
 });
+
+test("fmtSeason", () => assert.equal(fmtSeason("20262027"), "2026–27"));
+test("drawGapLine", () => assert.equal(
+  drawGapLine({ model: 0.249, actual: 0.223, gap: 0.026 }), "Malli 24,9 % · toteutunut 22,3 % · ero +2,6 %-yks."));

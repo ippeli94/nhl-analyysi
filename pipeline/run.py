@@ -417,7 +417,18 @@ def run(
             odds_history = tracking.odds_rows(
                 snapshot, [g for g in games if g["state"] == "upcoming"]
             )
-        latest = export.build_latest(games, state, next_game_date, now)
+        try:
+            draw = tracking.draw_gap(
+                tracking.read_log("predictions", season),
+                tracking.read_log("results", season)
+                + [_result_record(rec) for rec in records],
+                season,
+            )
+            calibration = {"draw": draw}
+        except Exception as exc:  # noqa: BLE001 - calibration must never fail the run
+            logger.warning("calibration failed: %s", type(exc).__name__)
+            calibration = {"draw": None}
+        latest = export.build_latest(games, state, next_game_date, now, calibration)
         errors = export.validate(latest)
         if errors:
             logger.error("latest.json is invalid: %s", "; ".join(errors))

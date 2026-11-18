@@ -452,3 +452,8 @@ def test_started_game_keeps_frozen_odds(seeded):
 def test_offline_without_odds_flag_has_no_odds_source(seeded):
     assert go() == 0
     assert set(sources_of(seeded)) == {"nhl", "injuries"}
+
+
+def test_latest_has_calibration(seeded):
+    assert go() == 0
+    assert "calibration" in latest_of(seeded)

@@ -94,6 +94,9 @@ function signedOne(x) {
 }
 // Probability difference in percentage points, one decimal.
 export const fmtPp = (d) => signedOne(d * 100);
+export const fmtSeason = (s) => `${s.slice(0, 4)}–${s.slice(6)}`;
+export const drawGapLine = (d) =>
+  `Malli ${fmtPct1(d.model)} · toteutunut ${fmtPct1(d.actual)} · ero ${fmtPp(d.gap)} %-yks.`;
 export const fmtEv = (ev) => `${signedOne(ev * 100)} %`;
 
 const BOOKS = {

@@ -38,7 +38,8 @@ def _source(src_id: str, state: dict) -> dict:
 
 
 def build_latest(
-    games: list[dict], sources: dict, next_game_date: str | None, now: datetime
+    games: list[dict], sources: dict, next_game_date: str | None, now: datetime,
+    calibration: dict | None = None,
 ) -> dict:
     """Top-level latest.json object. Keys starting with "_" are private and never exported."""
     public = [
@@ -54,6 +55,7 @@ def build_latest(
         "review": {"problems": 0, "worst": None},
         "games": public,
         "next_game_date": next_game_date,
+        "calibration": calibration or {"draw": None},
     }
 
 

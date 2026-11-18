@@ -1,7 +1,7 @@
 import {
   SUPPORTED_SCHEMA, fmtTime, fmtDate, fmtDateTime, fmtPct, fmtNum, fmtScore,
   fmtSignedPct, ageText, freshness, groupByDate,
-  fmtOdds, fmtPct1, fmtPp, fmtEv, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
+  fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
 } from "./format.js";
 
 const DATA_URL = "data/latest.json";
@@ -388,7 +388,12 @@ function statusView(latest) {
       (s.fetched_at ? `<div class="src-t">Haettu ${esc(fmtDateTime(s.fetched_at))}</div>` : "") +
       (s.note ? `<div class="src-note">${esc(s.note)}</div>` : "") + `</li>`;
   }).join("");
+  const d = latest.calibration?.draw;
+  const drawTile = d
+    ? `<div class="stat"><span class="k">${esc(`Tasapelit, kausi ${fmtSeason(d.season)} (${d.n} ottelua)`)}</span><span class="v s">${esc(drawGapLine(d))}</span>${d.warn ? badge("Poikkeama yli 2 %-yks.", "warn") : ""}</div>`
+    : `<div class="stat"><span class="k">Tasapelit</span><span class="v s">Ei vielä riittävästi ratkenneita ennusteita</span></div>`;
   return `<a class="back" href="#/">‹ Ottelut</a><section class="sec"><h1 class="day-title">Tila</h1><ul class="srcs">${rows}</ul>` +
+    `<div class="stats one">${drawTile}</div>` +
     `<div class="stats one"><div class="stat"><span class="k">Tarkistusraportti</span><span class="v s">${esc(latest.review.problems)} ongelmaa</span></div>` +
     `<div class="stat"><span class="k">Mallin versio</span><span class="v s">${esc(latest.model_version)}</span></div></div></section>`;
 }
