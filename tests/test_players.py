@@ -428,3 +428,12 @@ def test_log_payload_columns():
     assert all(len(r) == len(config.PLAYER_LOG_COLUMNS) for r in rows)
     assert rows[0][-2:] == [0.3, 0.1]
     assert log["teams"]["AAA"]["unassigned"] == 0.03
+
+
+def test_project_lineup_normalises_unknown_pos(stub_score):
+    pg, _ = lineup_pg([("2025-11-01", "AAA", "BBB"), ("2025-11-03", "BBB", "AAA")])
+    target = pg[pg["team"] == "AAA"]["player"].iloc[0]
+    pg.loc[pg["player"] == target, "pos"] = "F"
+    slots = players.project_lineup(pg, "AAA", ASOF, "20252026")
+    assert {s["pos"] for s in slots} <= {"C", "L", "R", "D"}
+    assert next(s for s in slots if s["id"] == target)["pos"] == "C"

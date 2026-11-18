@@ -471,6 +471,17 @@ def run(
             calibration = {"draw": None}
         latest = export.build_latest(games, state, next_game_date, now, calibration)
         errors = export.validate(latest)
+        if errors and all(re.match(r"\$\.games\[\d+\]\.players", e) for e in errors):
+            bad = {int(re.match(r"\$\.games\[(\d+)\]", e).group(1)) for e in errors}
+            bad_ids = {latest["games"][i]["id"] for i in bad}
+            logger.warning("players dropped for games %s: %s", sorted(bad_ids), "; ".join(errors))
+            for g in games:
+                if g["id"] in bad_ids:
+                    g["players"] = None
+                    if g.get("_internal"):
+                        g["_internal"]["players_log"] = None
+            latest = export.build_latest(games, state, next_game_date, now, calibration)
+            errors = export.validate(latest)
         if errors:
             logger.error("latest.json is invalid: %s", "; ".join(errors))
             return 1
@@ -478,7 +489,10 @@ def run(
         # Everything above can fail without leaving anything durable behind.
         tracking.record_results([_result_record(rec) for rec in records])
         tracking.append_predictions(games, _iso(now))
-        tracking.append_players(games, _iso(now))
+        try:
+            tracking.append_players(games, _iso(now))
+        except Exception as exc:  # noqa: BLE001 - players must never block publishing
+            logger.warning("players log failed: %s", type(exc).__name__)
         if fetched_now:
             _write_json(ODDS_STATE, snapshot)
             tracking.append_odds(odds_history)

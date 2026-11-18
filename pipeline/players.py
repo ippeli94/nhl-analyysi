@@ -19,6 +19,11 @@ PG_COLUMNS = [
 Slot = dict  # {"id": int, "name": str | None, "pos": str, "toi_proj": float}
 
 
+def _norm_pos(pos) -> str:
+    pos = str(pos)
+    return pos if pos in ("C", "L", "R", "D") else "C"
+
+
 def _grp(pos: str) -> str:
     return "D" if pos == "D" else "F"
 
@@ -197,7 +202,7 @@ def project_lineup(pg: pd.DataFrame, team: str, asof: date, season: str) -> list
     info = hist.groupby("player").tail(1).set_index("player")
     slots = [
         {"id": int(pid), "name": (None if pd.isna(info.at[pid, "name"]) else info.at[pid, "name"]),
-         "pos": str(info.at[pid, "pos"]), "toi_proj": round(float(t), 1)}
+         "pos": _norm_pos(info.at[pid, "pos"]), "toi_proj": round(float(t), 1)}
         for pid, t in toi.items()
     ]
     slots.sort(key=lambda s: (-s["toi_proj"], s["id"]))

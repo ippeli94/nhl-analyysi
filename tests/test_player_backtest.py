@@ -214,13 +214,16 @@ def test_cli_writes_params_and_report_on_pass(root, monkeypatch):
     assert config.load_player_gate()["passed"] is True
 
 
-def test_cli_fail_leaves_params_untouched(root, monkeypatch):
+def test_cli_fail_writes_failed_gate_over_stale_pass(root, monkeypatch):
     stub_cli(monkeypatch, False)
     assert player_backtest.main(ARGS) == 1
-    assert not (root / "model/player_params.json").exists()
     assert "HYLÄTTY" in (root / "reports/player_backtest.md").read_text(encoding="utf-8")
-    (root / "model").mkdir()
     f = root / "model/player_params.json"
-    f.write_text('{"unassigned": 0.05}\n')
+    assert json.loads(f.read_text())["gate"]["passed"] is False  # no file before: still written
+    f.write_text('{"unassigned": 0.05, "gate": {"passed": true}}\n')
     assert player_backtest.main(ARGS) == 1
-    assert f.read_text() == '{"unassigned": 0.05}\n'
+    data = json.loads(f.read_text())
+    assert data["gate"]["passed"] is False
+    assert data["gate"]["sims"] == 2000 and "goalie_mode" in data["gate"]
+    assert not list((root / "model").glob(".*.tmp"))
+    assert config.load_player_gate()["passed"] is False

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
 from dataclasses import asdict, replace
 
@@ -192,6 +193,13 @@ def _report(args, pp: PlayerParams, res: dict, passed: bool) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _atomic_write(path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.tmp")
+    tmp.write_text(text, encoding="utf-8", newline="\n")
+    os.replace(tmp, path)
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="pipeline.player_backtest")
     ap.add_argument("--tune-season", required=True)
@@ -217,27 +225,25 @@ def main(argv: list[str] | None = None) -> int:
         return res["rows"]
 
     tune_rows = run(args.tune_season)
-    pp = tune_players(pg, tune_rows, args.tune_season, p, config.load_player_params())
+    base = replace(config.load_player_params(), unassigned=config.PlayerParams().unassigned)
+    pp = tune_players(pg, tune_rows, args.tune_season, p, base)
     gate_rows = run(args.gate_season)
     res = player_backtest(pg, gate_rows, args.gate_season, p, pp)
     passed = player_gate(res["metrics"])
 
     report = config.path("reports", "player_backtest.md")
     report.parent.mkdir(parents=True, exist_ok=True)
-    report.write_text(_report(args, pp, res, passed), encoding="utf-8")
-    if passed:
-        gate = {
-            "passed": True, "season": args.gate_season, "tune_season": args.tune_season,
-            "goalie_mode": mode, "points": _strip(res["metrics"]["points"]),
-            "goals": _strip(res["metrics"]["goals"]), "coverage": res["coverage"],
-            "unassigned": res["unassigned"],
-        }
-        f = config.path("model", "player_params.json")
-        f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(
-            json.dumps({**asdict(pp), "gate": gate}, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
+    _atomic_write(report, _report(args, pp, res, passed))
+    gate = {
+        "passed": passed, "season": args.gate_season, "tune_season": args.tune_season,
+        "goalie_mode": mode, "sims": args.sims, "points": _strip(res["metrics"]["points"]),
+        "goals": _strip(res["metrics"]["goals"]), "coverage": res["coverage"],
+        "unassigned": res["unassigned"],
+    }
+    f = config.path("model", "player_params.json")
+    _atomic_write(
+        f, json.dumps({**asdict(pp), "gate": gate}, ensure_ascii=False, indent=2) + "\n"
+    )
     logger.info("player gate %s", "passed" if passed else "FAILED")
     return 0 if passed else 1
 

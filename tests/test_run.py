@@ -500,3 +500,39 @@ def test_started_game_keeps_frozen_players(seeded):
     assert started["state"] == "started"
     assert started["players"] == first[2026020338]["players"]
     assert started["players"] is not None
+
+
+def test_invalid_players_block_is_dropped_not_fatal(seeded, monkeypatch, caplog):
+    real = run.players.project_lineup
+
+    def bad(pg, team, day, season):
+        slots = real(pg, team, day, season)
+        return [{**slots[0], "pos": "F"}, *slots[1:]] if slots else slots
+
+    monkeypatch.setattr(run.players, "project_lineup", bad)
+    # "F" is normalised in the real code; force the bad value past it via the block itself
+    real_block = run.players.team_block
+
+    def bad_block(*a, **k):
+        b = real_block(*a, **k)
+        if b:
+            b["top"][0]["pos"] = "F"
+        return b
+
+    monkeypatch.setattr(run.players, "team_block", bad_block)
+    assert go() == 0
+    lat = latest_of(seeded)
+    assert export.validate(lat) == []
+    g = by_id(lat)[2026020338]
+    assert g["players"] is None
+    assert "players dropped" in caplog.text
+    assert tracking.read_log("players", SEASON) == []
+
+
+def test_players_log_failure_does_not_block(seeded, monkeypatch):
+    def boom(*a, **k):
+        raise OSError("disk")
+
+    monkeypatch.setattr(run.tracking, "append_players", boom)
+    assert go() == 0
+    assert by_id(latest_of(seeded))[2026020338]["players"] is not None
