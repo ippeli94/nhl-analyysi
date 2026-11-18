@@ -1,0 +1,42 @@
+{
+  "half_life_days": 60.0,
+  "offseason_gap_days": 60,
+  "prev_season_weight": 0.7,
+  "xg_weight": 0.6,
+  "alpha": 0.005,
+  "sigma_pace": 0.0,
+  "sigma_team": 0.0,
+  "draw_kappa": 1.272594013777514,
+  "ot_slope": 0.3,
+  "use_periods": true,
+  "period_prior_games": 20,
+  "goalie_k": 60.0,
+  "goalie_weight": 0.6,
+  "use_goalie": true,
+  "gate": {
+    "passed": true,
+    "variant": "full",
+    "season": "20252026",
+    "n": 1312,
+    "brier": 0.24305,
+    "brier_base": 0.25114329268292684,
+    "logloss": 0.6789,
+    "logloss_base": 0.6954663907359765,
+    "accuracy": 0.5411585365853658,
+    "goalie_mode": "projected",
+    "goalie_modes": {
+      "none": {
+        "brier": 0.24299004919969514,
+        "logloss": 0.6787947637188422
+      },
+      "actual": {
+        "brier": 0.24307,
+        "logloss": 0.67888
+      },
+      "projected": {
+        "brier": 0.24305,
+        "logloss": 0.6789
+      }
+    }
+  }
+}
