@@ -239,7 +239,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -249,36 +249,36 @@
             {
               "key": "home",
               "p_model": 0.5167,
-              "p_market": 0.5077,
+              "p_market": 0.5051,
               "best": {
-                "book": "veikkaus_fi",
-                "price": 1.95
+                "book": "pinnacle",
+                "price": 1.93
               },
               "veikkaus": {
-                "price": 1.95,
-                "ev": 0.0076,
+                "price": 1.89,
+                "ev": -0.0234,
                 "value": false
               },
-              "edge": 0.009,
-              "ev": 0.0076,
+              "edge": 0.0116,
+              "ev": -0.0028,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.4833,
-              "p_market": 0.4923,
+              "p_market": 0.4949,
               "best": {
                 "book": "pinnacle",
-                "price": 1.98
+                "price": 1.97
               },
               "veikkaus": {
-                "price": 1.85,
-                "ev": -0.1059,
+                "price": 1.91,
+                "ev": -0.0769,
                 "value": false
               },
-              "edge": -0.009,
-              "ev": -0.0431,
+              "edge": -0.0116,
+              "ev": -0.0479,
               "value": false,
               "flag": null
             }
@@ -287,19 +287,19 @@
             {
               "book": "veikkaus_fi",
               "prices": [
-                1.95,
-                1.85
+                1.89,
+                1.91
               ],
-              "vig": 0.0534,
+              "vig": 0.0527,
               "valid": true
             },
             {
               "book": "pinnacle",
               "prices": [
-                1.92,
-                1.98
+                1.93,
+                1.97
               ],
-              "vig": 0.0259,
+              "vig": 0.0257,
               "valid": true
             },
             {
@@ -360,12 +360,12 @@
               "p_model": 0.3565,
               "p_market": 0.3982,
               "best": {
-                "book": "marathonbet",
-                "price": 2.52
+                "book": "coolbet",
+                "price": 2.5
               },
               "veikkaus": null,
               "edge": -0.0417,
-              "ev": -0.1016,
+              "ev": -0.1088,
               "value": false,
               "flag": null
             }
@@ -414,11 +414,11 @@
             {
               "book": "marathonbet",
               "prices": [
-                2.44,
+                2.46,
                 4.15,
-                2.52
+                2.5
               ],
-              "vig": 0.0476,
+              "vig": 0.0475,
               "valid": true
             }
           ]
@@ -434,11 +434,11 @@
               "p_market": 0.5506,
               "best": {
                 "book": "marathonbet",
-                "price": 1.74
+                "price": 1.75
               },
               "veikkaus": null,
               "edge": -0.0412,
-              "ev": -0.1135,
+              "ev": -0.1084,
               "value": false,
               "flag": null
             },
@@ -479,10 +479,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.74,
-                2.09
+                1.75,
+                2.08
               ],
-              "vig": 0.0532,
+              "vig": 0.0522,
               "valid": true
             }
           ]
@@ -495,27 +495,27 @@
             {
               "key": "over",
               "p_model": 0.4576,
-              "p_market": 0.4974,
+              "p_market": 0.4961,
               "best": {
                 "book": "pinnacle",
-                "price": 1.95
+                "price": 1.96
               },
               "veikkaus": null,
-              "edge": -0.0399,
-              "ev": -0.0974,
+              "edge": -0.0386,
+              "ev": -0.0933,
               "value": false,
               "flag": null
             },
             {
               "key": "under",
               "p_model": 0.5424,
-              "p_market": 0.5026,
+              "p_market": 0.5039,
               "best": {
                 "book": "pinnacle",
                 "price": 1.93
               },
               "veikkaus": null,
-              "edge": 0.0399,
+              "edge": 0.0386,
               "ev": 0.0424,
               "value": true,
               "flag": null
@@ -525,10 +525,10 @@
             {
               "book": "pinnacle",
               "prices": [
-                1.95,
+                1.96,
                 1.93
               ],
-              "vig": 0.031,
+              "vig": 0.0283,
               "valid": true
             }
           ]
@@ -541,28 +541,28 @@
             {
               "key": "home",
               "p_model": 0.3056,
-              "p_market": 0.2981,
+              "p_market": 0.2946,
               "best": {
                 "book": "pinnacle",
-                "price": 3.25
+                "price": 3.28
               },
               "veikkaus": null,
-              "edge": 0.0075,
-              "ev": -0.0068,
+              "edge": 0.011,
+              "ev": 0.0024,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.6944,
-              "p_market": 0.7019,
+              "p_market": 0.7054,
               "best": {
-                "book": "betsson",
-                "price": 1.44
+                "book": "pinnacle",
+                "price": 1.37
               },
               "veikkaus": null,
-              "edge": -0.0075,
-              "ev": -0.0001,
+              "edge": -0.011,
+              "ev": -0.0487,
               "value": false,
               "flag": null
             }
@@ -571,37 +571,28 @@
             {
               "book": "pinnacle",
               "prices": [
-                3.25,
-                1.38
+                3.28,
+                1.37
               ],
-              "vig": 0.0323,
+              "vig": 0.0348,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                2.8,
-                1.44
+                3.2,
+                1.35
               ],
-              "vig": 0.0516,
-              "valid": true
-            },
-            {
-              "book": "coolbet",
-              "prices": [
-                3.18,
-                1.36
-              ],
-              "vig": 0.0498,
+              "vig": 0.0532,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                2.8,
-                1.44
+                3.2,
+                1.35
               ],
-              "vig": 0.0516,
+              "vig": 0.0532,
               "valid": true
             }
           ]
@@ -617,7 +608,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.88
+                "price": 1.89
               },
               "veikkaus": null,
               "edge": null,
@@ -631,7 +622,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.93
+                "price": 1.92
               },
               "veikkaus": null,
               "edge": null,
@@ -644,10 +635,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.88,
-                1.93
+                1.89,
+                1.92
               ],
-              "vig": 0.05,
+              "vig": 0.0499,
               "valid": true
             }
           ]
@@ -662,12 +653,12 @@
               "p_model": 0.7165,
               "p_market": 0.7033,
               "best": {
-                "book": "leovegas_fi",
-                "price": 1.35
+                "book": "coolbet",
+                "price": 1.36
               },
               "veikkaus": null,
               "edge": 0.0132,
-              "ev": -0.0327,
+              "ev": -0.0256,
               "value": false,
               "flag": null
             },
@@ -694,6 +685,15 @@
                 3.2
               ],
               "vig": 0.0532,
+              "valid": true
+            },
+            {
+              "book": "coolbet",
+              "prices": [
+                1.36,
+                3.18
+              ],
+              "vig": 0.0498,
               "valid": true
             },
             {
@@ -742,8 +742,8 @@
           "book": "pinnacle",
           "price": 1.93,
           "p_model": 0.5424,
-          "p_market": 0.5026,
-          "edge": 0.0399,
+          "p_market": 0.5039,
+          "edge": 0.0386,
           "ev": 0.0424,
           "flag": null,
           "veikkaus": null
@@ -1494,7 +1494,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -1504,7 +1504,7 @@
             {
               "key": "home",
               "p_model": 0.5907,
-              "p_market": 0.602,
+              "p_market": 0.601,
               "best": {
                 "book": "pinnacle",
                 "price": 1.62
@@ -1514,7 +1514,7 @@
                 "ev": -0.0549,
                 "value": false
               },
-              "edge": -0.0113,
+              "edge": -0.0103,
               "ev": -0.0431,
               "value": false,
               "flag": null
@@ -1522,18 +1522,18 @@
             {
               "key": "away",
               "p_model": 0.4093,
-              "p_market": 0.398,
+              "p_market": 0.399,
               "best": {
                 "book": "pinnacle",
-                "price": 2.45
+                "price": 2.44
               },
               "veikkaus": {
-                "price": 2.32,
-                "ev": -0.0504,
+                "price": 2.34,
+                "ev": -0.0422,
                 "value": false
               },
-              "edge": 0.0113,
-              "ev": 0.0028,
+              "edge": 0.0103,
+              "ev": -0.0013,
               "value": false,
               "flag": null
             }
@@ -1543,18 +1543,18 @@
               "book": "veikkaus_fi",
               "prices": [
                 1.6,
-                2.32
+                2.34
               ],
-              "vig": 0.056,
+              "vig": 0.0524,
               "valid": true
             },
             {
               "book": "pinnacle",
               "prices": [
                 1.62,
-                2.45
+                2.44
               ],
-              "vig": 0.0254,
+              "vig": 0.0271,
               "valid": true
             },
             {
@@ -1585,42 +1585,42 @@
             {
               "key": "home",
               "p_model": 0.4559,
-              "p_market": 0.4936,
+              "p_market": 0.5085,
               "best": {
                 "book": "marathonbet",
-                "price": 2.01
+                "price": 2.02
               },
               "veikkaus": null,
-              "edge": -0.0377,
-              "ev": -0.0836,
+              "edge": -0.0526,
+              "ev": -0.0791,
               "value": false,
               "flag": null
             },
             {
               "key": "draw",
               "p_model": 0.2537,
-              "p_market": 0.2102,
+              "p_market": 0.2089,
               "best": {
-                "book": "unibet_fi",
-                "price": 4.6
+                "book": "leovegas_fi",
+                "price": 4.7
               },
               "veikkaus": null,
-              "edge": 0.0435,
-              "ev": 0.167,
+              "edge": 0.0448,
+              "ev": 0.1924,
               "value": true,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.2904,
-              "p_market": 0.2962,
+              "p_market": 0.2826,
               "best": {
                 "book": "leovegas_fi",
-                "price": 3.3
+                "price": 3.45
               },
               "veikkaus": null,
-              "edge": -0.0058,
-              "ev": -0.0417,
+              "edge": 0.0078,
+              "ev": 0.0019,
               "value": false,
               "flag": null
             }
@@ -1629,51 +1629,51 @@
             {
               "book": "unibet_fi",
               "prices": [
-                1.95,
+                1.89,
                 4.6,
-                3.25
+                3.4
               ],
-              "vig": 0.0379,
+              "vig": 0.0406,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
-                1.95,
-                4.6,
-                3.3
+                1.89,
+                4.7,
+                3.45
               ],
-              "vig": 0.0332,
+              "vig": 0.0317,
               "valid": true
             },
             {
               "book": "coolbet",
               "prices": [
-                1.99,
-                4.3,
+                1.97,
+                4.4,
                 3.22
               ],
-              "vig": 0.0456,
+              "vig": 0.0454,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
-                1.95,
-                4.6,
-                3.3
+                1.89,
+                4.7,
+                3.45
               ],
-              "vig": 0.0332,
+              "vig": 0.0317,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                2.01,
+                2.02,
                 4.3,
-                3.16
+                3.14
               ],
-              "vig": 0.0465,
+              "vig": 0.0461,
               "valid": true
             }
           ]
@@ -1750,28 +1750,28 @@
             {
               "key": "over",
               "p_model": 0.512,
-              "p_market": 0.5116,
+              "p_market": 0.5141,
               "best": {
                 "book": "pinnacle",
-                "price": 1.9
+                "price": 1.89
               },
               "veikkaus": null,
-              "edge": 0.0004,
-              "ev": -0.0248,
+              "edge": -0.0021,
+              "ev": -0.0294,
               "value": false,
               "flag": null
             },
             {
               "key": "under",
               "p_model": 0.488,
-              "p_market": 0.4884,
+              "p_market": 0.4859,
               "best": {
                 "book": "pinnacle",
-                "price": 1.99
+                "price": 2.0
               },
               "veikkaus": null,
-              "edge": -0.0004,
-              "ev": -0.0263,
+              "edge": 0.0021,
+              "ev": -0.0219,
               "value": false,
               "flag": null
             }
@@ -1780,10 +1780,10 @@
             {
               "book": "pinnacle",
               "prices": [
-                1.9,
-                1.99
+                1.89,
+                2.0
               ],
-              "vig": 0.0288,
+              "vig": 0.0291,
               "valid": true
             }
           ]
@@ -1796,13 +1796,13 @@
             {
               "key": "home",
               "p_model": 0.3755,
-              "p_market": 0.3796,
+              "p_market": 0.3811,
               "best": {
                 "book": "pinnacle",
                 "price": 2.55
               },
               "veikkaus": null,
-              "edge": -0.0041,
+              "edge": -0.0056,
               "ev": -0.0425,
               "value": false,
               "flag": null
@@ -1810,13 +1810,13 @@
             {
               "key": "away",
               "p_model": 0.6245,
-              "p_market": 0.6204,
+              "p_market": 0.6189,
               "best": {
                 "book": "betsson",
                 "price": 1.62
               },
               "veikkaus": null,
-              "edge": 0.0041,
+              "edge": 0.0056,
               "ev": 0.0117,
               "value": false,
               "flag": null
@@ -1826,19 +1826,19 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                2.45,
-                1.55
+                2.35,
+                1.57
               ],
-              "vig": 0.0533,
+              "vig": 0.0625,
               "valid": true
             },
             {
               "book": "pinnacle",
               "prices": [
                 2.55,
-                1.56
+                1.57
               ],
-              "vig": 0.0332,
+              "vig": 0.0291,
               "valid": true
             },
             {
@@ -1871,10 +1871,10 @@
             {
               "book": "unibet_se",
               "prices": [
-                2.45,
-                1.55
+                2.35,
+                1.57
               ],
-              "vig": 0.0533,
+              "vig": 0.0625,
               "valid": true
             }
           ]
@@ -1931,12 +1931,12 @@
           "market": "1x2",
           "line": null,
           "outcome": "draw",
-          "book": "unibet_fi",
-          "price": 4.6,
+          "book": "leovegas_fi",
+          "price": 4.7,
           "p_model": 0.2537,
-          "p_market": 0.2102,
-          "edge": 0.0435,
-          "ev": 0.167,
+          "p_market": 0.2089,
+          "edge": 0.0448,
+          "ev": 0.1924,
           "flag": null,
           "veikkaus": null
         }
@@ -2666,7 +2666,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -2676,36 +2676,36 @@
             {
               "key": "home",
               "p_model": 0.4797,
-              "p_market": 0.5,
+              "p_market": 0.4961,
               "best": {
-                "book": "veikkaus_fi",
-                "price": 2.0
+                "book": "pinnacle",
+                "price": 1.96
               },
               "veikkaus": {
-                "price": 2.0,
-                "ev": -0.0406,
+                "price": 1.91,
+                "ev": -0.0838,
                 "value": false
               },
-              "edge": -0.0203,
-              "ev": -0.0406,
+              "edge": -0.0164,
+              "ev": -0.0598,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.5203,
-              "p_market": 0.5,
+              "p_market": 0.5039,
               "best": {
                 "book": "pinnacle",
-                "price": 1.95
+                "price": 1.93
               },
               "veikkaus": {
-                "price": 1.81,
-                "ev": -0.0583,
+                "price": 1.89,
+                "ev": -0.0166,
                 "value": false
               },
-              "edge": 0.0203,
-              "ev": 0.0146,
+              "edge": 0.0164,
+              "ev": 0.0042,
               "value": false,
               "flag": null
             }
@@ -2714,19 +2714,19 @@
             {
               "book": "veikkaus_fi",
               "prices": [
-                2.0,
-                1.81
+                1.91,
+                1.89
               ],
-              "vig": 0.0525,
+              "vig": 0.0527,
               "valid": true
             },
             {
               "book": "pinnacle",
               "prices": [
-                1.95,
-                1.95
+                1.96,
+                1.93
               ],
-              "vig": 0.0256,
+              "vig": 0.0283,
               "valid": true
             },
             {
@@ -2841,11 +2841,11 @@
             {
               "book": "marathonbet",
               "prices": [
-                2.47,
+                2.48,
                 4.25,
-                2.47
+                2.45
               ],
-              "vig": 0.045,
+              "vig": 0.0467,
               "valid": true
             }
           ]
@@ -2853,49 +2853,40 @@
         {
           "key": "totals",
           "line": 5.5,
-          "ref": "median",
+          "ref": null,
           "outcomes": [
             {
               "key": "over",
               "p_model": 0.6785,
-              "p_market": 0.5769,
+              "p_market": null,
               "best": {
                 "book": "leovegas_fi",
                 "price": 1.65
               },
               "veikkaus": null,
-              "edge": 0.1016,
-              "ev": 0.1196,
-              "value": true,
-              "flag": "suspicious"
+              "edge": null,
+              "ev": null,
+              "value": false,
+              "flag": null
             },
             {
               "key": "under",
               "p_model": 0.3215,
-              "p_market": 0.4231,
+              "p_market": null,
               "best": {
                 "book": "leovegas_fi",
                 "price": 2.25
               },
               "veikkaus": null,
-              "edge": -0.1016,
-              "ev": -0.2767,
+              "edge": null,
+              "ev": null,
               "value": false,
-              "flag": "suspicious"
+              "flag": null
             }
           ],
           "books": [
             {
               "book": "leovegas_fi",
-              "prices": [
-                1.65,
-                2.25
-              ],
-              "vig": 0.0505,
-              "valid": true
-            },
-            {
-              "book": "coolbet",
               "prices": [
                 1.65,
                 2.25
@@ -2913,13 +2904,13 @@
             {
               "key": "over",
               "p_model": 0.5858,
-              "p_market": 0.4718,
+              "p_market": 0.4756,
               "best": {
-                "book": "marathonbet",
+                "book": "coolbet",
                 "price": 2.27
               },
               "veikkaus": null,
-              "edge": 0.114,
+              "edge": 0.1102,
               "ev": 0.3297,
               "value": true,
               "flag": "suspicious"
@@ -2927,14 +2918,14 @@
             {
               "key": "under",
               "p_model": 0.4142,
-              "p_market": 0.5282,
+              "p_market": 0.5244,
               "best": {
                 "book": "pinnacle",
-                "price": 1.84
+                "price": 1.85
               },
               "veikkaus": null,
-              "edge": -0.114,
-              "ev": -0.2379,
+              "edge": -0.1102,
+              "ev": -0.2337,
               "value": false,
               "flag": "suspicious"
             }
@@ -2943,19 +2934,28 @@
             {
               "book": "pinnacle",
               "prices": [
-                2.06,
-                1.84
+                2.04,
+                1.85
               ],
-              "vig": 0.0289,
+              "vig": 0.0307,
+              "valid": true
+            },
+            {
+              "book": "coolbet",
+              "prices": [
+                2.27,
+                1.64
+              ],
+              "vig": 0.0503,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                2.27,
-                1.63
+                2.25,
+                1.64
               ],
-              "vig": 0.054,
+              "vig": 0.0542,
               "valid": true
             }
           ]
@@ -2963,33 +2963,33 @@
         {
           "key": "spreads",
           "line": -1.5,
-          "ref": "pinnacle",
+          "ref": "median",
           "outcomes": [
             {
               "key": "home",
               "p_model": 0.3043,
-              "p_market": 0.2968,
+              "p_market": 0.2935,
               "best": {
-                "book": "pinnacle",
-                "price": 3.27
+                "book": "betsson",
+                "price": 3.5
               },
               "veikkaus": null,
-              "edge": 0.0075,
-              "ev": -0.0049,
+              "edge": 0.0108,
+              "ev": 0.0651,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.6957,
-              "p_market": 0.7032,
+              "p_market": 0.7065,
               "best": {
-                "book": "betsson",
-                "price": 1.4
+                "book": "coolbet",
+                "price": 1.36
               },
               "veikkaus": null,
-              "edge": -0.0075,
-              "ev": -0.026,
+              "edge": -0.0108,
+              "ev": -0.0538,
               "value": false,
               "flag": null
             }
@@ -2998,28 +2998,19 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                3.2,
+                3.25,
                 1.35
               ],
-              "vig": 0.0532,
-              "valid": true
-            },
-            {
-              "book": "pinnacle",
-              "prices": [
-                3.27,
-                1.38
-              ],
-              "vig": 0.0304,
+              "vig": 0.0484,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                2.95,
-                1.4
+                3.5,
+                1.3
               ],
-              "vig": 0.0533,
+              "vig": 0.0549,
               "valid": true
             },
             {
@@ -3034,19 +3025,19 @@
             {
               "book": "nordicbet",
               "prices": [
-                2.95,
-                1.4
+                3.5,
+                1.3
               ],
-              "vig": 0.0533,
+              "vig": 0.0549,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
-                3.2,
+                3.25,
                 1.35
               ],
-              "vig": 0.0532,
+              "vig": 0.0484,
               "valid": true
             }
           ]
@@ -3076,7 +3067,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.91
+                "price": 1.9
               },
               "veikkaus": null,
               "edge": null,
@@ -3090,9 +3081,55 @@
               "book": "marathonbet",
               "prices": [
                 1.91,
-                1.91
+                1.9
               ],
-              "vig": 0.0471,
+              "vig": 0.0499,
+              "valid": true
+            }
+          ]
+        },
+        {
+          "key": "spreads",
+          "line": 1.5,
+          "ref": "pinnacle",
+          "outcomes": [
+            {
+              "key": "home",
+              "p_model": 0.67,
+              "p_market": 0.7026,
+              "best": {
+                "book": "pinnacle",
+                "price": 1.38
+              },
+              "veikkaus": null,
+              "edge": -0.0326,
+              "ev": -0.0754,
+              "value": false,
+              "flag": null
+            },
+            {
+              "key": "away",
+              "p_model": 0.33,
+              "p_market": 0.2974,
+              "best": {
+                "book": "pinnacle",
+                "price": 3.26
+              },
+              "veikkaus": null,
+              "edge": 0.0326,
+              "ev": 0.0758,
+              "value": true,
+              "flag": null
+            }
+          ],
+          "books": [
+            {
+              "book": "pinnacle",
+              "prices": [
+                1.38,
+                3.26
+              ],
+              "vig": 0.0314,
               "valid": true
             }
           ]
@@ -3100,28 +3137,28 @@
       ],
       "picks": [
         {
-          "market": "totals",
-          "line": 6.5,
-          "outcome": "over",
-          "book": "marathonbet",
-          "price": 2.27,
-          "p_model": 0.5858,
-          "p_market": 0.4718,
-          "edge": 0.114,
-          "ev": 0.3297,
-          "flag": "suspicious",
+          "market": "spreads",
+          "line": 1.5,
+          "outcome": "away",
+          "book": "pinnacle",
+          "price": 3.26,
+          "p_model": 0.33,
+          "p_market": 0.2974,
+          "edge": 0.0326,
+          "ev": 0.0758,
+          "flag": null,
           "veikkaus": null
         },
         {
           "market": "totals",
-          "line": 5.5,
+          "line": 6.5,
           "outcome": "over",
-          "book": "leovegas_fi",
-          "price": 1.65,
-          "p_model": 0.6785,
-          "p_market": 0.5769,
-          "edge": 0.1016,
-          "ev": 0.1196,
+          "book": "coolbet",
+          "price": 2.27,
+          "p_model": 0.5858,
+          "p_market": 0.4756,
+          "edge": 0.1102,
+          "ev": 0.3297,
           "flag": "suspicious",
           "veikkaus": null
         }
@@ -3811,7 +3848,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -3821,36 +3858,36 @@
             {
               "key": "home",
               "p_model": 0.4754,
-              "p_market": 0.5,
+              "p_market": 0.5039,
               "best": {
                 "book": "pinnacle",
-                "price": 1.94
+                "price": 1.93
               },
               "veikkaus": {
                 "price": 1.87,
                 "ev": -0.111,
                 "value": false
               },
-              "edge": -0.0246,
-              "ev": -0.0777,
+              "edge": -0.0285,
+              "ev": -0.0825,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.5246,
-              "p_market": 0.5,
+              "p_market": 0.4961,
               "best": {
                 "book": "pinnacle",
-                "price": 1.94
+                "price": 1.96
               },
               "veikkaus": {
                 "price": 1.92,
                 "ev": 0.0072,
                 "value": false
               },
-              "edge": 0.0246,
-              "ev": 0.0177,
+              "edge": 0.0285,
+              "ev": 0.0282,
               "value": false,
               "flag": null
             }
@@ -3868,28 +3905,28 @@
             {
               "book": "pinnacle",
               "prices": [
-                1.94,
-                1.94
+                1.93,
+                1.96
               ],
-              "vig": 0.0309,
+              "vig": 0.0283,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                1.9,
-                1.9
+                1.89,
+                1.91
               ],
-              "vig": 0.0526,
+              "vig": 0.0527,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                1.9,
-                1.9
+                1.89,
+                1.91
               ],
-              "vig": 0.0526,
+              "vig": 0.0527,
               "valid": true
             }
           ]
@@ -3902,13 +3939,13 @@
             {
               "key": "home",
               "p_model": 0.3521,
-              "p_market": 0.3914,
+              "p_market": 0.3912,
               "best": {
                 "book": "unibet_fi",
                 "price": 2.48
               },
               "veikkaus": null,
-              "edge": -0.0393,
+              "edge": -0.0391,
               "ev": -0.1268,
               "value": false,
               "flag": null
@@ -3916,13 +3953,13 @@
             {
               "key": "draw",
               "p_model": 0.2497,
-              "p_market": 0.2251,
+              "p_market": 0.2283,
               "best": {
                 "book": "marathonbet",
                 "price": 4.4
               },
               "veikkaus": null,
-              "edge": 0.0246,
+              "edge": 0.0214,
               "ev": 0.0987,
               "value": true,
               "flag": null
@@ -3930,13 +3967,13 @@
             {
               "key": "away",
               "p_model": 0.3982,
-              "p_market": 0.3834,
+              "p_market": 0.3805,
               "best": {
-                "book": "leovegas_fi",
+                "book": "unibet_fi",
                 "price": 2.55
               },
               "veikkaus": null,
-              "edge": 0.0148,
+              "edge": 0.0177,
               "ev": 0.0154,
               "value": false,
               "flag": null
@@ -3947,40 +3984,40 @@
               "book": "unibet_fi",
               "prices": [
                 2.48,
-                4.3,
-                2.5
+                4.2,
+                2.55
               ],
-              "vig": 0.0358,
+              "vig": 0.0335,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
                 2.48,
-                4.3,
+                4.25,
                 2.55
               ],
-              "vig": 0.0279,
+              "vig": 0.0307,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
                 2.48,
-                4.3,
+                4.25,
                 2.55
               ],
-              "vig": 0.0279,
+              "vig": 0.0307,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                2.44,
+                2.43,
                 4.4,
-                2.44
+                2.45
               ],
-              "vig": 0.0469,
+              "vig": 0.047,
               "valid": true
             }
           ]
@@ -3996,7 +4033,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.65
+                "price": 1.66
               },
               "veikkaus": null,
               "edge": null,
@@ -4010,7 +4047,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 2.24
+                "price": 2.22
               },
               "veikkaus": null,
               "edge": null,
@@ -4023,10 +4060,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.65,
-                2.24
+                1.66,
+                2.22
               ],
-              "vig": 0.0525,
+              "vig": 0.0529,
               "valid": true
             }
           ]
@@ -4042,11 +4079,11 @@
               "p_market": 0.4768,
               "best": {
                 "book": "leovegas_fi",
-                "price": 2.28
+                "price": 2.32
               },
               "veikkaus": null,
               "edge": -0.0543,
-              "ev": -0.0368,
+              "ev": -0.0199,
               "value": false,
               "flag": null
             },
@@ -4069,10 +4106,10 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                2.28,
-                1.62
+                2.32,
+                1.61
               ],
-              "vig": 0.0559,
+              "vig": 0.0522,
               "valid": true
             },
             {
@@ -4089,32 +4126,32 @@
         {
           "key": "spreads",
           "line": -1.5,
-          "ref": "median",
+          "ref": "pinnacle",
           "outcomes": [
             {
               "key": "home",
               "p_model": 0.279,
-              "p_market": 0.3093,
+              "p_market": 0.2959,
               "best": {
-                "book": "leovegas_fi",
-                "price": 3.2
+                "book": "pinnacle",
+                "price": 3.26
               },
               "veikkaus": null,
-              "edge": -0.0303,
-              "ev": -0.1072,
+              "edge": -0.0169,
+              "ev": -0.0905,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.721,
-              "p_market": 0.6907,
+              "p_market": 0.7041,
               "best": {
                 "book": "betsson",
                 "price": 1.4
               },
               "veikkaus": null,
-              "edge": 0.0303,
+              "edge": 0.0169,
               "ev": 0.0094,
               "value": false,
               "flag": null
@@ -4128,6 +4165,15 @@
                 1.35
               ],
               "vig": 0.0532,
+              "valid": true
+            },
+            {
+              "book": "pinnacle",
+              "prices": [
+                3.26,
+                1.37
+              ],
+              "vig": 0.0367,
               "valid": true
             },
             {
@@ -4170,7 +4216,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.91
+                "price": 1.9
               },
               "veikkaus": null,
               "edge": null,
@@ -4197,56 +4243,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.91,
+                1.9,
                 1.91
               ],
-              "vig": 0.0471,
-              "valid": true
-            }
-          ]
-        },
-        {
-          "key": "spreads",
-          "line": 1.5,
-          "ref": "pinnacle",
-          "outcomes": [
-            {
-              "key": "home",
-              "p_model": 0.6831,
-              "p_market": 0.7035,
-              "best": {
-                "book": "pinnacle",
-                "price": 1.37
-              },
-              "veikkaus": null,
-              "edge": -0.0204,
-              "ev": -0.0642,
-              "value": false,
-              "flag": null
-            },
-            {
-              "key": "away",
-              "p_model": 0.3169,
-              "p_market": 0.2965,
-              "best": {
-                "book": "pinnacle",
-                "price": 3.25
-              },
-              "veikkaus": null,
-              "edge": 0.0204,
-              "ev": 0.0299,
-              "value": false,
-              "flag": null
-            }
-          ],
-          "books": [
-            {
-              "book": "pinnacle",
-              "prices": [
-                1.37,
-                3.25
-              ],
-              "vig": 0.0376,
+              "vig": 0.0499,
               "valid": true
             }
           ]
@@ -4260,8 +4260,8 @@
           "book": "marathonbet",
           "price": 4.4,
           "p_model": 0.2497,
-          "p_market": 0.2251,
-          "edge": 0.0246,
+          "p_market": 0.2283,
+          "edge": 0.0214,
           "ev": 0.0987,
           "flag": null,
           "veikkaus": null
@@ -5045,7 +5045,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -5055,7 +5055,7 @@
             {
               "key": "home",
               "p_model": 0.5962,
-              "p_market": 0.6214,
+              "p_market": 0.6204,
               "best": {
                 "book": "pinnacle",
                 "price": 1.56
@@ -5065,7 +5065,7 @@
                 "ev": -0.0759,
                 "value": false
               },
-              "edge": -0.0252,
+              "edge": -0.0242,
               "ev": -0.0699,
               "value": false,
               "flag": null
@@ -5073,19 +5073,19 @@
             {
               "key": "away",
               "p_model": 0.4038,
-              "p_market": 0.3786,
+              "p_market": 0.3796,
               "best": {
                 "book": "pinnacle",
-                "price": 2.56
+                "price": 2.55
               },
               "veikkaus": {
                 "price": 2.45,
                 "ev": -0.0107,
                 "value": false
               },
-              "edge": 0.0252,
-              "ev": 0.0337,
-              "value": true,
+              "edge": 0.0242,
+              "ev": 0.0297,
+              "value": false,
               "flag": null
             }
           ],
@@ -5103,27 +5103,27 @@
               "book": "pinnacle",
               "prices": [
                 1.56,
-                2.56
+                2.55
               ],
-              "vig": 0.0317,
+              "vig": 0.0332,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                1.55,
-                2.46
+                1.54,
+                2.47
               ],
-              "vig": 0.0517,
+              "vig": 0.0542,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                1.55,
-                2.46
+                1.54,
+                2.47
               ],
-              "vig": 0.0517,
+              "vig": 0.0542,
               "valid": true
             }
           ]
@@ -5136,41 +5136,41 @@
             {
               "key": "home",
               "p_model": 0.466,
-              "p_market": 0.4912,
+              "p_market": 0.4914,
               "best": {
                 "book": "unibet_fi",
-                "price": 1.98
+                "price": 1.97
               },
               "veikkaus": null,
-              "edge": -0.0252,
-              "ev": -0.0773,
+              "edge": -0.0254,
+              "ev": -0.082,
               "value": false,
               "flag": null
             },
             {
               "key": "draw",
               "p_model": 0.2576,
-              "p_market": 0.2199,
+              "p_market": 0.2196,
               "best": {
                 "book": "marathonbet",
-                "price": 4.5
+                "price": 4.45
               },
               "veikkaus": null,
-              "edge": 0.0377,
-              "ev": 0.1592,
+              "edge": 0.038,
+              "ev": 0.1463,
               "value": true,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.2764,
-              "p_market": 0.2889,
+              "p_market": 0.289,
               "best": {
                 "book": "marathonbet",
                 "price": 3.38
               },
               "veikkaus": null,
-              "edge": -0.0125,
+              "edge": -0.0126,
               "ev": -0.0658,
               "value": false,
               "flag": null
@@ -5180,11 +5180,11 @@
             {
               "book": "unibet_fi",
               "prices": [
-                1.98,
-                4.35,
+                1.97,
+                4.4,
                 3.3
               ],
-              "vig": 0.038,
+              "vig": 0.0379,
               "valid": true
             },
             {
@@ -5210,11 +5210,11 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.89,
-                4.5,
+                1.9,
+                4.45,
                 3.38
               ],
-              "vig": 0.0472,
+              "vig": 0.0469,
               "valid": true
             }
           ]
@@ -5227,27 +5227,27 @@
             {
               "key": "over",
               "p_model": 0.4468,
-              "p_market": 0.5284,
+              "p_market": 0.5142,
               "best": {
                 "book": "pinnacle",
-                "price": 1.83
+                "price": 1.88
               },
               "veikkaus": null,
-              "edge": -0.0815,
-              "ev": -0.1823,
+              "edge": -0.0674,
+              "ev": -0.16,
               "value": false,
               "flag": null
             },
             {
               "key": "under",
               "p_model": 0.5532,
-              "p_market": 0.4716,
+              "p_market": 0.4858,
               "best": {
                 "book": "leovegas_fi",
                 "price": 2.1
               },
               "veikkaus": null,
-              "edge": 0.0815,
+              "edge": 0.0674,
               "ev": 0.1617,
               "value": true,
               "flag": null
@@ -5266,19 +5266,19 @@
             {
               "book": "pinnacle",
               "prices": [
-                1.83,
-                2.05
+                1.88,
+                1.99
               ],
-              "vig": 0.0343,
+              "vig": 0.0344,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                1.81,
-                2.0
+                1.84,
+                1.96
               ],
-              "vig": 0.0525,
+              "vig": 0.0537,
               "valid": true
             }
           ]
@@ -5291,13 +5291,13 @@
             {
               "key": "home",
               "p_model": 0.376,
-              "p_market": 0.3901,
+              "p_market": 0.3892,
               "best": {
                 "book": "leovegas_fi",
                 "price": 2.48
               },
               "veikkaus": null,
-              "edge": -0.0141,
+              "edge": -0.0132,
               "ev": -0.0675,
               "value": false,
               "flag": null
@@ -5305,13 +5305,13 @@
             {
               "key": "away",
               "p_model": 0.624,
-              "p_market": 0.6099,
+              "p_market": 0.6108,
               "best": {
                 "book": "betsson",
                 "price": 1.6
               },
               "veikkaus": null,
-              "edge": 0.0141,
+              "edge": 0.0132,
               "ev": -0.0016,
               "value": false,
               "flag": null
@@ -5330,28 +5330,28 @@
             {
               "book": "pinnacle",
               "prices": [
-                2.47,
+                2.48,
                 1.58
               ],
-              "vig": 0.0378,
+              "vig": 0.0361,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                2.3,
+                2.35,
                 1.6
               ],
-              "vig": 0.0598,
+              "vig": 0.0505,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                2.3,
+                2.35,
                 1.6
               ],
-              "vig": 0.0598,
+              "vig": 0.0505,
               "valid": true
             },
             {
@@ -5376,7 +5376,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 2.15
+                "price": 2.17
               },
               "veikkaus": null,
               "edge": null,
@@ -5390,7 +5390,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.71
+                "price": 1.7
               },
               "veikkaus": null,
               "edge": null,
@@ -5403,10 +5403,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                2.15,
-                1.71
+                2.17,
+                1.7
               ],
-              "vig": 0.0499,
+              "vig": 0.0491,
               "valid": true
             }
           ]
@@ -5420,8 +5420,8 @@
           "book": "leovegas_fi",
           "price": 2.1,
           "p_model": 0.5532,
-          "p_market": 0.4716,
-          "edge": 0.0815,
+          "p_market": 0.4858,
+          "edge": 0.0674,
           "ev": 0.1617,
           "flag": null,
           "veikkaus": null
@@ -5431,30 +5431,13 @@
           "line": null,
           "outcome": "draw",
           "book": "marathonbet",
-          "price": 4.5,
+          "price": 4.45,
           "p_model": 0.2576,
-          "p_market": 0.2199,
-          "edge": 0.0377,
-          "ev": 0.1592,
+          "p_market": 0.2196,
+          "edge": 0.038,
+          "ev": 0.1463,
           "flag": null,
           "veikkaus": null
-        },
-        {
-          "market": "h2h",
-          "line": null,
-          "outcome": "away",
-          "book": "pinnacle",
-          "price": 2.56,
-          "p_model": 0.4038,
-          "p_market": 0.3786,
-          "edge": 0.0252,
-          "ev": 0.0337,
-          "flag": null,
-          "veikkaus": {
-            "price": 2.45,
-            "ev": -0.0107,
-            "value": false
-          }
         }
       ]
     },
@@ -6202,7 +6185,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -6212,36 +6195,36 @@
             {
               "key": "home",
               "p_model": 0.4967,
-              "p_market": 0.5,
+              "p_market": 0.5039,
               "best": {
                 "book": "pinnacle",
-                "price": 1.94
+                "price": 1.93
               },
               "veikkaus": {
                 "price": 1.85,
                 "ev": -0.0811,
                 "value": false
               },
-              "edge": -0.0033,
-              "ev": -0.0364,
+              "edge": -0.0072,
+              "ev": -0.0414,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.5033,
-              "p_market": 0.5,
+              "p_market": 0.4961,
               "best": {
-                "book": "veikkaus_fi",
-                "price": 1.95
+                "book": "pinnacle",
+                "price": 1.96
               },
               "veikkaus": {
                 "price": 1.95,
                 "ev": -0.0186,
                 "value": false
               },
-              "edge": 0.0033,
-              "ev": -0.0186,
+              "edge": 0.0072,
+              "ev": -0.0135,
               "value": false,
               "flag": null
             }
@@ -6259,28 +6242,28 @@
             {
               "book": "pinnacle",
               "prices": [
-                1.94,
-                1.94
+                1.93,
+                1.96
               ],
-              "vig": 0.0309,
+              "vig": 0.0283,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                1.9,
-                1.9
+                1.89,
+                1.91
               ],
-              "vig": 0.0526,
+              "vig": 0.0527,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                1.9,
-                1.9
+                1.89,
+                1.91
               ],
-              "vig": 0.0526,
+              "vig": 0.0527,
               "valid": true
             }
           ]
@@ -6293,42 +6276,42 @@
             {
               "key": "home",
               "p_model": 0.3689,
-              "p_market": 0.3917,
+              "p_market": 0.3958,
               "best": {
-                "book": "leovegas_fi",
-                "price": 2.48
+                "book": "unibet_fi",
+                "price": 2.45
               },
               "veikkaus": null,
-              "edge": -0.0228,
-              "ev": -0.0851,
+              "edge": -0.0269,
+              "ev": -0.0962,
               "value": false,
               "flag": null
             },
             {
               "key": "draw",
               "p_model": 0.2473,
-              "p_market": 0.2198,
+              "p_market": 0.221,
               "best": {
-                "book": "unibet_fi",
-                "price": 4.4
+                "book": "marathonbet",
+                "price": 4.45
               },
               "veikkaus": null,
-              "edge": 0.0275,
-              "ev": 0.0881,
+              "edge": 0.0263,
+              "ev": 0.1005,
               "value": true,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.3838,
-              "p_market": 0.3885,
+              "p_market": 0.3832,
               "best": {
                 "book": "leovegas_fi",
-                "price": 2.5
+                "price": 2.55
               },
               "veikkaus": null,
-              "edge": -0.0047,
-              "ev": -0.0405,
+              "edge": 0.0006,
+              "ev": -0.0213,
               "value": false,
               "flag": null
             }
@@ -6338,40 +6321,40 @@
               "book": "unibet_fi",
               "prices": [
                 2.45,
-                4.4,
-                2.48
+                4.35,
+                2.5
               ],
-              "vig": 0.0387,
+              "vig": 0.038,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
-                2.48,
+                2.45,
                 4.4,
-                2.5
+                2.55
               ],
-              "vig": 0.0305,
+              "vig": 0.0276,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
-                2.48,
+                2.45,
                 4.4,
-                2.5
+                2.55
               ],
-              "vig": 0.0305,
+              "vig": 0.0276,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                2.44,
-                4.4,
-                2.44
+                2.42,
+                4.45,
+                2.45
               ],
-              "vig": 0.0469,
+              "vig": 0.0461,
               "valid": true
             }
           ]
@@ -6386,12 +6369,12 @@
               "p_model": 0.4578,
               "p_market": 0.4858,
               "best": {
-                "book": "leovegas_fi",
-                "price": 2.25
+                "book": "marathonbet",
+                "price": 2.24
               },
               "veikkaus": null,
               "edge": -0.028,
-              "ev": 0.03,
+              "ev": 0.0254,
               "value": false,
               "flag": null
             },
@@ -6414,10 +6397,10 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                2.25,
+                2.23,
                 1.65
               ],
-              "vig": 0.0505,
+              "vig": 0.0545,
               "valid": true
             },
             {
@@ -6443,32 +6426,32 @@
         {
           "key": "spreads",
           "line": -1.5,
-          "ref": "median",
+          "ref": "pinnacle",
           "outcomes": [
             {
               "key": "home",
               "p_model": 0.3,
-              "p_market": 0.31,
+              "p_market": 0.2959,
               "best": {
-                "book": "leovegas_fi",
-                "price": 3.2
+                "book": "pinnacle",
+                "price": 3.26
               },
               "veikkaus": null,
-              "edge": -0.01,
-              "ev": -0.04,
+              "edge": 0.0041,
+              "ev": -0.022,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.7,
-              "p_market": 0.69,
+              "p_market": 0.7041,
               "best": {
                 "book": "betsson",
                 "price": 1.4
               },
               "veikkaus": null,
-              "edge": 0.01,
+              "edge": -0.0041,
               "ev": -0.02,
               "value": false,
               "flag": null
@@ -6478,10 +6461,19 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                3.2,
+                3.15,
                 1.36
               ],
-              "vig": 0.0478,
+              "vig": 0.0528,
+              "valid": true
+            },
+            {
+              "book": "pinnacle",
+              "prices": [
+                3.26,
+                1.37
+              ],
+              "vig": 0.0367,
               "valid": true
             },
             {
@@ -6505,10 +6497,10 @@
             {
               "book": "unibet_se",
               "prices": [
-                3.2,
+                3.15,
                 1.36
               ],
-              "vig": 0.0478,
+              "vig": 0.0528,
               "valid": true
             }
           ]
@@ -6524,7 +6516,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.91
+                "price": 1.9
               },
               "veikkaus": null,
               "edge": null,
@@ -6551,56 +6543,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.91,
+                1.9,
                 1.91
               ],
-              "vig": 0.0471,
-              "valid": true
-            }
-          ]
-        },
-        {
-          "key": "spreads",
-          "line": 1.5,
-          "ref": "pinnacle",
-          "outcomes": [
-            {
-              "key": "home",
-              "p_model": 0.6937,
-              "p_market": 0.7047,
-              "best": {
-                "book": "pinnacle",
-                "price": 1.37
-              },
-              "veikkaus": null,
-              "edge": -0.011,
-              "ev": -0.0496,
-              "value": false,
-              "flag": null
-            },
-            {
-              "key": "away",
-              "p_model": 0.3063,
-              "p_market": 0.2953,
-              "best": {
-                "book": "pinnacle",
-                "price": 3.27
-              },
-              "veikkaus": null,
-              "edge": 0.011,
-              "ev": 0.0016,
-              "value": false,
-              "flag": null
-            }
-          ],
-          "books": [
-            {
-              "book": "pinnacle",
-              "prices": [
-                1.37,
-                3.27
-              ],
-              "vig": 0.0357,
+              "vig": 0.0499,
               "valid": true
             }
           ]
@@ -6611,12 +6557,12 @@
           "market": "1x2",
           "line": null,
           "outcome": "draw",
-          "book": "unibet_fi",
-          "price": 4.4,
+          "book": "marathonbet",
+          "price": 4.45,
           "p_model": 0.2473,
-          "p_market": 0.2198,
-          "edge": 0.0275,
-          "ev": 0.0881,
+          "p_market": 0.221,
+          "edge": 0.0263,
+          "ev": 0.1005,
           "flag": null,
           "veikkaus": null
         }
@@ -7366,7 +7312,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -7376,36 +7322,36 @@
             {
               "key": "home",
               "p_model": 0.5811,
-              "p_market": 0.5558,
+              "p_market": 0.551,
               "best": {
                 "book": "pinnacle",
-                "price": 1.75
+                "price": 1.76
               },
               "veikkaus": {
                 "price": 1.72,
                 "ev": -0.0005,
                 "value": false
               },
-              "edge": 0.0253,
-              "ev": 0.0169,
+              "edge": 0.0301,
+              "ev": 0.0227,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.4189,
-              "p_market": 0.4442,
+              "p_market": 0.449,
               "best": {
                 "book": "pinnacle",
-                "price": 2.19
+                "price": 2.16
               },
               "veikkaus": {
                 "price": 2.12,
                 "ev": -0.1119,
                 "value": false
               },
-              "edge": -0.0253,
-              "ev": -0.0826,
+              "edge": -0.0301,
+              "ev": -0.0952,
               "value": false,
               "flag": null
             }
@@ -7423,10 +7369,10 @@
             {
               "book": "pinnacle",
               "prices": [
-                1.75,
-                2.19
+                1.76,
+                2.16
               ],
-              "vig": 0.028,
+              "vig": 0.0311,
               "valid": true
             },
             {
@@ -7457,27 +7403,27 @@
             {
               "key": "home",
               "p_model": 0.4621,
-              "p_market": 0.4439,
+              "p_market": 0.4403,
               "best": {
-                "book": "leovegas_fi",
-                "price": 2.18
+                "book": "unibet_fi",
+                "price": 2.2
               },
               "veikkaus": null,
-              "edge": 0.0182,
-              "ev": 0.0074,
+              "edge": 0.0218,
+              "ev": 0.0166,
               "value": false,
               "flag": null
             },
             {
               "key": "draw",
               "p_model": 0.2313,
-              "p_market": 0.2193,
+              "p_market": 0.225,
               "best": {
                 "book": "marathonbet",
                 "price": 4.55
               },
               "veikkaus": null,
-              "edge": 0.012,
+              "edge": 0.0063,
               "ev": 0.0524,
               "value": false,
               "flag": null
@@ -7485,14 +7431,14 @@
             {
               "key": "away",
               "p_model": 0.3065,
-              "p_market": 0.3368,
+              "p_market": 0.3348,
               "best": {
                 "book": "leovegas_fi",
-                "price": 2.88
+                "price": 2.9
               },
               "veikkaus": null,
-              "edge": -0.0303,
-              "ev": -0.1173,
+              "edge": -0.0283,
+              "ev": -0.1112,
               "value": false,
               "flag": null
             }
@@ -7501,41 +7447,41 @@
             {
               "book": "unibet_fi",
               "prices": [
-                2.17,
-                4.4,
-                2.85
+                2.2,
+                4.3,
+                2.88
               ],
-              "vig": 0.039,
+              "vig": 0.0343,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
-                2.18,
-                4.4,
-                2.88
+                2.2,
+                4.3,
+                2.9
               ],
-              "vig": 0.0332,
+              "vig": 0.0319,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
-                2.18,
-                4.4,
-                2.88
+                2.2,
+                4.3,
+                2.9
               ],
-              "vig": 0.0332,
+              "vig": 0.0319,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                2.14,
+                2.17,
                 4.55,
-                2.78
+                2.74
               ],
-              "vig": 0.0468,
+              "vig": 0.0456,
               "valid": true
             }
           ]
@@ -7551,11 +7497,11 @@
               "p_market": 0.5258,
               "best": {
                 "book": "leovegas_fi",
-                "price": 2.12
+                "price": 2.1
               },
               "veikkaus": null,
               "edge": 0.0764,
-              "ev": 0.2767,
+              "ev": 0.2646,
               "value": true,
               "flag": null
             },
@@ -7578,10 +7524,10 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                2.12,
-                1.72
+                2.1,
+                1.74
               ],
-              "vig": 0.0531,
+              "vig": 0.0509,
               "valid": true
             },
             {
@@ -7596,10 +7542,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                2.06,
-                1.76
+                2.05,
+                1.77
               ],
-              "vig": 0.0536,
+              "vig": 0.0528,
               "valid": true
             }
           ]
@@ -7612,27 +7558,27 @@
             {
               "key": "home",
               "p_model": 0.3864,
-              "p_market": 0.3466,
+              "p_market": 0.3435,
               "best": {
                 "book": "pinnacle",
-                "price": 2.79
+                "price": 2.81
               },
               "veikkaus": null,
-              "edge": 0.0398,
-              "ev": 0.0781,
+              "edge": 0.0429,
+              "ev": 0.0858,
               "value": true,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.6136,
-              "p_market": 0.6534,
+              "p_market": 0.6565,
               "best": {
                 "book": "betsson",
                 "price": 1.5
               },
               "veikkaus": null,
-              "edge": -0.0398,
+              "edge": -0.0429,
               "ev": -0.0796,
               "value": false,
               "flag": null
@@ -7642,19 +7588,19 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                2.7,
-                1.45
+                2.75,
+                1.44
               ],
-              "vig": 0.06,
+              "vig": 0.0581,
               "valid": true
             },
             {
               "book": "pinnacle",
               "prices": [
-                2.79,
-                1.48
+                2.81,
+                1.47
               ],
-              "vig": 0.0341,
+              "vig": 0.0361,
               "valid": true
             },
             {
@@ -7678,10 +7624,10 @@
             {
               "book": "unibet_se",
               "prices": [
-                2.7,
-                1.45
+                2.75,
+                1.44
               ],
-              "vig": 0.06,
+              "vig": 0.0581,
               "valid": true
             }
           ]
@@ -7697,7 +7643,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.69
+                "price": 1.71
               },
               "veikkaus": null,
               "edge": null,
@@ -7711,7 +7657,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 2.18
+                "price": 2.15
               },
               "veikkaus": null,
               "edge": null,
@@ -7724,10 +7670,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.69,
-                2.18
+                1.71,
+                2.15
               ],
-              "vig": 0.0504,
+              "vig": 0.0499,
               "valid": true
             }
           ]
@@ -7739,11 +7685,11 @@
           "line": 6.5,
           "outcome": "over",
           "book": "leovegas_fi",
-          "price": 2.12,
+          "price": 2.1,
           "p_model": 0.6022,
           "p_market": 0.5258,
           "edge": 0.0764,
-          "ev": 0.2767,
+          "ev": 0.2646,
           "flag": null,
           "veikkaus": null
         },
@@ -7752,11 +7698,11 @@
           "line": -1.5,
           "outcome": "home",
           "book": "pinnacle",
-          "price": 2.79,
+          "price": 2.81,
           "p_model": 0.3864,
-          "p_market": 0.3466,
-          "edge": 0.0398,
-          "ev": 0.0781,
+          "p_market": 0.3435,
+          "edge": 0.0429,
+          "ev": 0.0858,
           "flag": null,
           "veikkaus": null
         }
@@ -8506,7 +8452,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -8571,13 +8517,13 @@
             {
               "key": "home",
               "p_model": 0.5803,
-              "p_market": 0.5905,
+              "p_market": 0.5917,
               "best": {
                 "book": "leovegas_fi",
                 "price": 1.64
               },
               "veikkaus": null,
-              "edge": -0.0102,
+              "edge": -0.0114,
               "ev": -0.0483,
               "value": false,
               "flag": null
@@ -8585,28 +8531,28 @@
             {
               "key": "draw",
               "p_model": 0.2138,
-              "p_market": 0.2035,
+              "p_market": 0.2061,
               "best": {
                 "book": "marathonbet",
-                "price": 4.95
+                "price": 5.0
               },
               "veikkaus": null,
-              "edge": 0.0103,
-              "ev": 0.0583,
+              "edge": 0.0077,
+              "ev": 0.069,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.2059,
-              "p_market": 0.206,
+              "p_market": 0.2022,
               "best": {
                 "book": "unibet_fi",
-                "price": 4.7
+                "price": 4.8
               },
               "veikkaus": null,
-              "edge": -0.0001,
-              "ev": -0.0323,
+              "edge": 0.0037,
+              "ev": -0.0117,
               "value": false,
               "flag": null
             }
@@ -8616,40 +8562,40 @@
               "book": "unibet_fi",
               "prices": [
                 1.63,
-                4.75,
-                4.7
+                4.7,
+                4.8
               ],
-              "vig": 0.0368,
+              "vig": 0.0346,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
                 1.64,
-                4.75,
-                4.7
+                4.7,
+                4.8
               ],
-              "vig": 0.033,
+              "vig": 0.0309,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
                 1.64,
-                4.75,
-                4.7
+                4.7,
+                4.8
               ],
-              "vig": 0.033,
+              "vig": 0.0309,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                1.64,
-                4.95,
-                4.25
+                1.63,
+                5.0,
+                4.3
               ],
-              "vig": 0.0471,
+              "vig": 0.0461,
               "valid": true
             }
           ]
@@ -8662,27 +8608,27 @@
             {
               "key": "over",
               "p_model": 0.5032,
-              "p_market": 0.4634,
+              "p_market": 0.4614,
               "best": {
                 "book": "marathonbet",
-                "price": 2.06
+                "price": 2.08
               },
               "veikkaus": null,
-              "edge": 0.0399,
-              "ev": 0.0366,
+              "edge": 0.0418,
+              "ev": 0.0467,
               "value": true,
               "flag": null
             },
             {
               "key": "under",
               "p_model": 0.4968,
-              "p_market": 0.5366,
+              "p_market": 0.5386,
               "best": {
                 "book": "leovegas_fi",
                 "price": 1.78
               },
               "veikkaus": null,
-              "edge": -0.0399,
+              "edge": -0.0418,
               "ev": -0.1157,
               "value": false,
               "flag": null
@@ -8701,10 +8647,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                2.06,
-                1.76
+                2.08,
+                1.75
               ],
-              "vig": 0.0536,
+              "vig": 0.0522,
               "valid": true
             }
           ]
@@ -8717,13 +8663,13 @@
             {
               "key": "home",
               "p_model": 0.5017,
-              "p_market": 0.4961,
+              "p_market": 0.4947,
               "best": {
                 "book": "leovegas_fi",
                 "price": 1.93
               },
               "veikkaus": null,
-              "edge": 0.0056,
+              "edge": 0.007,
               "ev": -0.0317,
               "value": false,
               "flag": null
@@ -8731,13 +8677,13 @@
             {
               "key": "away",
               "p_model": 0.4983,
-              "p_market": 0.5039,
+              "p_market": 0.5053,
               "best": {
                 "book": "betsson",
                 "price": 1.9
               },
               "veikkaus": null,
-              "edge": -0.0056,
+              "edge": -0.007,
               "ev": -0.0532,
               "value": false,
               "flag": null
@@ -8748,9 +8694,9 @@
               "book": "leovegas_fi",
               "prices": [
                 1.93,
-                1.87
+                1.85
               ],
-              "vig": 0.0529,
+              "vig": 0.0587,
               "valid": true
             },
             {
@@ -8775,9 +8721,9 @@
               "book": "unibet_se",
               "prices": [
                 1.93,
-                1.87
+                1.85
               ],
-              "vig": 0.0529,
+              "vig": 0.0587,
               "valid": true
             }
           ]
@@ -8835,11 +8781,11 @@
           "line": 6.5,
           "outcome": "over",
           "book": "marathonbet",
-          "price": 2.06,
+          "price": 2.08,
           "p_model": 0.5032,
-          "p_market": 0.4634,
-          "edge": 0.0399,
-          "ev": 0.0366,
+          "p_market": 0.4614,
+          "edge": 0.0418,
+          "ev": 0.0467,
           "flag": null,
           "veikkaus": null
         }
@@ -9589,7 +9535,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -9599,36 +9545,36 @@
             {
               "key": "home",
               "p_model": 0.5027,
-              "p_market": 0.5179,
+              "p_market": 0.509,
               "best": {
                 "book": "pinnacle",
-                "price": 1.88
+                "price": 1.91
               },
               "veikkaus": {
                 "price": 1.87,
                 "ev": -0.06,
                 "value": false
               },
-              "edge": -0.0152,
-              "ev": -0.0549,
+              "edge": -0.0063,
+              "ev": -0.0398,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.4973,
-              "p_market": 0.4821,
+              "p_market": 0.491,
               "best": {
                 "book": "pinnacle",
-                "price": 2.02
+                "price": 1.98
               },
               "veikkaus": {
                 "price": 1.92,
                 "ev": -0.0452,
                 "value": false
               },
-              "edge": 0.0152,
-              "ev": 0.0045,
+              "edge": 0.0063,
+              "ev": -0.0153,
               "value": false,
               "flag": null
             }
@@ -9646,28 +9592,28 @@
             {
               "book": "pinnacle",
               "prices": [
-                1.88,
-                2.02
+                1.91,
+                1.98
               ],
-              "vig": 0.027,
+              "vig": 0.0286,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                1.83,
-                1.98
+                1.86,
+                1.94
               ],
-              "vig": 0.0515,
+              "vig": 0.0531,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                1.83,
-                1.98
+                1.86,
+                1.94
               ],
-              "vig": 0.0515,
+              "vig": 0.0531,
               "valid": true
             }
           ]
@@ -9680,41 +9626,41 @@
             {
               "key": "home",
               "p_model": 0.3816,
-              "p_market": 0.4158,
+              "p_market": 0.4169,
               "best": {
                 "book": "marathonbet",
-                "price": 2.35
+                "price": 2.39
               },
               "veikkaus": null,
-              "edge": -0.0342,
-              "ev": -0.1032,
+              "edge": -0.0353,
+              "ev": -0.088,
               "value": false,
               "flag": null
             },
             {
               "key": "draw",
               "p_model": 0.2476,
-              "p_market": 0.2253,
+              "p_market": 0.2249,
               "best": {
                 "book": "marathonbet",
-                "price": 4.35
+                "price": 4.4
               },
               "veikkaus": null,
-              "edge": 0.0223,
-              "ev": 0.0771,
+              "edge": 0.0227,
+              "ev": 0.0894,
               "value": true,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.3708,
-              "p_market": 0.3589,
+              "p_market": 0.3582,
               "best": {
                 "book": "unibet_fi",
                 "price": 2.7
               },
               "veikkaus": null,
-              "edge": 0.0119,
+              "edge": 0.0126,
               "ev": 0.0012,
               "value": false,
               "flag": null
@@ -9725,40 +9671,40 @@
               "book": "unibet_fi",
               "prices": [
                 2.32,
-                4.25,
+                4.3,
                 2.7
               ],
-              "vig": 0.0367,
+              "vig": 0.034,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
-                2.33,
+                2.32,
                 4.3,
                 2.7
               ],
-              "vig": 0.0321,
+              "vig": 0.034,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
-                2.33,
+                2.32,
                 4.3,
                 2.7
               ],
-              "vig": 0.0321,
+              "vig": 0.034,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                2.35,
-                4.35,
-                2.55
+                2.39,
+                4.4,
+                2.5
               ],
-              "vig": 0.0476,
+              "vig": 0.0457,
               "valid": true
             }
           ]
@@ -9771,13 +9717,13 @@
             {
               "key": "over",
               "p_model": 0.5763,
-              "p_market": 0.5438,
+              "p_market": 0.5476,
               "best": {
                 "book": "leovegas_fi",
                 "price": 1.76
               },
               "veikkaus": null,
-              "edge": 0.0325,
+              "edge": 0.0287,
               "ev": 0.0143,
               "value": false,
               "flag": null
@@ -9785,14 +9731,14 @@
             {
               "key": "under",
               "p_model": 0.4237,
-              "p_market": 0.4562,
+              "p_market": 0.4524,
               "best": {
                 "book": "marathonbet",
-                "price": 2.1
+                "price": 2.13
               },
               "veikkaus": null,
-              "edge": -0.0325,
-              "ev": -0.1102,
+              "edge": -0.0287,
+              "ev": -0.0975,
               "value": false,
               "flag": null
             }
@@ -9802,18 +9748,18 @@
               "book": "leovegas_fi",
               "prices": [
                 1.76,
-                2.06
+                2.07
               ],
-              "vig": 0.0536,
+              "vig": 0.0513,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                1.73,
-                2.1
+                1.71,
+                2.13
               ],
-              "vig": 0.0542,
+              "vig": 0.0543,
               "valid": true
             }
           ]
@@ -9826,28 +9772,28 @@
             {
               "key": "over",
               "p_model": 0.5311,
-              "p_market": 0.5013,
+              "p_market": 0.513,
               "best": {
                 "book": "pinnacle",
-                "price": 1.93
+                "price": 1.88
               },
               "veikkaus": null,
-              "edge": 0.0298,
-              "ev": 0.0226,
+              "edge": 0.0182,
+              "ev": -0.0014,
               "value": false,
               "flag": null
             },
             {
               "key": "under",
               "p_model": 0.4689,
-              "p_market": 0.4987,
+              "p_market": 0.487,
               "best": {
                 "book": "pinnacle",
-                "price": 1.94
+                "price": 1.98
               },
               "veikkaus": null,
-              "edge": -0.0298,
-              "ev": -0.0817,
+              "edge": -0.0182,
+              "ev": -0.0647,
               "value": false,
               "flag": null
             }
@@ -9856,10 +9802,10 @@
             {
               "book": "pinnacle",
               "prices": [
-                1.93,
-                1.94
+                1.88,
+                1.98
               ],
-              "vig": 0.0336,
+              "vig": 0.037,
               "valid": true
             }
           ]
@@ -9872,27 +9818,27 @@
             {
               "key": "home",
               "p_model": 0.3067,
-              "p_market": 0.3062,
+              "p_market": 0.3013,
               "best": {
                 "book": "pinnacle",
-                "price": 3.15
+                "price": 3.2
               },
               "veikkaus": null,
-              "edge": 0.0005,
-              "ev": -0.0339,
+              "edge": 0.0054,
+              "ev": -0.0186,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.6933,
-              "p_market": 0.6938,
+              "p_market": 0.6987,
               "best": {
                 "book": "betsson",
                 "price": 1.44
               },
               "veikkaus": null,
-              "edge": -0.0005,
+              "edge": -0.0054,
               "ev": -0.0016,
               "value": false,
               "flag": null
@@ -9902,19 +9848,19 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                3.05,
+                3.0,
                 1.38
               ],
-              "vig": 0.0525,
+              "vig": 0.058,
               "valid": true
             },
             {
               "book": "pinnacle",
               "prices": [
-                3.15,
-                1.39
+                3.2,
+                1.38
               ],
-              "vig": 0.0369,
+              "vig": 0.0371,
               "valid": true
             },
             {
@@ -9938,10 +9884,10 @@
             {
               "book": "unibet_se",
               "prices": [
-                3.05,
+                3.0,
                 1.38
               ],
-              "vig": 0.0525,
+              "vig": 0.058,
               "valid": true
             }
           ]
@@ -9957,7 +9903,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.83
+                "price": 1.87
               },
               "veikkaus": null,
               "edge": null,
@@ -9971,7 +9917,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.99
+                "price": 1.94
               },
               "veikkaus": null,
               "edge": null,
@@ -9984,10 +9930,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.83,
-                1.99
+                1.87,
+                1.94
               ],
-              "vig": 0.049,
+              "vig": 0.0502,
               "valid": true
             }
           ]
@@ -9999,11 +9945,11 @@
           "line": null,
           "outcome": "draw",
           "book": "marathonbet",
-          "price": 4.35,
+          "price": 4.4,
           "p_model": 0.2476,
-          "p_market": 0.2253,
-          "edge": 0.0223,
-          "ev": 0.0771,
+          "p_market": 0.2249,
+          "edge": 0.0227,
+          "ev": 0.0894,
           "flag": null,
           "veikkaus": null
         }
@@ -10693,7 +10639,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -10784,13 +10730,13 @@
             {
               "key": "home",
               "p_model": 0.4661,
-              "p_market": 0.4423,
+              "p_market": 0.4421,
               "best": {
                 "book": "leovegas_fi",
                 "price": 2.2
               },
               "veikkaus": null,
-              "edge": 0.0238,
+              "edge": 0.024,
               "ev": 0.0254,
               "value": false,
               "flag": null
@@ -10798,28 +10744,28 @@
             {
               "key": "draw",
               "p_model": 0.248,
-              "p_market": 0.2201,
+              "p_market": 0.2233,
               "best": {
                 "book": "marathonbet",
-                "price": 4.55
+                "price": 4.5
               },
               "veikkaus": null,
-              "edge": 0.0279,
-              "ev": 0.1284,
+              "edge": 0.0247,
+              "ev": 0.116,
               "value": true,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.2859,
-              "p_market": 0.3376,
+              "p_market": 0.3346,
               "best": {
-                "book": "leovegas_fi",
-                "price": 2.88
+                "book": "unibet_fi",
+                "price": 2.9
               },
               "veikkaus": null,
-              "edge": -0.0517,
-              "ev": -0.1766,
+              "edge": -0.0487,
+              "ev": -0.1709,
               "value": false,
               "flag": null
             }
@@ -10829,40 +10775,40 @@
               "book": "unibet_fi",
               "prices": [
                 2.18,
-                4.4,
-                2.85
+                4.3,
+                2.9
               ],
-              "vig": 0.0369,
+              "vig": 0.0361,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
                 2.2,
-                4.4,
-                2.88
+                4.35,
+                2.9
               ],
-              "vig": 0.029,
+              "vig": 0.0293,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
                 2.2,
-                4.4,
-                2.88
+                4.35,
+                2.9
               ],
-              "vig": 0.029,
+              "vig": 0.0293,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                2.1,
-                4.55,
-                2.85
+                2.11,
+                4.5,
+                2.86
               ],
-              "vig": 0.0468,
+              "vig": 0.0458,
               "valid": true
             }
           ]
@@ -10875,28 +10821,28 @@
             {
               "key": "over",
               "p_model": 0.4352,
-              "p_market": 0.5,
+              "p_market": 0.4742,
               "best": {
-                "book": "leovegas_fi",
-                "price": 2.15
+                "book": "marathonbet",
+                "price": 2.24
               },
               "veikkaus": null,
-              "edge": -0.0648,
-              "ev": -0.0642,
+              "edge": -0.039,
+              "ev": -0.0251,
               "value": false,
               "flag": null
             },
             {
               "key": "under",
               "p_model": 0.5647,
-              "p_market": 0.5,
+              "p_market": 0.5258,
               "best": {
                 "book": "pinnacle",
-                "price": 1.93
+                "price": 1.84
               },
               "veikkaus": null,
-              "edge": 0.0647,
-              "ev": 0.09,
+              "edge": 0.039,
+              "ev": 0.0391,
               "value": true,
               "flag": null
             }
@@ -10905,28 +10851,28 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                2.15,
-                1.7
+                2.12,
+                1.71
               ],
-              "vig": 0.0534,
+              "vig": 0.0565,
               "valid": true
             },
             {
               "book": "pinnacle",
               "prices": [
-                1.93,
-                1.93
+                2.04,
+                1.84
               ],
-              "vig": 0.0363,
+              "vig": 0.0337,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                2.15,
-                1.7
+                2.24,
+                1.65
               ],
-              "vig": 0.0534,
+              "vig": 0.0525,
               "valid": true
             }
           ]
@@ -10956,11 +10902,11 @@
               "p_market": 0.6486,
               "best": {
                 "book": "betsson",
-                "price": 1.5
+                "price": 1.52
               },
               "veikkaus": null,
               "edge": -0.0324,
-              "ev": -0.0757,
+              "ev": -0.0634,
               "value": false,
               "flag": null
             }
@@ -10970,9 +10916,9 @@
               "book": "leovegas_fi",
               "prices": [
                 2.75,
-                1.44
+                1.45
               ],
-              "vig": 0.0581,
+              "vig": 0.0533,
               "valid": true
             },
             {
@@ -10988,27 +10934,27 @@
               "book": "betsson",
               "prices": [
                 2.55,
-                1.5
+                1.52
               ],
-              "vig": 0.0588,
+              "vig": 0.0501,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
                 2.55,
-                1.5
+                1.52
               ],
-              "vig": 0.0588,
+              "vig": 0.0501,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
                 2.75,
-                1.44
+                1.45
               ],
-              "vig": 0.0581,
+              "vig": 0.0533,
               "valid": true
             }
           ]
@@ -11066,24 +11012,11 @@
           "line": null,
           "outcome": "draw",
           "book": "marathonbet",
-          "price": 4.55,
+          "price": 4.5,
           "p_model": 0.248,
-          "p_market": 0.2201,
-          "edge": 0.0279,
-          "ev": 0.1284,
-          "flag": null,
-          "veikkaus": null
-        },
-        {
-          "market": "totals",
-          "line": 6.5,
-          "outcome": "under",
-          "book": "pinnacle",
-          "price": 1.93,
-          "p_model": 0.5647,
-          "p_market": 0.5,
-          "edge": 0.0647,
-          "ev": 0.09,
+          "p_market": 0.2233,
+          "edge": 0.0247,
+          "ev": 0.116,
           "flag": null,
           "veikkaus": null
         },
@@ -11097,6 +11030,19 @@
           "p_market": 0.3514,
           "edge": 0.0324,
           "ev": 0.0554,
+          "flag": null,
+          "veikkaus": null
+        },
+        {
+          "market": "totals",
+          "line": 6.5,
+          "outcome": "under",
+          "book": "pinnacle",
+          "price": 1.84,
+          "p_model": 0.5647,
+          "p_market": 0.5258,
+          "edge": 0.039,
+          "ev": 0.0391,
           "flag": null,
           "veikkaus": null
         }
@@ -11826,7 +11772,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -11836,36 +11782,36 @@
             {
               "key": "home",
               "p_model": 0.4419,
-              "p_market": 0.4211,
+              "p_market": 0.4069,
               "best": {
                 "book": "pinnacle",
-                "price": 2.31
+                "price": 2.39
               },
               "veikkaus": {
                 "price": 2.25,
                 "ev": -0.0057,
                 "value": false
               },
-              "edge": 0.0208,
-              "ev": 0.0208,
-              "value": false,
+              "edge": 0.035,
+              "ev": 0.0561,
+              "value": true,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.5581,
-              "p_market": 0.5789,
+              "p_market": 0.5931,
               "best": {
-                "book": "pinnacle",
-                "price": 1.68
+                "book": "veikkaus_fi",
+                "price": 1.64
               },
               "veikkaus": {
                 "price": 1.64,
                 "ev": -0.0847,
                 "value": false
               },
-              "edge": -0.0208,
-              "ev": -0.0624,
+              "edge": -0.035,
+              "ev": -0.0847,
               "value": false,
               "flag": null
             }
@@ -11883,28 +11829,28 @@
             {
               "book": "pinnacle",
               "prices": [
-                2.31,
-                1.68
+                2.39,
+                1.64
               ],
-              "vig": 0.0281,
+              "vig": 0.0282,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                2.28,
-                1.63
+                2.31,
+                1.61
               ],
-              "vig": 0.0521,
+              "vig": 0.054,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                2.28,
-                1.63
+                2.31,
+                1.61
               ],
-              "vig": 0.0521,
+              "vig": 0.054,
               "valid": true
             }
           ]
@@ -11917,27 +11863,27 @@
             {
               "key": "home",
               "p_model": 0.3187,
-              "p_market": 0.2943,
+              "p_market": 0.3046,
               "best": {
-                "book": "unibet_fi",
-                "price": 3.3
+                "book": "leovegas_fi",
+                "price": 3.2
               },
               "veikkaus": null,
-              "edge": 0.0244,
-              "ev": 0.0517,
-              "value": true,
+              "edge": 0.0141,
+              "ev": 0.0198,
+              "value": false,
               "flag": null
             },
             {
               "key": "draw",
               "p_model": 0.2539,
-              "p_market": 0.2202,
+              "p_market": 0.226,
               "best": {
                 "book": "marathonbet",
                 "price": 4.45
               },
               "veikkaus": null,
-              "edge": 0.0337,
+              "edge": 0.0279,
               "ev": 0.1299,
               "value": true,
               "flag": null
@@ -11945,14 +11891,14 @@
             {
               "key": "away",
               "p_model": 0.4274,
-              "p_market": 0.4856,
+              "p_market": 0.4694,
               "best": {
-                "book": "marathonbet",
-                "price": 2.05
+                "book": "leovegas_fi",
+                "price": 2.07
               },
               "veikkaus": null,
-              "edge": -0.0582,
-              "ev": -0.1238,
+              "edge": -0.042,
+              "ev": -0.1153,
               "value": false,
               "flag": null
             }
@@ -11961,41 +11907,41 @@
             {
               "book": "unibet_fi",
               "prices": [
-                3.3,
-                4.4,
-                1.98
+                3.15,
+                4.25,
+                2.06
               ],
-              "vig": 0.0354,
+              "vig": 0.0382,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
-                3.3,
-                4.4,
-                2.0
+                3.2,
+                4.3,
+                2.07
               ],
-              "vig": 0.0303,
+              "vig": 0.0281,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
-                3.3,
-                4.4,
-                2.0
+                3.2,
+                4.3,
+                2.07
               ],
-              "vig": 0.0303,
+              "vig": 0.0281,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                3.0,
+                3.12,
                 4.45,
-                2.05
+                1.99
               ],
-              "vig": 0.0459,
+              "vig": 0.0477,
               "valid": true
             }
           ]
@@ -12008,13 +11954,13 @@
             {
               "key": "over",
               "p_model": 0.4896,
-              "p_market": 0.5399,
+              "p_market": 0.5436,
               "best": {
                 "book": "marathonbet",
                 "price": 1.77
               },
               "veikkaus": null,
-              "edge": -0.0503,
+              "edge": -0.054,
               "ev": -0.1334,
               "value": false,
               "flag": null
@@ -12022,14 +11968,14 @@
             {
               "key": "under",
               "p_model": 0.5104,
-              "p_market": 0.4601,
+              "p_market": 0.4564,
               "best": {
                 "book": "leovegas_fi",
-                "price": 2.08
+                "price": 2.12
               },
               "veikkaus": null,
-              "edge": 0.0503,
-              "ev": 0.0616,
+              "edge": 0.054,
+              "ev": 0.082,
               "value": true,
               "flag": null
             }
@@ -12038,10 +11984,10 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                1.75,
-                2.08
+                1.73,
+                2.12
               ],
-              "vig": 0.0522,
+              "vig": 0.0497,
               "valid": true
             },
             {
@@ -12063,27 +12009,27 @@
             {
               "key": "over",
               "p_model": 0.4361,
-              "p_market": 0.4845,
+              "p_market": 0.4858,
               "best": {
                 "book": "pinnacle",
-                "price": 2.0
+                "price": 1.99
               },
               "veikkaus": null,
-              "edge": -0.0484,
-              "ev": -0.1157,
+              "edge": -0.0497,
+              "ev": -0.1196,
               "value": false,
               "flag": null
             },
             {
               "key": "under",
               "p_model": 0.5639,
-              "p_market": 0.5155,
+              "p_market": 0.5142,
               "best": {
                 "book": "pinnacle",
                 "price": 1.88
               },
               "veikkaus": null,
-              "edge": 0.0485,
+              "edge": 0.0497,
               "ev": 0.0545,
               "value": true,
               "flag": null
@@ -12093,17 +12039,17 @@
             {
               "book": "pinnacle",
               "prices": [
-                2.0,
+                1.99,
                 1.88
               ],
-              "vig": 0.0319,
+              "vig": 0.0344,
               "valid": true
             }
           ]
         },
         {
           "key": "spreads",
-          "line": 0.0,
+          "line": 1.0,
           "ref": null,
           "outcomes": [
             {
@@ -12112,7 +12058,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 2.33
+                "price": 1.63
               },
               "veikkaus": null,
               "edge": null,
@@ -12126,7 +12072,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.61
+                "price": 2.29
               },
               "veikkaus": null,
               "edge": null,
@@ -12139,10 +12085,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                2.33,
-                1.61
+                1.63,
+                2.29
               ],
-              "vig": 0.0503,
+              "vig": 0.0502,
               "valid": true
             }
           ]
@@ -12155,13 +12101,13 @@
             {
               "key": "home",
               "p_model": 0.6536,
-              "p_market": 0.6478,
+              "p_market": 0.6346,
               "best": {
-                "book": "leovegas_fi",
+                "book": "betsson",
                 "price": 1.54
               },
               "veikkaus": null,
-              "edge": 0.0058,
+              "edge": 0.019,
               "ev": 0.0065,
               "value": false,
               "flag": null
@@ -12169,14 +12115,14 @@
             {
               "key": "away",
               "p_model": 0.3464,
-              "p_market": 0.3522,
+              "p_market": 0.3654,
               "best": {
                 "book": "pinnacle",
-                "price": 2.74
+                "price": 2.64
               },
               "veikkaus": null,
-              "edge": -0.0058,
-              "ev": -0.0509,
+              "edge": -0.019,
+              "ev": -0.0855,
               "value": false,
               "flag": null
             }
@@ -12185,46 +12131,46 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                1.54,
-                2.48
+                1.5,
+                2.6
               ],
-              "vig": 0.0526,
+              "vig": 0.0513,
               "valid": true
             },
             {
               "book": "pinnacle",
               "prices": [
-                1.49,
-                2.74
+                1.52,
+                2.64
               ],
-              "vig": 0.0361,
+              "vig": 0.0367,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                1.52,
+                1.54,
                 2.48
               ],
-              "vig": 0.0611,
+              "vig": 0.0526,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                1.52,
+                1.54,
                 2.48
               ],
-              "vig": 0.0611,
+              "vig": 0.0526,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
-                1.54,
-                2.48
+                1.5,
+                2.6
               ],
-              "vig": 0.0526,
+              "vig": 0.0513,
               "valid": true
             }
           ]
@@ -12238,8 +12184,8 @@
           "book": "marathonbet",
           "price": 4.45,
           "p_model": 0.2539,
-          "p_market": 0.2202,
-          "edge": 0.0337,
+          "p_market": 0.226,
+          "edge": 0.0279,
           "ev": 0.1299,
           "flag": null,
           "veikkaus": null
@@ -12249,13 +12195,30 @@
           "line": 5.5,
           "outcome": "under",
           "book": "leovegas_fi",
-          "price": 2.08,
+          "price": 2.12,
           "p_model": 0.5104,
-          "p_market": 0.4601,
-          "edge": 0.0503,
-          "ev": 0.0616,
+          "p_market": 0.4564,
+          "edge": 0.054,
+          "ev": 0.082,
           "flag": null,
           "veikkaus": null
+        },
+        {
+          "market": "h2h",
+          "line": null,
+          "outcome": "home",
+          "book": "pinnacle",
+          "price": 2.39,
+          "p_model": 0.4419,
+          "p_market": 0.4069,
+          "edge": 0.035,
+          "ev": 0.0561,
+          "flag": null,
+          "veikkaus": {
+            "price": 2.25,
+            "ev": -0.0057,
+            "value": false
+          }
         },
         {
           "market": "totals",
@@ -12264,22 +12227,9 @@
           "book": "pinnacle",
           "price": 1.88,
           "p_model": 0.5639,
-          "p_market": 0.5155,
-          "edge": 0.0485,
+          "p_market": 0.5142,
+          "edge": 0.0497,
           "ev": 0.0545,
-          "flag": null,
-          "veikkaus": null
-        },
-        {
-          "market": "1x2",
-          "line": null,
-          "outcome": "home",
-          "book": "unibet_fi",
-          "price": 3.3,
-          "p_model": 0.3187,
-          "p_market": 0.2943,
-          "edge": 0.0244,
-          "ev": 0.0517,
           "flag": null,
           "veikkaus": null
         }
@@ -13029,7 +12979,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -13039,36 +12989,36 @@
             {
               "key": "home",
               "p_model": 0.3456,
-              "p_market": 0.3458,
+              "p_market": 0.3364,
               "best": {
-                "book": "veikkaus_fi",
-                "price": 2.8
+                "book": "pinnacle",
+                "price": 2.88
               },
               "veikkaus": {
                 "price": 2.8,
                 "ev": -0.0323,
                 "value": false
               },
-              "edge": -0.0002,
-              "ev": -0.0323,
+              "edge": 0.0092,
+              "ev": -0.0047,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.6544,
-              "p_market": 0.6542,
+              "p_market": 0.6636,
               "best": {
                 "book": "pinnacle",
-                "price": 1.48
+                "price": 1.46
               },
               "veikkaus": {
                 "price": 1.44,
                 "ev": -0.0577,
                 "value": false
               },
-              "edge": 0.0002,
-              "ev": -0.0315,
+              "edge": -0.0092,
+              "ev": -0.0446,
               "value": false,
               "flag": null
             }
@@ -13086,28 +13036,28 @@
             {
               "book": "pinnacle",
               "prices": [
-                2.8,
-                1.48
+                2.88,
+                1.46
               ],
-              "vig": 0.0328,
+              "vig": 0.0322,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                2.65,
-                1.48
+                2.72,
+                1.46
               ],
-              "vig": 0.053,
+              "vig": 0.0526,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                2.65,
-                1.48
+                2.72,
+                1.46
               ],
-              "vig": 0.053,
+              "vig": 0.0526,
               "valid": true
             }
           ]
@@ -13120,27 +13070,27 @@
             {
               "key": "home",
               "p_model": 0.241,
-              "p_market": 0.257,
+              "p_market": 0.2588,
               "best": {
-                "book": "unibet_fi",
-                "price": 3.75
+                "book": "marathonbet",
+                "price": 3.8
               },
               "veikkaus": null,
-              "edge": -0.016,
-              "ev": -0.0963,
+              "edge": -0.0178,
+              "ev": -0.0842,
               "value": false,
               "flag": null
             },
             {
               "key": "draw",
               "p_model": 0.23,
-              "p_market": 0.2094,
+              "p_market": 0.2065,
               "best": {
-                "book": "marathonbet",
+                "book": "unibet_fi",
                 "price": 4.7
               },
               "veikkaus": null,
-              "edge": 0.0206,
+              "edge": 0.0235,
               "ev": 0.081,
               "value": true,
               "flag": null
@@ -13148,14 +13098,14 @@
             {
               "key": "away",
               "p_model": 0.529,
-              "p_market": 0.5336,
+              "p_market": 0.5347,
               "best": {
                 "book": "leovegas_fi",
-                "price": 1.81
+                "price": 1.82
               },
               "veikkaus": null,
-              "edge": -0.0046,
-              "ev": -0.0425,
+              "edge": -0.0057,
+              "ev": -0.0372,
               "value": false,
               "flag": null
             }
@@ -13165,40 +13115,40 @@
               "book": "unibet_fi",
               "prices": [
                 3.75,
-                4.6,
-                1.8
+                4.7,
+                1.81
               ],
-              "vig": 0.0396,
+              "vig": 0.0319,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
                 3.75,
-                4.6,
-                1.81
+                4.7,
+                1.82
               ],
-              "vig": 0.0365,
+              "vig": 0.0289,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
                 3.75,
-                4.6,
-                1.81
+                4.7,
+                1.82
               ],
-              "vig": 0.0365,
+              "vig": 0.0289,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                3.72,
+                3.8,
                 4.7,
-                1.77
+                1.75
               ],
-              "vig": 0.0466,
+              "vig": 0.0474,
               "valid": true
             }
           ]
@@ -13211,28 +13161,28 @@
             {
               "key": "over",
               "p_model": 0.4917,
-              "p_market": 0.5646,
+              "p_market": 0.5584,
               "best": {
-                "book": "marathonbet",
-                "price": 1.69
+                "book": "leovegas_fi",
+                "price": 1.7
               },
               "veikkaus": null,
-              "edge": -0.0729,
-              "ev": -0.1691,
+              "edge": -0.0668,
+              "ev": -0.1641,
               "value": false,
               "flag": null
             },
             {
               "key": "under",
               "p_model": 0.5083,
-              "p_market": 0.4354,
+              "p_market": 0.4416,
               "best": {
                 "book": "leovegas_fi",
-                "price": 2.2
+                "price": 2.15
               },
               "veikkaus": null,
-              "edge": 0.0729,
-              "ev": 0.1184,
+              "edge": 0.0668,
+              "ev": 0.093,
               "value": true,
               "flag": null
             }
@@ -13241,19 +13191,19 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                1.68,
-                2.2
+                1.7,
+                2.15
               ],
-              "vig": 0.0498,
+              "vig": 0.0534,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                1.69,
-                2.17
+                1.7,
+                2.15
               ],
-              "vig": 0.0525,
+              "vig": 0.0534,
               "valid": true
             }
           ]
@@ -13266,28 +13216,28 @@
             {
               "key": "over",
               "p_model": 0.4343,
-              "p_market": 0.5142,
+              "p_market": 0.509,
               "best": {
                 "book": "pinnacle",
-                "price": 1.88
+                "price": 1.9
               },
               "veikkaus": null,
-              "edge": -0.0799,
-              "ev": -0.1649,
+              "edge": -0.0747,
+              "ev": -0.1571,
               "value": false,
               "flag": null
             },
             {
               "key": "under",
               "p_model": 0.5657,
-              "p_market": 0.4858,
+              "p_market": 0.491,
               "best": {
                 "book": "pinnacle",
-                "price": 1.99
+                "price": 1.97
               },
               "veikkaus": null,
-              "edge": 0.0799,
-              "ev": 0.113,
+              "edge": 0.0748,
+              "ev": 0.1029,
               "value": true,
               "flag": null
             }
@@ -13296,10 +13246,10 @@
             {
               "book": "pinnacle",
               "prices": [
-                1.88,
-                1.99
+                1.9,
+                1.97
               ],
-              "vig": 0.0344,
+              "vig": 0.0339,
               "valid": true
             }
           ]
@@ -13315,7 +13265,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.84
+                "price": 1.86
               },
               "veikkaus": null,
               "edge": null,
@@ -13329,7 +13279,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.98
+                "price": 1.95
               },
               "veikkaus": null,
               "edge": null,
@@ -13342,10 +13292,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.84,
-                1.98
+                1.86,
+                1.95
               ],
-              "vig": 0.0485,
+              "vig": 0.0505,
               "valid": true
             }
           ]
@@ -13358,28 +13308,28 @@
             {
               "key": "home",
               "p_model": 0.5534,
-              "p_market": 0.5722,
+              "p_market": 0.566,
               "best": {
                 "book": "betsson",
-                "price": 1.7
+                "price": 1.72
               },
               "veikkaus": null,
-              "edge": -0.0188,
-              "ev": -0.0592,
+              "edge": -0.0126,
+              "ev": -0.0482,
               "value": false,
               "flag": null
             },
             {
               "key": "away",
               "p_model": 0.4466,
-              "p_market": 0.4278,
+              "p_market": 0.434,
               "best": {
-                "book": "pinnacle",
-                "price": 2.26
+                "book": "leovegas_fi",
+                "price": 2.23
               },
               "veikkaus": null,
-              "edge": 0.0188,
-              "ev": 0.0093,
+              "edge": 0.0126,
+              "ev": -0.0041,
               "value": false,
               "flag": null
             }
@@ -13388,46 +13338,46 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                1.65,
+                1.66,
                 2.23
               ],
-              "vig": 0.0545,
+              "vig": 0.0508,
               "valid": true
             },
             {
               "book": "pinnacle",
               "prices": [
-                1.69,
-                2.26
+                1.71,
+                2.23
               ],
-              "vig": 0.0342,
+              "vig": 0.0332,
               "valid": true
             },
             {
               "book": "betsson",
               "prices": [
-                1.7,
-                2.15
+                1.72,
+                2.12
               ],
-              "vig": 0.0534,
+              "vig": 0.0531,
               "valid": true
             },
             {
               "book": "nordicbet",
               "prices": [
-                1.7,
-                2.15
+                1.72,
+                2.12
               ],
-              "vig": 0.0534,
+              "vig": 0.0531,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
-                1.65,
+                1.66,
                 2.23
               ],
-              "vig": 0.0545,
+              "vig": 0.0508,
               "valid": true
             }
           ]
@@ -13436,27 +13386,27 @@
       "picks": [
         {
           "market": "totals",
-          "line": 5.5,
+          "line": 6.0,
           "outcome": "under",
-          "book": "leovegas_fi",
-          "price": 2.2,
-          "p_model": 0.5083,
-          "p_market": 0.4354,
-          "edge": 0.0729,
-          "ev": 0.1184,
+          "book": "pinnacle",
+          "price": 1.97,
+          "p_model": 0.5657,
+          "p_market": 0.491,
+          "edge": 0.0748,
+          "ev": 0.1029,
           "flag": null,
           "veikkaus": null
         },
         {
           "market": "totals",
-          "line": 6.0,
+          "line": 5.5,
           "outcome": "under",
-          "book": "pinnacle",
-          "price": 1.99,
-          "p_model": 0.5657,
-          "p_market": 0.4858,
-          "edge": 0.0799,
-          "ev": 0.113,
+          "book": "leovegas_fi",
+          "price": 2.15,
+          "p_model": 0.5083,
+          "p_market": 0.4416,
+          "edge": 0.0668,
+          "ev": 0.093,
           "flag": null,
           "veikkaus": null
         },
@@ -13464,11 +13414,11 @@
           "market": "1x2",
           "line": null,
           "outcome": "draw",
-          "book": "marathonbet",
+          "book": "unibet_fi",
           "price": 4.7,
           "p_model": 0.23,
-          "p_market": 0.2094,
-          "edge": 0.0206,
+          "p_market": 0.2065,
+          "edge": 0.0235,
           "ev": 0.081,
           "flag": null,
           "veikkaus": null
@@ -14179,7 +14129,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -14244,13 +14194,13 @@
             {
               "key": "home",
               "p_model": 0.5388,
-              "p_market": 0.4677,
+              "p_market": 0.4681,
               "best": {
                 "book": "leovegas_fi",
                 "price": 2.07
               },
               "veikkaus": null,
-              "edge": 0.0711,
+              "edge": 0.0707,
               "ev": 0.1153,
               "value": true,
               "flag": null
@@ -14258,13 +14208,13 @@
             {
               "key": "draw",
               "p_model": 0.2079,
-              "p_market": 0.22,
+              "p_market": 0.2197,
               "best": {
                 "book": "marathonbet",
                 "price": 4.6
               },
               "veikkaus": null,
-              "edge": -0.0121,
+              "edge": -0.0118,
               "ev": -0.0437,
               "value": false,
               "flag": null
@@ -14272,13 +14222,13 @@
             {
               "key": "away",
               "p_model": 0.2532,
-              "p_market": 0.3123,
+              "p_market": 0.3122,
               "best": {
                 "book": "unibet_fi",
                 "price": 3.1
               },
               "veikkaus": null,
-              "edge": -0.0591,
+              "edge": -0.059,
               "ev": -0.2151,
               "value": false,
               "flag": null
@@ -14289,10 +14239,10 @@
               "book": "unibet_fi",
               "prices": [
                 2.06,
-                4.35,
+                4.4,
                 3.1
               ],
-              "vig": 0.0379,
+              "vig": 0.0353,
               "valid": true
             },
             {
@@ -14318,11 +14268,11 @@
             {
               "book": "marathonbet",
               "prices": [
-                1.99,
+                2.02,
                 4.6,
-                3.06
+                2.99
               ],
-              "vig": 0.0467,
+              "vig": 0.0469,
               "valid": true
             }
           ]
@@ -14335,28 +14285,28 @@
             {
               "key": "over",
               "p_model": 0.6726,
-              "p_market": 0.462,
+              "p_market": 0.4679,
               "best": {
                 "book": "leovegas_fi",
-                "price": 2.07
+                "price": 2.04
               },
               "veikkaus": null,
-              "edge": 0.2106,
-              "ev": 0.3923,
+              "edge": 0.2047,
+              "ev": 0.3722,
               "value": true,
               "flag": "suspicious"
             },
             {
               "key": "under",
               "p_model": 0.3274,
-              "p_market": 0.538,
+              "p_market": 0.5321,
               "best": {
                 "book": "marathonbet",
-                "price": 1.78
+                "price": 1.79
               },
               "veikkaus": null,
-              "edge": -0.2106,
-              "ev": -0.4173,
+              "edge": -0.2047,
+              "ev": -0.414,
               "value": false,
               "flag": "suspicious"
             }
@@ -14365,19 +14315,19 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                2.07,
-                1.75
+                2.04,
+                1.78
               ],
-              "vig": 0.0545,
+              "vig": 0.052,
               "valid": true
             },
             {
               "book": "marathonbet",
               "prices": [
-                2.04,
-                1.78
+                2.02,
+                1.79
               ],
-              "vig": 0.052,
+              "vig": 0.0537,
               "valid": true
             }
           ]
@@ -14466,7 +14416,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 2.27
+                "price": 2.31
               },
               "veikkaus": null,
               "edge": null,
@@ -14480,7 +14430,7 @@
               "p_market": null,
               "best": {
                 "book": "marathonbet",
-                "price": 1.64
+                "price": 1.62
               },
               "veikkaus": null,
               "edge": null,
@@ -14493,10 +14443,10 @@
             {
               "book": "marathonbet",
               "prices": [
-                2.27,
-                1.64
+                2.31,
+                1.62
               ],
-              "vig": 0.0503,
+              "vig": 0.0502,
               "valid": true
             }
           ]
@@ -14523,8 +14473,8 @@
           "book": "leovegas_fi",
           "price": 2.07,
           "p_model": 0.5388,
-          "p_market": 0.4677,
-          "edge": 0.0711,
+          "p_market": 0.4681,
+          "edge": 0.0707,
           "ev": 0.1153,
           "flag": null,
           "veikkaus": null
@@ -14547,11 +14497,11 @@
           "line": 6.5,
           "outcome": "over",
           "book": "leovegas_fi",
-          "price": 2.07,
+          "price": 2.04,
           "p_model": 0.6726,
-          "p_market": 0.462,
-          "edge": 0.2106,
-          "ev": 0.3923,
+          "p_market": 0.4679,
+          "edge": 0.2047,
+          "ev": 0.3722,
           "flag": "suspicious",
           "veikkaus": null
         }
@@ -15301,7 +15251,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -15392,13 +15342,13 @@
             {
               "key": "home",
               "p_model": 0.4452,
-              "p_market": 0.5145,
+              "p_market": 0.5184,
               "best": {
-                "book": "unibet_fi",
+                "book": "marathonbet",
                 "price": 1.88
               },
               "veikkaus": null,
-              "edge": -0.0693,
+              "edge": -0.0732,
               "ev": -0.163,
               "value": false,
               "flag": null
@@ -15420,14 +15370,14 @@
             {
               "key": "away",
               "p_model": 0.3166,
-              "p_market": 0.2706,
+              "p_market": 0.2667,
               "best": {
                 "book": "leovegas_fi",
-                "price": 3.6
+                "price": 3.65
               },
               "veikkaus": null,
-              "edge": 0.046,
-              "ev": 0.1398,
+              "edge": 0.0499,
+              "ev": 0.1556,
               "value": true,
               "flag": null
             }
@@ -15436,31 +15386,31 @@
             {
               "book": "unibet_fi",
               "prices": [
-                1.88,
+                1.86,
                 4.5,
-                3.55
+                3.6
               ],
-              "vig": 0.0358,
+              "vig": 0.0376,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
-                1.88,
+                1.87,
                 4.5,
-                3.6
+                3.65
               ],
-              "vig": 0.0319,
+              "vig": 0.031,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
-                1.88,
+                1.87,
                 4.5,
-                3.6
+                3.65
               ],
-              "vig": 0.0319,
+              "vig": 0.031,
               "valid": true
             },
             {
@@ -15563,12 +15513,12 @@
               "p_model": 0.6264,
               "p_market": 0.596,
               "best": {
-                "book": "pinnacle",
-                "price": 1.62
+                "book": "leovegas_fi",
+                "price": 1.63
               },
               "veikkaus": null,
               "edge": 0.0304,
-              "ev": 0.0148,
+              "ev": 0.021,
               "value": false,
               "flag": null
             }
@@ -15577,10 +15527,10 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                2.32,
-                1.61
+                2.28,
+                1.63
               ],
-              "vig": 0.0522,
+              "vig": 0.0521,
               "valid": true
             },
             {
@@ -15613,10 +15563,10 @@
             {
               "book": "unibet_se",
               "prices": [
-                2.32,
-                1.61
+                2.28,
+                1.63
               ],
-              "vig": 0.0522,
+              "vig": 0.0521,
               "valid": true
             }
           ]
@@ -15674,11 +15624,11 @@
           "line": null,
           "outcome": "away",
           "book": "leovegas_fi",
-          "price": 3.6,
+          "price": 3.65,
           "p_model": 0.3166,
-          "p_market": 0.2706,
-          "edge": 0.046,
-          "ev": 0.1398,
+          "p_market": 0.2667,
+          "edge": 0.0499,
+          "ev": 0.1556,
           "flag": null,
           "veikkaus": null
         },
@@ -16458,7 +16408,7 @@
     "h2h": null,
     "insights": null,
     "odds": {
-      "fetched_at": "2026-11-18T20:07:19Z",
+      "fetched_at": "2026-11-18T22:36:12Z",
       "markets": [
         {
           "key": "h2h",
@@ -16549,13 +16499,13 @@
             {
               "key": "home",
               "p_model": 0.4043,
-              "p_market": 0.4158,
+              "p_market": 0.4147,
               "best": {
-                "book": "leovegas_fi",
+                "book": "unibet_fi",
                 "price": 2.33
               },
               "veikkaus": null,
-              "edge": -0.0115,
+              "edge": -0.0104,
               "ev": -0.058,
               "value": false,
               "flag": null
@@ -16563,13 +16513,13 @@
             {
               "key": "draw",
               "p_model": 0.2624,
-              "p_market": 0.2253,
+              "p_market": 0.2274,
               "best": {
                 "book": "marathonbet",
                 "price": 4.33
               },
               "veikkaus": null,
-              "edge": 0.0371,
+              "edge": 0.035,
               "ev": 0.1362,
               "value": true,
               "flag": null
@@ -16577,13 +16527,13 @@
             {
               "key": "away",
               "p_model": 0.3333,
-              "p_market": 0.3588,
+              "p_market": 0.3579,
               "best": {
                 "book": "unibet_fi",
                 "price": 2.7
               },
               "veikkaus": null,
-              "edge": -0.0255,
+              "edge": -0.0246,
               "ev": -0.1001,
               "value": false,
               "flag": null
@@ -16593,31 +16543,31 @@
             {
               "book": "unibet_fi",
               "prices": [
-                2.32,
+                2.33,
                 4.25,
                 2.7
               ],
-              "vig": 0.0367,
+              "vig": 0.0348,
               "valid": true
             },
             {
               "book": "leovegas_fi",
               "prices": [
                 2.33,
-                4.3,
+                4.25,
                 2.7
               ],
-              "vig": 0.0321,
+              "vig": 0.0348,
               "valid": true
             },
             {
               "book": "unibet_se",
               "prices": [
                 2.33,
-                4.3,
+                4.25,
                 2.7
               ],
-              "vig": 0.0321,
+              "vig": 0.0348,
               "valid": true
             },
             {
@@ -16657,11 +16607,11 @@
               "p_market": 0.4768,
               "best": {
                 "book": "leovegas_fi",
-                "price": 2.15
+                "price": 2.08
               },
               "veikkaus": null,
               "edge": 0.0658,
-              "ev": 0.1665,
+              "ev": 0.1286,
               "value": true,
               "flag": null
             }
@@ -16670,10 +16620,10 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                1.7,
-                2.15
+                1.75,
+                2.08
               ],
-              "vig": 0.0534,
+              "vig": 0.0522,
               "valid": true
             },
             {
@@ -16706,7 +16656,7 @@
               "p_model": 0.3254,
               "p_market": 0.3161,
               "best": {
-                "book": "pinnacle",
+                "book": "leovegas_fi",
                 "price": 3.05
               },
               "veikkaus": null,
@@ -16734,10 +16684,10 @@
             {
               "book": "leovegas_fi",
               "prices": [
-                3.0,
-                1.4
+                3.05,
+                1.38
               ],
-              "vig": 0.0476,
+              "vig": 0.0525,
               "valid": true
             },
             {
@@ -16770,10 +16720,10 @@
             {
               "book": "unibet_se",
               "prices": [
-                3.0,
-                1.4
+                3.05,
+                1.38
               ],
-              "vig": 0.0476,
+              "vig": 0.0525,
               "valid": true
             }
           ]
@@ -16827,28 +16777,28 @@
       ],
       "picks": [
         {
-          "market": "totals",
-          "line": 5.5,
-          "outcome": "under",
-          "book": "leovegas_fi",
-          "price": 2.15,
-          "p_model": 0.5426,
-          "p_market": 0.4768,
-          "edge": 0.0658,
-          "ev": 0.1665,
-          "flag": null,
-          "veikkaus": null
-        },
-        {
           "market": "1x2",
           "line": null,
           "outcome": "draw",
           "book": "marathonbet",
           "price": 4.33,
           "p_model": 0.2624,
-          "p_market": 0.2253,
-          "edge": 0.0371,
+          "p_market": 0.2274,
+          "edge": 0.035,
           "ev": 0.1362,
+          "flag": null,
+          "veikkaus": null
+        },
+        {
+          "market": "totals",
+          "line": 5.5,
+          "outcome": "under",
+          "book": "leovegas_fi",
+          "price": 2.08,
+          "p_model": 0.5426,
+          "p_market": 0.4768,
+          "edge": 0.0658,
+          "ev": 0.1286,
           "flag": null,
           "veikkaus": null
         }
