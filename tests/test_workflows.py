@@ -50,8 +50,31 @@ def test_deploy_is_guarded_by_ran_and_review_code():
     deploy_step = _step_containing(text, "actions/upload-pages-artifact@v3")
     assert "steps.run.outputs.ran == 'true'" in deploy_step
     assert "steps.review.outputs.code != '2'" in deploy_step
-    assert "actions/deploy-pages@v4" in text
+    for marker in ("actions/configure-pages@v5", "actions/deploy-pages@v4"):
+        step = _step_containing(text, marker)
+        assert "steps.run.outputs.ran == 'true'" in step, marker
+        assert "steps.review.outputs.code != '2'" in step, marker
     assert "environment:" in text and "github-pages" in text
+
+
+def test_fail_step_runs_only_on_review_code_2():
+    text = _text("pipeline.yml")
+    fail_step = _step_containing(text, "exit 1")
+    assert "if: steps.review.outputs.code == '2'" in fail_step
+
+
+def test_workflow_inputs_are_not_interpolated_into_run():
+    for name in ("backfill.yml", "train_xg.yml"):
+        for line in _text(name).splitlines():
+            if "${{ inputs." in line:
+                assert re.fullmatch(r"\s+[A-Z_]+: \$\{\{ inputs\.\w+ \}\}", line), (name, line)
+
+
+def test_train_defaults_are_two_latest_completed_seasons_and_current_test():
+    text = _text("train_xg.yml")
+    assert 'default: "20242025 20252026"' in text
+    assert 'default: "20262027"' in text
+    assert "timeout-minutes: 30" in text
 
 
 def test_no_secret_reference_in_phase_1():

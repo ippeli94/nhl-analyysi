@@ -23,7 +23,9 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - name: Backfill
-        run: python -m pipeline.backfill --seasons ${{ inputs.seasons }}
+        env:
+          SEASONS: ${{ inputs.seasons }}
+        run: python -m pipeline.backfill --seasons $SEASONS
       - name: Commit and push cache
         run: |
           git config user.name "github-actions[bot]"
