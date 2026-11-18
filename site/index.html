@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#070b14" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f3f5fa" media="(prefers-color-scheme: light)">
+  <title>NHL-analyysi</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <header id="topbar" class="topbar"></header>
+    <div id="banner"></div>
+    <main id="view" class="view" tabindex="-1"><p class="loading">Ladataan…</p></main>
+    <footer class="footer">Luvut ovat mallin arvioita, eivät takuita.</footer>
+  </div>
+  <nav id="nav" class="nav" aria-label="Päävalikko"></nav>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
