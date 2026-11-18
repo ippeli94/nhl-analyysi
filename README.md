@@ -36,6 +36,20 @@ Kertoimia haetaan kello 17.17 ja 23.37 Suomen aikaa sekä manuaaliajoissa. Muut 
 
 Lähde ei tarjoa NHL:n 1X2-kertoimia (kotivoitto, tasapeli, vierasvoitto) perusmarkkinana. Sivu näyttää siksi mallin laskemat 1X2-kertoimet ilman marginaalia sekä pienimmän Veikkauksen kertoimen, jolla vedosta voi pitää arvopelinä.
 
+## Pelaajaennusteet
+
+Pelaajan piste- ja maalitodennäköisyys (vähintään yksi piste tai maali) lasketaan joukkueen odotetuista maaleista. Kenttäpelaajien maalit ja pisteet per 60 minuuttia tulevat painotetuista kausitiedoista, ja ne kutistetaan kohti saman position keskiarvoa. Maalit jaetaan kokoonpanon pelaajille tasojen ja jääajan mukaan, ja todennäköisyydet saadaan binomijakaumasta.
+
+Parametrit viritetään kaudella 2024-25 ja julkaisuehto arvioidaan kaudella 2025-26:
+
+```bash
+python -m pipeline.player_backtest --tune-season 20242025 --gate-season 20252026
+```
+
+Sivu näyttää pelaajat vasta, kun `model/player_params.json` sisältää `gate.passed`-arvon tosi. Kaudella 2025-26 ehto täyttyi: P(vähintään 1 piste) Brier 0,206 (lähtötaso 0,214) ja P(vähintään 1 maali) Brier 0,123 (lähtötaso 0,128). Parhaiden pelaajien todennäköisyydet ovat hieman varovaisia: toteutunut osuus on 45–60 %:n luokissa 4–6 prosenttiyksikköä korkeampi.
+
+Kokoonpano on arvio (tila "Arvio"). Se johdetaan joukkueen viimeisimmästä pelistä, eikä loukkaantumislähdettä ole. Pelaaja, joka ei pukeutunut viimeisimpään peliin, ei ole mukana.
+
 ## Jos ajo epäonnistuu tai tarkistus hälyttää
 
 GitHub lähettää sähköpostin, kun ajo päättyy virheeseen. Lue `reports/review.md`, korjaa ongelma paikallisesti, aja `python tools/review.py` uudelleen ja työnnä korjaus repoon. Jos tarkistus löytää virheen (koodi 2), julkaisua ei tehdä ja edellinen sivu jää näkyviin.
