@@ -24,8 +24,10 @@ logger = logging.getLogger(__name__)
 GOALIE_MODES = ("none", "actual", "projected")
 ROW_COLUMNS = [
     "game_id", "date", "p_home", "y_home", "p_reg_draw", "y_reg_draw",
-    "total_mean", "total_actual",
+    "total_mean", "total_actual", "p_reg_home", "p_reg_away", "y_reg",
 ]
+LOGLOSS_CLIP = 1e-6
+DRAW_SECTION = "## Draw calibration"
 HALF_LIVES = (25, 40, 60)
 ALPHAS = (0.005, 0.02, 0.05, 0.2)
 SIGMAS = (0.0, 0.08, 0.15)
@@ -120,6 +122,9 @@ def run_backtest(
                 "y_reg_draw": float(g.score_reg == g.opp_score_reg),
                 "total_mean": sim["score"]["total"]["mean"],
                 "total_actual": float(g.score_reg + g.opp_score_reg + (g.decided != "REG")),
+                "p_reg_home": sim["prob"]["reg_home"], "p_reg_away": sim["prob"]["reg_away"],
+                "y_reg": 1 if g.score_reg == g.opp_score_reg
+                else (0 if g.score_reg > g.opp_score_reg else 2),
             })
         if (i + 1) % PROGRESS_EVERY == 0:
             logger.info("backtest %s [%s]: %d/%d dates", season, goalie_mode, i + 1, len(dates))
@@ -154,6 +159,46 @@ def kappa_from(rows: pd.DataFrame) -> float:
     return a * (1 - d) / (d * (1 - a))
 
 
+def reweight_draw(
+    p_h: np.ndarray, p_d: np.ndarray, p_a: np.ndarray, kappa: float
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Re-apply a draw weight to 1X2 probabilities simulated with draw_kappa = 1 (exact)."""
+    z = 1 + (kappa - 1) * p_d
+    return p_h / z, kappa * p_d / z, p_a / z
+
+
+def _reweighted(rows: pd.DataFrame, kappa: float) -> np.ndarray:
+    h, d, a = reweight_draw(
+        rows["p_reg_home"].to_numpy(float), rows["p_reg_draw"].to_numpy(float),
+        rows["p_reg_away"].to_numpy(float), kappa,
+    )
+    return np.column_stack([h, d, a])
+
+
+def logloss_1x2(rows: pd.DataFrame, kappa: float) -> float:
+    """Mean -log of the reweighted probability of the actual regulation result."""
+    probs = _reweighted(rows, kappa)
+    y = rows["y_reg"].to_numpy(int)
+    p = np.clip(probs[np.arange(len(y)), y], LOGLOSS_CLIP, None)
+    return float(-np.log(p).mean())
+
+
+def fit_draw_kappa(rows: pd.DataFrame) -> float:
+    """Grid kappa with the lowest 1X2 log loss. Rows must come from a draw_kappa = 1 run."""
+    lo, hi, step = config.KAPPA_GRID
+    grid = np.arange(lo, hi + 1e-9, step)
+    return float(grid[int(np.argmin([logloss_1x2(rows, float(k)) for k in grid]))])
+
+
+def draw_report(rows: pd.DataFrame, kappa: float) -> dict:
+    p_mean = float(_reweighted(rows, kappa)[:, 1].mean())
+    y_mean = float((rows["y_reg"] == 1).mean())
+    return {
+        "n": int(len(rows)), "p_mean": p_mean, "y_mean": y_mean, "gap": p_mean - y_mean,
+        "logloss_1x2": logloss_1x2(rows, kappa),
+    }
+
+
 def gate(m: dict) -> bool:
     return bool(m["brier"] < m["brier_base"] and m["logloss"] < m["logloss_base"])
 
@@ -177,7 +222,7 @@ def tune(
     best = min(sigmas, key=lambda q: _logloss(tg, season, q))
     logger.info("tune: sigma=%s", best.sigma_team)
     rows = run_backtest(tg, season, best, n_sims=TUNE_SIMS)["rows"]
-    best = replace(best, draw_kappa=kappa_from(rows))
+    best = replace(best, draw_kappa=fit_draw_kappa(rows))
     if gg is not None:
         weights = [replace(best, goalie_weight=w) for w in GOALIE_WEIGHTS]
         best = min(weights, key=lambda q: _logloss(tg, season, q, gg, "actual"))
@@ -227,13 +272,114 @@ def _write_json(parts: tuple[str, ...], obj) -> None:
     f.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def _gate_result(args, judged: str, modes: dict, m: dict, passed: bool) -> dict:
+    return {
+        "passed": passed, "variant": args.variant, "season": args.gate_season, "n": m["n"],
+        "brier": m["brier"], "brier_base": m["brier_base"],
+        "logloss": m["logloss"], "logloss_base": m["logloss_base"],
+        "accuracy": m["accuracy"], "goalie_mode": judged,
+        "goalie_modes": {
+            k: {"brier": v["metrics"]["brier"], "logloss": v["metrics"]["logloss"]}
+            for k, v in modes.items()
+        },
+    }
+
+
+def _draw_section(reports: dict[str, dict], at_one: dict[str, dict], kappa: float) -> str:
+    lines = [
+        DRAW_SECTION, "",
+        f"Fitted kappa {kappa:.3f}.", "",
+        "| Season | n | Model | Actual | Gap | 1X2 log loss (k=1) | 1X2 log loss (fitted) |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for season, r in reports.items():
+        lines.append(
+            f"| {season} | {r['n']} | {r['p_mean']:.4f} | {r['y_mean']:.4f} | {r['gap']:+.4f} "
+            f"| {at_one[season]['logloss_1x2']:.4f} | {r['logloss_1x2']:.4f} |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def _write_report(main_text: str | None, draw_text: str) -> None:
+    """Write main_text (or keep the existing report without its old draw section) + draw_text."""
+    f = config.path("reports", "backtest.md")
+    f.parent.mkdir(parents=True, exist_ok=True)
+    text = main_text
+    if text is None:
+        text = f.read_text(encoding="utf-8") if f.exists() else ""
+        text = text.split(DRAW_SECTION)[0].rstrip("\n")
+        text = text + "\n" if text else ""
+    f.write_text(text + ("\n" if text else "") + draw_text, encoding="utf-8")
+
+
+def refit(args) -> int:
+    """Refit draw_kappa on the pooled --refit-draw seasons and re-judge the gate (spec 15.3)."""
+    p = config.load_params()
+    old_gate = config.load_gate() or {}
+    mode = old_gate.get("goalie_mode", "projected" if p.use_goalie else "none")
+    fit_seasons = sorted(args.refit_draw)
+    run_seasons = sorted({*fit_seasons, args.tune_season, args.gate_season})
+    seasons = sorted({s for r in run_seasons for s in (_season_before(r), r)})
+    coefs = config.path(*BT_COEFS)
+    tg = load_team_games(seasons, coefs, p.xg_weight)
+    gg = load_goalie_games(seasons, coefs)
+
+    p1 = replace(p, draw_kappa=1.0)  # reweighting is exact only for kappa = 1 runs
+    rows = {s: run_backtest(tg, s, p1, gg=gg, goalie_mode=mode)["rows"] for s in run_seasons}
+    pooled = pd.concat([rows[s] for s in fit_seasons], ignore_index=True)
+    kappa = fit_draw_kappa(pooled)
+    rate_match = kappa_from(pooled)
+    reports = {s: draw_report(rows[s], kappa) for s in run_seasons}
+    at_one = {s: draw_report(rows[s], 1.0) for s in run_seasons}
+    gap_gate = reports[args.gate_season]["gap"]
+    current = fit_seasons[-1]
+    if current != args.gate_season and abs(reports[current]["gap"]) > config.DRAW_GAP_CURRENT_MAX:
+        logger.warning("draw gap %+.4f in %s exceeds %.3f", reports[current]["gap"], current,
+                       config.DRAW_GAP_CURRENT_MAX)
+
+    tuned = replace(p, draw_kappa=kappa)
+    modes = {
+        m: run_backtest(tg, args.gate_season, tuned, gg=gg, goalie_mode=m)
+        for m in GOALIE_MODES
+    }
+    use_goalie = modes["projected"]["metrics"]["logloss"] <= modes["none"]["metrics"]["logloss"]
+    judged = "projected" if use_goalie else "none"
+    tuned = replace(tuned, use_goalie=use_goalie)
+    m = modes[judged]["metrics"]
+    gate_ok = gate(m)
+    passed = gate_ok and abs(gap_gate) < config.DRAW_GAP_MAX
+    draw_text = _draw_section(reports, at_one, kappa)
+
+    if passed:
+        result = _gate_result(args, judged, modes, m, passed)
+        result["draw"] = {
+            "kappa": kappa, "fit_seasons": fit_seasons, "kappa_rate_match": rate_match,
+            "seasons": reports,
+        }
+        _write_json(("model", "params.json"), {**asdict(tuned), "gate": result})
+        _write_json(
+            ("model", f"backtest_{args.gate_season}.json"),
+            {"season": args.gate_season, "variant": args.variant, "goalie_mode": judged, **m},
+        )
+        _write_report(_report(args.gate_season, args.variant, modes, judged, passed), draw_text)
+    else:
+        _write_report(None, draw_text)
+    logger.info("refit kappa %.3f (rate match %.3f): gate %s, draw gap %+.4f -> %s",
+                kappa, rate_match, "passed" if gate_ok else "FAILED", gap_gate,
+                "written" if passed else "NOT written")
+    return 0 if passed else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="pipeline.backtest")
     ap.add_argument("--tune-season", required=True)
     ap.add_argument("--gate-season", required=True)
     ap.add_argument("--variant", choices=VARIANTS, default="full")
+    ap.add_argument("--refit-draw", nargs="+", metavar="SEASON", default=None)
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
+    if args.refit_draw:
+        return refit(args)
 
     base = _variant_params(args.variant)
     seasons = sorted({_season_before(args.tune_season), args.tune_season,
@@ -253,16 +399,7 @@ def main(argv: list[str] | None = None) -> int:
     m = modes[judged]["metrics"]
     passed = gate(m)
 
-    result = {
-        "passed": passed, "variant": args.variant, "season": args.gate_season, "n": m["n"],
-        "brier": m["brier"], "brier_base": m["brier_base"],
-        "logloss": m["logloss"], "logloss_base": m["logloss_base"],
-        "accuracy": m["accuracy"], "goalie_mode": judged,
-        "goalie_modes": {
-            k: {"brier": v["metrics"]["brier"], "logloss": v["metrics"]["logloss"]}
-            for k, v in modes.items()
-        },
-    }
+    result = _gate_result(args, judged, modes, m, passed)
     _write_json(("model", "params.json"), {**asdict(tuned), "gate": result})
     _write_json(
         ("model", f"backtest_{args.gate_season}.json"),
