@@ -356,22 +356,20 @@ def _odds_entry(ctx: Ctx):
     return sources.get("odds")
 
 
-def _vig_problems(g: dict) -> list[Problem]:
-    found = []
-    for market in (g.get("odds") or {}).get("markets") or []:
-        for b in market.get("books") or []:
-            if isinstance(b, dict) and b.get("valid") is False:
-                vig = b.get("vig")
-                shown = f"{vig:.1%}" if isinstance(vig, int | float) else "?"
-                found.append(Problem(WARNING, "ODDS", _gname(g),
-                                     f"{b.get('book')} {market.get('key')}: marginaali {shown}",
-                                     "tarkista välittäjän kertoimet tai ODDS_VIG_RANGE"))
-    return found
+def _vig_counts(games: list[dict]) -> dict:
+    """Markets with an out-of-range vig per bookmaker, over all games."""
+    counts: dict = {}
+    for g in games:
+        for market in (g.get("odds") or {}).get("markets") or []:
+            for b in market.get("books") or []:
+                if isinstance(b, dict) and b.get("valid") is False:
+                    counts[b.get("book")] = counts.get(b.get("book"), 0) + 1
+    return counts
 
 
-def _snapshot_problems(snap: dict) -> list[Problem]:
+def _snapshot_problems(snap: dict, this_run: bool) -> list[Problem]:
     where = "/".join(ODDS_FILE)
-    found = [Problem(ERROR, "ODDS", where, f"tuntematon joukkue: {name}",
+    found = [Problem(ERROR if this_run else WARNING, "ODDS", where, f"tuntematon joukkue: {name}",
                      "lisää nimi pipeline/teams.py ODDS_ALIASES")
              for name in snap.get("unknown_teams") or []]
     for u in snap.get("unmatched") or []:
@@ -416,10 +414,15 @@ def check_odds(ctx: Ctx) -> list[Problem]:
                              "poista tiedosto; seuraava --odds-ajo luo sen uudelleen"))
     snap = snap if isinstance(snap, dict) else None
     try:
-        for g in games:
-            found += _vig_problems(g)
+        for book, n in _vig_counts(games).items():
+            found.append(Problem(WARNING, "ODDS", "odds",
+                                 f"{book}: {n} markkinaa marginaalin ulkopuolella",
+                                 "tarkista välittäjän kertoimet tai ODDS_VIG_RANGE"))
         if snap is not None:
-            found += _snapshot_problems(snap)
+            stamp = (ctx.latest or {}).get("generated_at")
+            this_run = bool(stamp and snap.get("fetched_at")
+                            and _parse(snap["fetched_at"]) == _parse(stamp))
+            found += _snapshot_problems(snap, this_run)
     except (TypeError, AttributeError, KeyError):
         found.append(Problem(WARNING, "ODDS", "data/state/odds.json",
                              "kerroindata ei ole luettavissa",

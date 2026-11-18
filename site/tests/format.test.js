@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   fmtTime, fmtDate, fmtPct, fmtNum, fmtScore, fmtSignedPct, ageText,
   freshness, groupByDate, fmtDateTime, SUPPORTED_SCHEMA,
-  fmtOdds, fmtPct1, fmtPp, fmtEv, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks,
+  fmtOdds, fmtPct1, fmtPp, fmtEv, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
 } from "../format.js";
 
 const NOW = new Date("2026-11-16T12:00:00Z");
@@ -120,3 +120,15 @@ test("collectPicks veikkausOnly", () => {
 });
 test("collectPicks skips started games", () =>
   assert.ok(!collectPicks(picksLatest(), { showFlagged: true }).some((x) => x.game.id === 3)));
+
+
+test("oddsFetchedAt picks the newest game block, else the fallback", () => {
+  const l = { games: [
+    { odds: { fetched_at: "2026-11-16T09:00:00Z" } },
+    { odds: null },
+    { odds: { fetched_at: "2026-11-16T21:37:00Z" } },
+  ] };
+  assert.equal(oddsFetchedAt(l, "2026-11-15T00:00:00Z"), "2026-11-16T21:37:00Z");
+  assert.equal(oddsFetchedAt({ games: [{ odds: null }] }, "2026-11-15T00:00:00Z"), "2026-11-15T00:00:00Z");
+  assert.equal(oddsFetchedAt({}, undefined), null);
+});

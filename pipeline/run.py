@@ -299,6 +299,15 @@ def _odds_note(resp: odds.OddsResponse) -> str:
     return note
 
 
+def _recent_fetch(entry: dict, now: datetime) -> bool:
+    """True when the odds source was fetched within 24 h (else a quota reset may be missed)."""
+    try:
+        stamp = entry.get("last_ok_at") or entry.get("fetched_at")
+        return now - _parse_utc(stamp) <= timedelta(hours=24)
+    except Exception:  # noqa: BLE001 - unreadable state means: re-probe
+        return False
+
+
 def odds_stage(
     selected: list[ScheduledGame], state: dict, now: datetime, fetch: bool
 ) -> tuple[dict | None, bool]:
@@ -313,7 +322,11 @@ def odds_stage(
         return previous, False
     entry = state.get("odds") or {}
     remaining = entry.get("remaining")
-    if isinstance(remaining, int) and remaining < config.ODDS_MIN_REMAINING:
+    if (
+        isinstance(remaining, int)
+        and remaining < config.ODDS_MIN_REMAINING
+        and _recent_fetch(entry, now)
+    ):
         state["odds"] = dict(
             entry, status="stale", note=f"Haku ohitettu: krediittejä jäljellä {remaining}"
         )

@@ -1,7 +1,7 @@
 import {
   SUPPORTED_SCHEMA, fmtTime, fmtDate, fmtDateTime, fmtPct, fmtNum, fmtScore,
   fmtSignedPct, ageText, freshness, groupByDate,
-  fmtOdds, fmtPct1, fmtPp, fmtEv, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks,
+  fmtOdds, fmtPct1, fmtPp, fmtEv, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
 } from "./format.js";
 
 const DATA_URL = "data/latest.json";
@@ -175,7 +175,8 @@ function valueView(latest) {
   const src = oddsSource(latest);
   const head = `<h1 class="day-title">Ylikertoimet</h1>`;
   if (!src) return `${head}<section class="empty"><p>Kertoimia ei ole vielä haettu.</p></section>`;
-  const fetched = src.fetched_at ? `<p class="note fetched">Kertoimet haettu ${esc(fmtDateTime(src.fetched_at))}</p>` : "";
+  const fetchedAt = oddsFetchedAt(latest, src.fetched_at);
+  const fetched = fetchedAt ? `<p class="note fetched">Kertoimet haettu ${esc(fmtDateTime(fetchedAt))}</p>` : "";
   const picks = collectPicks(latest, valueFilter);
   const body = picks.length
     ? `<div class="cards">${picks.map(pickCard).join("")}</div>`

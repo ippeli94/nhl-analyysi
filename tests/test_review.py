@@ -325,16 +325,35 @@ def test_low_credits_is_warning(odds_root):
 def test_invalid_vig_is_warning(seeded):
     seed_odds(seeded)
     assert review.main(ARGS) == 1
-    assert "betsson h2h: marginaali 20.0%" in report(seeded)
+    assert "betsson: 1 markkinaa marginaalin ulkopuolella" in report(seeded)
 
 
-def test_unknown_team_is_error(odds_root):
+def test_invalid_vig_collapses_to_one_warning_per_book(seeded):
+    seed_odds(seeded)
+    edit(seeded, lambda o: o["games"][0]["odds"]["markets"].append(
+        dict(o["games"][0]["odds"]["markets"][0], key="totals", line=5.5)))
+    review.main(ARGS)
+    assert report(seeded).count("betsson: 2 markkinaa marginaalin ulkopuolella") == 1
+
+
+def test_unknown_team_is_error_when_fetched_this_run(odds_root):
+    stamp = latest(odds_root)["generated_at"]
     seed_odds(odds_root, snapshot={
-        "fetched_at": iso(datetime.now(UTC)), "remaining": 400, "games": {},
+        "fetched_at": stamp, "remaining": 400, "games": {},
         "unknown_teams": ["Utah Hockey Club"], "unmatched": []})
     assert review.main(ARGS) == 2
     text = report(odds_root)
     assert "[VIRHE] ODDS" in text and "Utah Hockey Club" in text
+
+
+def test_unknown_team_from_older_fetch_is_warning(odds_root):
+    seed_odds(odds_root, snapshot={
+        "fetched_at": iso(datetime.now(UTC) - timedelta(hours=5)), "remaining": 400, "games": {},
+        "unknown_teams": ["Utah Hockey Club"], "unmatched": []})
+    assert review.main(ARGS) == 1
+    text = report(odds_root)
+    assert "[VAROITUS] ODDS" in text and "tuntematon joukkue: Utah Hockey Club" in text
+    assert "[VIRHE]" not in text
 
 
 def test_unmatched_event_is_warning(odds_root):

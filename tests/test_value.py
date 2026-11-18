@@ -264,6 +264,18 @@ def test_veikkaus_block_and_value_flag():
     assert odds["picks"][0]["veikkaus"] == o["veikkaus"]
 
 
+def test_veikkaus_value_false_when_its_book_is_not_vig_valid():
+    books = {
+        "pinnacle": bm(h2h=[1.58, 2.52]),
+        "coolbet": bm(h2h=[1.70, 2.30]),
+        "veikkaus_fi": bm(h2h=[1.90, 2.80]),  # vig far below range, high price
+    }
+    m = market(value.game_odds(make_game(), books, TS), "h2h")
+    assert {b["book"]: b["valid"] for b in m["books"]}["veikkaus_fi"] is False
+    v = outcome(m, "home")["veikkaus"]
+    assert v["price"] == 1.90 and v["ev"] is not None and v["value"] is False
+
+
 def test_veikkaus_absent_is_null():
     books = {"pinnacle": bm(h2h=[1.58, 2.52]), "coolbet": bm(h2h=[1.70, 2.30])}
     o = outcome(market(value.game_odds(make_game(), books, TS), "h2h"), "home")

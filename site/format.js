@@ -146,3 +146,13 @@ export function collectPicks(latest, { market = "all", veikkausOnly = false, sho
   if (!showFlagged) return clean;
   return clean.concat(out.filter((x) => x.pick.flag).sort(byEv));
 }
+
+// Newest odds fetch time among the games' odds blocks; falls back to the source's own time.
+export function oddsFetchedAt(latest, fallback) {
+  let best = null;
+  for (const g of latest.games || []) {
+    const t = g.odds?.fetched_at;
+    if (t && (best === null || Date.parse(t) > Date.parse(best))) best = t;
+  }
+  return best ?? fallback ?? null;
+}

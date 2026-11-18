@@ -7,6 +7,7 @@ exception message. Odds API event ids are never kept (they look like leaked keys
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import TypedDict
@@ -49,8 +50,8 @@ class OddsResponse:
 
 def _int_header(headers, name: str) -> int | None:
     try:
-        return int(headers.get(name))
-    except (TypeError, ValueError):
+        return int(float(headers.get(name)))
+    except (TypeError, ValueError, OverflowError):
         return None
 
 
@@ -125,7 +126,9 @@ def _price(outcome) -> float | None:
     if not isinstance(outcome, dict):
         return None
     price = outcome.get("price")
-    if isinstance(price, bool) or not isinstance(price, int | float) or not price > 1.0:
+    if isinstance(price, bool) or not isinstance(price, int | float):
+        return None
+    if not math.isfinite(price) or not price > 1.0:
         return None
     return float(price)
 

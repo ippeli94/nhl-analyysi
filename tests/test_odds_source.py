@@ -114,6 +114,19 @@ def test_non_numeric_usage_headers_are_none(monkeypatch):
     assert (result.remaining, result.used, result.last) == (None, None, None)
 
 
+def test_float_and_nan_usage_headers(monkeypatch):
+    Recorder([FakeResponse(200, [], {
+        "x-requests-remaining": "312.0", "x-requests-used": "nan", "x-requests-last": "inf",
+    })]).install(monkeypatch)
+    result = odds.fetch_odds(NOW, KEY)
+    assert (result.remaining, result.used, result.last) == (312, None, None)
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), True, 1.0])
+def test_price_rejects_non_finite(bad):
+    assert odds._price({"price": bad}) is None
+
+
 def test_422_falls_back_to_regions(monkeypatch):
     recorder = Recorder([FakeResponse(422), FakeResponse(200, [], USAGE)]).install(monkeypatch)
     result = odds.fetch_odds(NOW, KEY)

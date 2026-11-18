@@ -118,7 +118,7 @@ def _reference(entries: dict[str, list[float]]) -> tuple[dict, str | None, list[
     return info, None, None
 
 
-def _veikkaus(entries, idx, p_win, p_push, p_model, p_market):
+def _veikkaus(entries, info, idx, p_win, p_push, p_model, p_market):
     prices = entries.get(config.VEIKKAUS_BOOK)
     if prices is None:
         return None
@@ -127,7 +127,10 @@ def _veikkaus(entries, idx, p_win, p_push, p_model, p_market):
     if p_model is not None and p_market is not None:
         ev = p_win * effective_price(config.VEIKKAUS_BOOK, price) + p_push - 1.0
         edge = p_model - p_market
-    value = bool(ev is not None and ev >= config.ODDS_EV_MIN and edge >= config.ODDS_EDGE_MIN)
+    value = bool(
+        info[config.VEIKKAUS_BOOK]["valid"]
+        and ev is not None and ev >= config.ODDS_EV_MIN and edge >= config.ODDS_EDGE_MIN
+    )
     return {"price": price, "ev": _r(ev), "value": value}
 
 
@@ -165,7 +168,7 @@ def _market(game: dict, key: str, line: float | None, entries: dict) -> dict:
             "p_model": _r(p_model),
             "p_market": _r(p_market),
             "best": best,
-            "veikkaus": _veikkaus(entries, idx, p_win, p_push, p_model, p_market),
+            "veikkaus": _veikkaus(entries, info, idx, p_win, p_push, p_model, p_market),
             "edge": _r(edge),
             "ev": _r(ev),
             "value": value,

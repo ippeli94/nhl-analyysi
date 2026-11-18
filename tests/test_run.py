@@ -332,6 +332,24 @@ def test_skip_when_credits_low(seeded, monkeypatch):
     assert src["status"] == "stale" and "25" in src["note"]
 
 
+def test_low_credits_reprobe_when_last_ok_is_old(seeded, monkeypatch):
+    state = seeded / "data/state"
+    state.mkdir(parents=True)
+    (state / "sources.json").write_text(json.dumps({"odds": {
+        "status": "ok", "fetched_at": "2026-11-16T09:00:00Z", "last_ok_at": "2026-11-16T09:00:00Z",
+        "note": None, "remaining": 25, "used": 475,
+    }}), encoding="utf-8")  # 30 h before NOW
+    calls = []
+
+    def fake(*a):
+        calls.append(a)
+        raise SourceError("offline test")
+
+    monkeypatch.setattr(odds, "fetch_odds", fake)
+    assert go(NOW, "--odds") == 0
+    assert len(calls) == 1
+
+
 def test_credit_skip_still_applies_fresh_snapshot(seeded, monkeypatch):
     assert go(NOW, "--odds") == 0
     f = seeded / "data/state/sources.json"
