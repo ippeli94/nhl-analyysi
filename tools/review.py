@@ -228,6 +228,89 @@ def check_roster(ctx: Ctx) -> list[Problem]:
     return found
 
 
+def _player_gate_passed(ctx: Ctx) -> bool:
+    params = _read_json(ctx.root / "model" / "player_params.json", None)
+    gate = params.get("gate") if isinstance(params, dict) else None
+    return isinstance(gate, dict) and gate.get("passed") is True
+
+
+def _team_player_problems(g: dict, side: str, block: dict) -> list[Problem]:
+    where, team = _gname(g), block["team"]
+    found: list[Problem] = []
+    if team != g[side]["abbr"]:
+        found.append(Problem(ERROR, "ROSTER", where, f"{team}: joukkue ei ole ottelun {side}-puoli",
+                             "tarkista pipeline/players.py game_players"))
+    top = block["top"]
+    for p in top:
+        name = p.get("name") or f"#{p['id']}"
+        if p["team"] != team:
+            found.append(Problem(ERROR, "ROSTER", where, f"{team}: pelaaja {p['id']} ei kuulu "
+                                 "joukkueeseen", "tarkista pipeline/players.py kokoonpano"))
+        for key, label in (("p_points", "pisteet"), ("p_goals", "maalit")):
+            vals = p[key]
+            if any(b > a + 1e-9 for a, b in zip(vals, vals[1:], strict=False)):
+                found.append(Problem(ERROR, "PROB", where,
+                                     f"{name}: P(≥k) ei laskeva ({label} {vals})",
+                                     "tarkista pipeline/players.py binom_tails"))
+        if any(gv > pv + 1e-9 for gv, pv in zip(p["p_goals"], p["p_points"], strict=False)):
+            found.append(Problem(ERROR, "PROB", where,
+                                 f"{name}: maalit {p['p_goals']} > pisteet {p['p_points']}",
+                                 "tarkista π ≥ q pipeline/players.py"))
+    mean = block["goals_mean"]
+    gap = block["exp_goals"] / mean - (1 - block["unassigned"]) if mean > 0 else 0.0
+    if abs(gap) > config.PLAYER_SUM_TOL:
+        found.append(Problem(ERROR, "PROB", where,
+                             f"{team}: pelaajien maaliodotus {block['exp_goals']:.2f} vs "
+                             f"joukkue {mean:.2f}", "tarkista normalisointi pipeline/players.py"))
+    if block["exp_points"] > config.PLAYER_PPG_MAX * mean:
+        found.append(Problem(ERROR, "PROB", where,
+                             f"{team}: pisteodotus {block['exp_points']:.2f} yli 3 × maalit",
+                             "tarkista normalisointi pipeline/players.py"))
+    if len(top) < config.PLAYER_MIN_TOP:
+        found.append(Problem(ERROR, "ROSTER", where,
+                             f"{team}: listalla {len(top)} pelaajaa (< {config.PLAYER_MIN_TOP})",
+                             "tarkista pipeline/players.py game_players"))
+    if block["dressed"] != config.PLAYER_DRESSED:
+        found.append(Problem(WARNING, "ROSTER", where,
+                             f"{team}: kokoonpanossa {block['dressed']} kenttäpelaajaa",
+                             "arvio viimeisimmästä ottelusta"))
+    return found
+
+
+def check_players(ctx: Ctx) -> list[Problem]:
+    if ctx.latest is None or export.validate(ctx.latest):
+        return []  # SITE reports the schema errors; values cannot be trusted
+    found: list[Problem] = []
+    gate = _player_gate_passed(ctx)
+    for g in _games(ctx):
+        if g.get("state") != "upcoming":
+            continue
+        try:
+            players = g.get("players")
+            if players is None:
+                if gate:
+                    found.append(Problem(WARNING, "ROSTER", _gname(g), "ei pelaajaennustetta",
+                                         "joukkueella ei välimuistissa otteluita tai "
+                                         "pelaajavaihe epäonnistui (katso ajoloki)"))
+                continue
+            seen: dict[int, str] = {}
+            for side in ("home", "away"):
+                block = players.get(side)
+                if block is None:
+                    continue
+                found += _team_player_problems(g, side, block)
+                for p in block["top"]:
+                    if seen.setdefault(p["id"], side) != side:
+                        found.append(Problem(ERROR, "ROSTER", _gname(g),
+                                             f"{block['team']}: pelaaja {p['id']} ei kuulu "
+                                             "joukkueeseen", "tarkista pipeline/players.py"))
+        except (TypeError, AttributeError, KeyError, ValueError):
+            found.append(Problem(WARNING, "ROSTER", _gname(g),
+                                 "pelaajalohko ei ole luettavissa",
+                                 "tarkista pipeline/players.py ja export"))
+    return found
+
+
 def _memo(ctx: Ctx, key: tuple, build: Callable[[], object]):
     if key not in ctx.memo:
         ctx.memo[key] = build()
@@ -581,7 +664,8 @@ def check_secret(ctx: Ctx) -> list[Problem]:
 
 
 CHECKS: list[Callable[[Ctx], list[Problem]]] = [
-    check_lint, check_test, check_site, check_prob, check_roster, check_sched, check_fresh,
+    check_lint, check_test, check_site, check_prob, check_roster, check_players, check_sched,
+    check_fresh,
     check_source, check_odds, check_track, check_calibration, check_cache, check_xg, check_secret,
 ]
 

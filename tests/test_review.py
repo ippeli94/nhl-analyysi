@@ -422,3 +422,106 @@ def test_malformed_odds_files_never_crash(odds_root):
     (odds_root / "data/state/odds.json").write_text("{", encoding="utf-8")
     assert review.main(ARGS) == 1
     assert "ei ole luettavaa JSONia" in report(odds_root)
+
+
+# --- players ------------------------------------------------------------------------------
+
+
+def _player(pid, team):
+    return {"id": pid, "name": f"P{pid}", "team": team, "pos": "C", "toi_proj": 18.0,
+            "p_points": [0.6, 0.2, 0.05], "p_goals": [0.3, 0.06, 0.008],
+            "exp_goals": 0.4, "exp_points": 0.9, "odds": None}
+
+
+def _block(team, base):
+    return {"team": team, "dressed": 18, "goals_mean": 3.2, "exp_goals": 3.1,
+            "exp_points": 8.3, "unassigned": 0.03,
+            "top": [_player(base + i, team) for i in range(6)]}
+
+
+@pytest.fixture
+def players_root(root):
+    obj = make_latest()
+    obj["games"][0]["players"] = {"lineup": "projected", "home": _block("CAR", 100),
+                                  "away": _block("SEA", 200)}
+    assert export.validate(obj) == []
+    write(root, obj)
+    return root
+
+
+def _gate(root, passed=True):
+    (root / "model").mkdir(exist_ok=True)
+    (root / "model/player_params.json").write_text(
+        json.dumps({"gate": {"passed": passed}}), encoding="utf-8")
+
+
+def _home(o):
+    return o["games"][0]["players"]["home"]
+
+
+def test_clean_players_ok(players_root):
+    assert review.main(ARGS) == 0
+
+
+def test_non_monotone_tail_is_error(players_root):
+    edit(players_root, lambda o: _home(o)["top"][0].update(p_points=[0.3, 0.4, 0.1]))
+    assert review.main(ARGS) == 2
+    assert "[VIRHE] PROB" in report(players_root) and "ei laskeva" in report(players_root)
+
+
+def test_goals_above_points_is_error(players_root):
+    edit(players_root, lambda o: _home(o)["top"][0].update(p_goals=[0.7, 0.06, 0.008]))
+    assert review.main(ARGS) == 2
+    assert "maalit" in report(players_root)
+
+
+def test_sum_mismatch_is_error(players_root):
+    edit(players_root, lambda o: _home(o).update(exp_goals=2.5))
+    assert review.main(ARGS) == 2
+    assert "pelaajien maaliodotus 2.50 vs joukkue 3.20" in report(players_root)
+
+
+def test_points_over_three_times_goals_is_error(players_root):
+    edit(players_root, lambda o: _home(o).update(exp_points=10.0))
+    assert review.main(ARGS) == 2
+    assert "yli 3 × maalit" in report(players_root)
+
+
+def test_foreign_player_is_error(players_root):
+    edit(players_root, lambda o: _home(o)["top"][0].update(team="XXX"))
+    assert review.main(ARGS) == 2
+    assert "[VIRHE] ROSTER" in report(players_root)
+
+
+def test_player_in_both_teams_is_error(players_root):
+    edit(players_root, lambda o: o["games"][0]["players"]["away"]["top"][0].update(id=100))
+    assert review.main(ARGS) == 2
+    assert "[VIRHE] ROSTER" in report(players_root)
+
+
+def test_short_top_list_is_error(players_root):
+    edit(players_root, lambda o: _home(o).update(top=_home(o)["top"][:4]))
+    assert review.main(ARGS) == 2
+    assert "listalla 4 pelaajaa (< 5)" in report(players_root)
+
+
+def test_dressed_17_is_warning(players_root):
+    edit(players_root, lambda o: _home(o).update(dressed=17))
+    assert review.main(ARGS) == 1
+    assert "[VAROITUS] ROSTER" in report(players_root)
+
+
+def test_missing_players_warns_only_with_gate(players_root):
+    edit(players_root, lambda o: o["games"][0].update(players=None))
+    assert review.main(ARGS) == 0
+    _gate(players_root, passed=False)
+    assert review.main(ARGS) == 0
+    _gate(players_root)
+    assert review.main(ARGS) == 1
+    assert "ei pelaajaennustetta" in report(players_root)
+
+
+def test_malformed_players_block_does_not_crash(players_root):
+    edit(players_root, lambda o: _home(o).update(goals_mean=None, top=None))
+    review.main(ARGS)  # schema errors are SITE's; no traceback either way
+    assert "tarkistus kaatui" not in report(players_root)
