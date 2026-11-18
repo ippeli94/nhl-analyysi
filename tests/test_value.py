@@ -337,3 +337,11 @@ def test_game_odds_does_not_mutate_inputs():
     value.game_odds(make_game(), books, TS)
     assert books == before
     assert config.ODDS_EV_MIN == 0.03
+
+
+def test_frontend_ev_threshold_matches_config():
+    import re
+
+    text = (config.ROOT / "site" / "format.js").read_text(encoding="utf-8")
+    found = re.search(r"VALUE_EV_MIN = ([0-9.]+)", text)
+    assert found and float(found.group(1)) == config.ODDS_EV_MIN

@@ -79,3 +79,70 @@ export function fmtDateTime(iso) {
   const p = parts(dtFmt, new Date(iso));
   return `${p.day}.${p.month}. ${p.hour}.${p.minute}`;
 }
+
+/* ---------- odds helpers ---------- */
+// Must equal config.ODDS_EV_MIN (pinned by tests/test_value.py).
+export const VALUE_EV_MIN = 0.03;
+
+export const fmtOdds = (x) => x.toFixed(2).replace(".", ",");
+export const fmtPct1 = (p) => `${(p * 100).toFixed(1).replace(".", ",")} %`;
+
+function signedOne(x) {
+  const r = Math.round(Math.abs(x) * 10) / 10;
+  const sign = x < 0 && r > 0 ? "−" : "+";
+  return `${sign}${r.toFixed(1).replace(".", ",")}`;
+}
+// Probability difference in percentage points, one decimal.
+export const fmtPp = (d) => signedOne(d * 100);
+export const fmtEv = (ev) => `${signedOne(ev * 100)} %`;
+
+const BOOKS = {
+  veikkaus_fi: "Veikkaus", unibet_fi: "Unibet", leovegas_fi: "LeoVegas", pinnacle: "Pinnacle",
+  betsson: "Betsson", coolbet: "Coolbet", nordicbet: "NordicBet", unibet_se: "Unibet (SE)",
+  betfair_ex_eu: "Betfair Exchange", marathonbet: "Marathonbet",
+};
+export const bookName = (key) => BOOKS[key] ?? key;
+
+export const fairOdds = (p) => Math.round(100 / p) / 100;
+export const minValuePrice = (p) => Math.ceil(((1 + VALUE_EV_MIN) / p) * 100 - 1e-9) / 100;
+
+const lineText = (x) => fmtNum(Math.abs(x), 1);
+const signedLine = (x) => `${x < 0 ? "−" : "+"}${lineText(x)}`;
+
+export function pickLabel(pick, game) {
+  const { market, outcome, line } = pick;
+  const abbr = outcome === "home" ? game.home.abbr : game.away.abbr;
+  if (market === "h2h") return `${abbr} voittaa`;
+  if (market === "1x2") {
+    return outcome === "draw"
+      ? "Tasapeli varsinaisella peliajalla" : `${abbr} voittaa varsinaisella peliajalla`;
+  }
+  if (market === "totals") return `${outcome === "over" ? "Yli" : "Alle"} ${lineText(line)} maalia`;
+  return `${abbr} ${signedLine(outcome === "home" ? line : -line)}`;
+}
+
+export function marketTitle(market, game) {
+  switch (market.key) {
+    case "h2h": return "Voittaja (sis. jatkoaika)";
+    case "1x2": return "1X2 (varsinainen peliaika)";
+    case "totals": return `Yli/alle ${lineText(market.line)}`;
+    default: return `Tasoitus ${game.home.abbr} ${signedLine(market.line)}`;
+  }
+}
+
+export function collectPicks(latest, { market = "all", veikkausOnly = false, showFlagged = false } = {}) {
+  const out = [];
+  for (const game of latest.games || []) {
+    if (game.state === "started" || !game.odds) continue;
+    for (const pick of game.odds.picks || []) {
+      if (market !== "all" && pick.market !== market) continue;
+      if (veikkausOnly && !pick.veikkaus?.value) continue;
+      out.push({ game, pick });
+    }
+  }
+  const key = (x) => (veikkausOnly ? x.pick.veikkaus.ev : x.pick.ev);
+  const byEv = (a, b) => key(b) - key(a);
+  const clean = out.filter((x) => !x.pick.flag).sort(byEv);
+  if (!showFlagged) return clean;
+  return clean.concat(out.filter((x) => x.pick.flag).sort(byEv));
+}

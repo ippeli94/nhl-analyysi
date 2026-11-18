@@ -1,6 +1,7 @@
 import {
   SUPPORTED_SCHEMA, fmtTime, fmtDate, fmtDateTime, fmtPct, fmtNum, fmtScore,
   fmtSignedPct, ageText, freshness, groupByDate,
+  fmtOdds, fmtPct1, fmtPp, fmtEv, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks,
 } from "./format.js";
 
 const DATA_URL = "data/latest.json";
@@ -14,7 +15,12 @@ const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ESC[c]);
 const ICON_BALL =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/>' +
   '<path d="M3.5 12h17M12 3.5c3 2.6 3 14.4 0 17M12 3.5c-3 2.6-3 14.4 0 17"/></svg>';
-const TABS = [{ id: "games", label: "Ottelut", href: "#/", icon: ICON_BALL }];
+const ICON_STAR =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/></svg>';
+const TABS = [
+  { id: "games", label: "Ottelut", href: "#/", icon: ICON_BALL },
+  { id: "value", label: "Ylikertoimet", href: "#/ylikertoimet", icon: ICON_STAR },
+];
 
 /* ---------- state ---------- */
 let state = { latest: null, error: null, schemaError: null, loadedAt: 0 };
@@ -95,7 +101,8 @@ function renderChrome(route) {
       : "";
   }
   $("nav").innerHTML = TABS.map((t) => {
-    const active = (route.name === "list" || route.name === "game") && t.id === "games";
+    const tab = route.name === "value" ? "value" : (route.name === "list" || route.name === "game") ? "games" : null;
+    const active = t.id === tab;
     return `<a href="${esc(t.href)}" class="${active ? "active" : ""}"${active ? ' aria-current="page"' : ""}>${t.icon}<span>${esc(t.label)}</span></a>`;
   }).join("");
 }
@@ -105,6 +112,7 @@ function gameCard(g) {
   const flags = [
     g.state === "started" ? badge("Käynnissä — ennuste jäädytetty", "live") : "",
     confidenceBadge(g),
+    g.state !== "started" && (g.odds?.picks || []).some((p) => !p.flag) ? badge("Ylikertoimia", "ok") : "",
   ].join("");
   const awayLead = g.prob.away_win > g.prob.home_win;
   return `<a class="card" href="#/ottelu/${esc(g.id)}">` +
@@ -129,6 +137,52 @@ function listView(latest) {
   return groupByDate(latest.games).map((grp, i) =>
     `<section class="day"><h1 class="day-title">${i === 0 ? "Ensi yön ottelut · " : ""}${esc(fmtDate(grp.nhl_date))}</h1>` +
     `<div class="cards">${grp.games.map(gameCard).join("")}</div></section>`).join("");
+}
+
+/* ---------- value view ---------- */
+const oddsSource = (latest) => (latest.sources || []).find((s) => s.id === "odds") || null;
+const VALUE_MARKETS = [
+  ["all", "Kaikki"], ["h2h", "Voittaja"], ["1x2", "1X2"], ["totals", "Yli/alle"], ["spreads", "Tasoitus"],
+];
+let valueFilter = { market: "all", veikkausOnly: false, showFlagged: false };
+
+function pickCard({ game, pick }) {
+  const v = pick.veikkaus;
+  const flagged = !!pick.flag;
+  return `<a class="card pick${flagged ? " flagged" : ""}" href="#/ottelu/${esc(game.id)}">` +
+    `<div class="pick-row"><span class="pick-label">${esc(pickLabel(pick, game))} · ${esc(bookName(pick.book))} ${esc(fmtOdds(pick.price))}</span>` +
+      `<span class="pick-ev">EV ${esc(fmtEv(pick.ev))}</span></div>` +
+    `<div class="pick-sub">Malli ${esc(fmtPct1(pick.p_model))} · Markkina ${esc(fmtPct1(pick.p_market))} · edge ${esc(fmtPp(pick.edge))}</div>` +
+    `<div class="pick-sub">${v ? `Veikkaus ${esc(fmtOdds(v.price))} (EV ${esc(fmtEv(v.ev))})` : "Veikkaus: ei kerrointa"}</div>` +
+    `<div class="pick-sub">${esc(game.away.abbr)} @ ${esc(game.home.abbr)} · ${esc(fmtDate(game.nhl_date))} ${esc(fmtTime(game.start_utc))}</div>` +
+    (flagged
+      ? `<div class="pick-flag">${badge("Todennäköisemmin mallin virhe", "warn")}` +
+        `<p class="note">Suuri ero markkinaan — todennäköisemmin mallin virhe tai puuttuva tieto kuin löytö.</p></div>`
+      : "") +
+    `</a>`;
+}
+
+function valueControls() {
+  const seg = VALUE_MARKETS.map(([id, label]) =>
+    `<button type="button" class="seg-btn" data-vmarket="${esc(id)}" aria-pressed="${valueFilter.market === id}">${esc(label)}</button>`).join("");
+  const tog = (key, label) =>
+    `<button type="button" class="toggle" data-vtoggle="${esc(key)}" aria-pressed="${valueFilter[key]}">${esc(label)}</button>`;
+  return `<div class="seg" role="group" aria-label="Markkina">${seg}</div>` +
+    `<div class="toggles">${tog("veikkausOnly", "Vain Veikkaus")}${tog("showFlagged", "Näytä varoitusleimalliset")}</div>`;
+}
+
+function valueView(latest) {
+  const src = oddsSource(latest);
+  const head = `<h1 class="day-title">Ylikertoimet</h1>`;
+  if (!src) return `${head}<section class="empty"><p>Kertoimia ei ole vielä haettu.</p></section>`;
+  const fetched = src.fetched_at ? `<p class="note fetched">Kertoimet haettu ${esc(fmtDateTime(src.fetched_at))}</p>` : "";
+  const picks = collectPicks(latest, valueFilter);
+  const body = picks.length
+    ? `<div class="cards">${picks.map(pickCard).join("")}</div>`
+    : `<section class="empty"><p>Ei ylikertoimia juuri nyt.</p></section>`;
+  return head + fetched + valueControls() + body +
+    `<p class="note foot">Markkina = Pinnaclen marginaaliton todennäköisyys, tai välittäjien mediaani jos Pinnacle puuttuu. ` +
+    `Ylikerroin: EV vähintään 3 % ja ero markkinaan vähintään 2 prosenttiyksikköä.</p>`;
 }
 
 /* ---------- detail sections ---------- */
@@ -244,6 +298,58 @@ function goalieCard(team, goalie) {
     `<p>Vaikutus vastustajan maaliodotukseen: <strong>${esc(fmtSignedPct(goalie.mult))}</strong></p></div>`;
 }
 
+const dash = "—";
+const ONE_X_TWO = [["home", "1", "reg_home"], ["draw", "X", "reg_draw"], ["away", "2", "reg_away"]];
+
+function oneXTwoBlock(g) {
+  const market = (g.odds?.markets || []).find((m) => m.key === "1x2");
+  const cols = ONE_X_TWO.map(([key, label, probKey]) => {
+    const p = g.prob[probKey];
+    const o = market?.outcomes.find((x) => x.key === key);
+    return `<div class="ox-col"><span class="ox-h">${label}</span>` +
+      `<span class="ox-v">Malli ${esc(fmtPct1(p))}</span>` +
+      `<span class="ox-v">Reilu kerroin ${esc(fmtOdds(fairOdds(p)))}</span>` +
+      `<span class="ox-v muted">Ylikerroin, kun kerroin ≥ ${esc(fmtOdds(minValuePrice(p)))}</span>` +
+      (market
+        ? `<span class="ox-v">Paras ${o?.best ? `${esc(bookName(o.best.book))} ${esc(fmtOdds(o.best.price))}` : dash}</span>` +
+          `<span class="ox-v">EV ${o?.ev != null ? esc(fmtEv(o.ev)) : dash}</span>`
+        : "") +
+      `</div>`;
+  }).join("");
+  return `<h3 class="sub first">1X2 · varsinainen peliaika</h3><div class="ox">${cols}</div>` +
+    (market ? "" : `<p class="note">Kerroinlähde ei tarjoa NHL:n 1X2-markkinaa. Vertaa Veikkauksen 1X2-kerrointa reiluun kertoimeen.</p>`);
+}
+
+function marketTable(m, g) {
+  const rows = m.outcomes.map((o) => {
+    const label = pickLabel({ market: m.key, outcome: o.key, line: m.line }, g);
+    return `<tr class="${o.value ? "is-value" : ""}"><th scope="row">${esc(label)}` +
+      (o.flag ? `<br>${badge("Todennäköisemmin mallin virhe", "warn")}` : "") + `</th>` +
+      `<td>${o.p_model != null ? esc(fmtPct1(o.p_model)) : dash}</td>` +
+      `<td>${o.p_market != null ? esc(fmtPct1(o.p_market)) : dash}</td>` +
+      `<td>${o.best ? `${esc(fmtOdds(o.best.price))} ${esc(bookName(o.best.book))}` : dash}</td>` +
+      `<td>${o.veikkaus ? esc(fmtOdds(o.veikkaus.price)) : dash}</td>` +
+      `<td>${o.ev != null ? esc(fmtEv(o.ev)) : dash}</td></tr>`;
+  }).join("");
+  const books = (m.books || []).map((b) =>
+    `<li>${esc(bookName(b.book))}: ${esc((b.prices || []).map(fmtOdds).join(" / "))}` +
+    `${b.vig != null ? ` · marginaali ${esc(fmtPct1(b.vig))}` : ""}${b.valid ? "" : " (ei käytetä)"}</li>`).join("");
+  return `<h3 class="sub">${esc(marketTitle(m, g))}</h3>` +
+    `<div class="twrap"><table class="otable"><thead><tr><th scope="col">Valinta</th><th scope="col">Malli</th>` +
+    `<th scope="col">Markkina</th><th scope="col">Paras</th><th scope="col">Veikkaus</th><th scope="col">EV</th></tr></thead>` +
+    `<tbody>${rows}</tbody></table></div>` +
+    `<details class="books"><summary>Kaikki välittäjät</summary><ul>${books}</ul></details>`;
+}
+
+function oddsSection(g) {
+  const first = oneXTwoBlock(g);
+  if (!g.odds) return first + `<p class="note">Kertoimia ei ole saatavilla tälle ottelulle.</p>`;
+  const refs = g.odds.markets.map((m) => m.ref);
+  const ref = refs.includes("pinnacle") ? "Viite: Pinnacle" : refs.includes("median") ? "Viite: välittäjien mediaani" : "Ei viitettä";
+  return first + g.odds.markets.map((m) => marketTable(m, g)).join("") +
+    `<p class="note foot">Kertoimet haettu ${esc(fmtDateTime(g.odds.fetched_at))} · ${esc(ref)}</p>`;
+}
+
 // A section whose render() returns null is not shown (later-phase fields stay invisible).
 const SECTIONS = [
   { id: "header", title: null, render: headerSection },
@@ -255,6 +361,7 @@ const SECTIONS = [
     render: (g) => (g.goalies
       ? `<div class="goalies">${goalieCard(g.away, g.goalies.away)}${goalieCard(g.home, g.goalies.home)}</div>` : null),
   },
+  { id: "odds", title: "Kertoimet", render: oddsSection },
 ];
 
 function gameView(g) {
@@ -267,7 +374,7 @@ function gameView(g) {
 }
 
 /* ---------- status view ---------- */
-const SOURCE_NAMES = { nhl: "NHL", injuries: "Loukkaantumiset (ESPN)" };
+const SOURCE_NAMES = { nhl: "NHL", injuries: "Loukkaantumiset (ESPN)", odds: "Kertoimet (The Odds API)" };
 const SOURCE_STATUS = {
   ok: ["Kunnossa", "ok"], stale: ["Vanhentunut", "warn"],
   failed: ["Epäonnistui", "bad"], unavailable: ["Ei saatavilla", "muted"],
@@ -291,6 +398,7 @@ function parseRoute() {
   const m = h.match(/^#\/ottelu\/(\d+)$/);
   if (m) return { name: "game", id: Number(m[1]) };
   if (h === "#/tila") return { name: "status" };
+  if (h === "#/ylikertoimet") return { name: "value" };
   return { name: "list" };
 }
 
@@ -313,6 +421,9 @@ function render() {
     if (!g) { location.hash = "#/"; return; }
     html = gameView(g);
     title = `${g.away.abbr} @ ${g.home.abbr} · NHL-analyysi`;
+  } else if (route.name === "value") {
+    html = valueView(state.latest);
+    title = "Ylikertoimet · NHL-analyysi";
   } else if (route.name === "status") {
     html = statusView(state.latest);
   } else {
@@ -334,6 +445,13 @@ function render() {
 }
 
 window.addEventListener("hashchange", render);
+$("view").addEventListener("click", (ev) => {
+  const btn = ev.target instanceof Element ? ev.target.closest("[data-vmarket], [data-vtoggle]") : null;
+  if (!btn) return;
+  if (btn.dataset.vmarket) valueFilter = { ...valueFilter, market: btn.dataset.vmarket };
+  else valueFilter = { ...valueFilter, [btn.dataset.vtoggle]: !valueFilter[btn.dataset.vtoggle] };
+  render();
+});
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible" && Date.now() - state.loadedAt > RELOAD_AFTER_MS) {
     await load();

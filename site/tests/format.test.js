@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   fmtTime, fmtDate, fmtPct, fmtNum, fmtScore, fmtSignedPct, ageText,
   freshness, groupByDate, fmtDateTime, SUPPORTED_SCHEMA,
+  fmtOdds, fmtPct1, fmtPp, fmtEv, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks,
 } from "../format.js";
 
 const NOW = new Date("2026-11-16T12:00:00Z");
@@ -68,3 +69,54 @@ test("groupByDate sorts and groups", () => {
 test("fmtDateTime", () => assert.equal(fmtDateTime("2026-11-16T00:00:00Z"), "16.11. 02.00"));
 test("freshness stale when generated_at is unparseable", () =>
   assert.equal(freshness(latest({ generated_at: "not a date" }), NOW), "stale"));
+
+test("fmtOdds", () => assert.equal(fmtOdds(1.66), "1,66"));
+test("fmtPct1", () => assert.equal(fmtPct1(0.642), "64,2 %"));
+test("fmtPp", () => { assert.equal(fmtPp(0.027), "+2,7"); assert.equal(fmtPp(-0.013), "−1,3"); });
+test("fmtEv", () => { assert.equal(fmtEv(0.066), "+6,6 %"); assert.equal(fmtEv(-0.0049), "−0,5 %"); });
+test("bookName", () => { assert.equal(bookName("veikkaus_fi"), "Veikkaus"); assert.equal(bookName("x"), "x"); });
+test("fair and min value price", () => { assert.equal(fairOdds(0.25), 4); assert.equal(minValuePrice(0.25), 4.12); });
+
+const G = { id: 1, state: "upcoming", home: { abbr: "VGK" }, away: { abbr: "LAK" } };
+test("pickLabel all markets", () => {
+  assert.equal(pickLabel({ market: "h2h", outcome: "home" }, G), "VGK voittaa");
+  assert.equal(pickLabel({ market: "1x2", outcome: "draw" }, G), "Tasapeli varsinaisella peliajalla");
+  assert.equal(pickLabel({ market: "1x2", outcome: "away" }, G), "LAK voittaa varsinaisella peliajalla");
+  assert.equal(pickLabel({ market: "totals", outcome: "over", line: 6.5 }, G), "Yli 6,5 maalia");
+  assert.equal(pickLabel({ market: "totals", outcome: "under", line: 5.5 }, G), "Alle 5,5 maalia");
+  assert.equal(pickLabel({ market: "spreads", outcome: "home", line: -1.5 }, G), "VGK −1,5");
+  assert.equal(pickLabel({ market: "spreads", outcome: "away", line: -1.5 }, G), "LAK +1,5");
+});
+test("marketTitle", () => {
+  assert.equal(marketTitle({ key: "h2h" }, G), "Voittaja (sis. jatkoaika)");
+  assert.equal(marketTitle({ key: "1x2" }, G), "1X2 (varsinainen peliaika)");
+  assert.equal(marketTitle({ key: "totals", line: 6.5 }, G), "Yli/alle 6,5");
+  assert.equal(marketTitle({ key: "spreads", line: -1.5 }, G), "Tasoitus VGK −1,5");
+});
+
+const pk = (market, ev, extra = {}) => ({
+  market, outcome: "home", line: null, ev, flag: null, veikkaus: null, ...extra,
+});
+const picksLatest = () => ({
+  games: [
+    { ...G, id: 1, odds: { picks: [pk("h2h", 0.05), pk("totals", 0.09, { flag: "suspicious" }),
+      pk("spreads", 0.07, { veikkaus: { price: 2, ev: 0.04, value: true } })] } },
+    { ...G, id: 2, odds: { picks: [pk("h2h", 0.08, { veikkaus: { price: 2, ev: 0.06, value: true } })] } },
+    { ...G, id: 3, state: "started", odds: { picks: [pk("h2h", 0.5)] } },
+    { ...G, id: 4, odds: null },
+  ],
+});
+test("collectPicks sorts and hides flagged by default", () => {
+  const evs = collectPicks(picksLatest()).map((x) => x.pick.ev);
+  assert.deepEqual(evs, [0.08, 0.07, 0.05]);
+  const all = collectPicks(picksLatest(), { showFlagged: true }).map((x) => x.pick.ev);
+  assert.deepEqual(all, [0.08, 0.07, 0.05, 0.09]);
+});
+test("collectPicks market filter", () =>
+  assert.deepEqual(collectPicks(picksLatest(), { market: "spreads" }).map((x) => x.pick.ev), [0.07]));
+test("collectPicks veikkausOnly", () => {
+  const r = collectPicks(picksLatest(), { veikkausOnly: true });
+  assert.deepEqual(r.map((x) => x.pick.veikkaus.ev), [0.06, 0.04]);
+});
+test("collectPicks skips started games", () =>
+  assert.ok(!collectPicks(picksLatest(), { showFlagged: true }).some((x) => x.game.id === 3)));
