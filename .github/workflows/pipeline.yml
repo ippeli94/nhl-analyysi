@@ -1,0 +1,74 @@
+name: pipeline
+
+on:
+  schedule:
+    - cron: "43 6 * * *"
+    - cron: "17 15 * * *"
+    - cron: "37 21 * * *"
+    - cron: "17 12 * * 0,6"
+  workflow_dispatch:
+
+concurrency:
+  group: pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        id: run
+        run: python -m pipeline.run${{ github.event.schedule == '17 12 * * 0,6' && ' --extra-if-early' || '' }}
+
+      - name: Review
+        id: review
+        if: steps.run.outputs.ran == 'true'
+        run: |
+          set +e
+          python tools/review.py --data-only
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Commit data
+        if: steps.run.outputs.ran == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data reports
+          if ! git diff --cached --quiet; then
+            git commit -m "data: run $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            git pull --rebase
+            git push
+          fi
+
+      - name: Configure Pages
+        if: steps.run.outputs.ran == 'true' && steps.review.outputs.code != '2'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: steps.run.outputs.ran == 'true' && steps.review.outputs.code != '2'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy Pages
+        id: deploy
+        if: steps.run.outputs.ran == 'true' && steps.review.outputs.code != '2'
+        uses: actions/deploy-pages@v4
+
+      - name: Fail on review errors
+        if: steps.review.outputs.code == '2'
+        run: exit 1
