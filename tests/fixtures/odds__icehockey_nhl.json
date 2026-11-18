@@ -1,0 +1,925 @@
+[
+ {
+  "id": "fixture-1",
+  "sport_key": "icehockey_nhl",
+  "sport_title": "NHL",
+  "commence_time": "2026-11-18T00:00:00Z",
+  "home_team": "Boston Bruins",
+  "away_team": "Los Angeles Kings",
+  "bookmakers": [
+   {
+    "key": "pinnacle",
+    "title": "pinnacle",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Boston Bruins",
+        "price": 1.72
+       },
+       {
+        "name": "Los Angeles Kings",
+        "price": 2.2
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.92,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.95,
+        "point": 6.5
+       },
+       {
+        "name": "Over",
+        "price": 1.69,
+        "point": 6.0
+       },
+       {
+        "name": "Under",
+        "price": 2.22,
+        "point": 6.0
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Boston Bruins",
+        "price": 2.55,
+        "point": -1.5
+       },
+       {
+        "name": "Los Angeles Kings",
+        "price": 1.52,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "veikkaus_fi",
+    "title": "veikkaus_fi",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Boston Bruins",
+        "price": 1.68
+       },
+       {
+        "name": "Los Angeles Kings",
+        "price": 2.1
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.85,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.9,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Boston Bruins",
+        "price": 2.45,
+        "point": -1.5
+       },
+       {
+        "name": "Los Angeles Kings",
+        "price": 1.55,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "coolbet",
+    "title": "coolbet",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Boston Bruins",
+        "price": 1.74
+       },
+       {
+        "name": "Los Angeles Kings",
+        "price": 2.18
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.93,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.93,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Boston Bruins",
+        "price": 2.6,
+        "point": -1.5
+       },
+       {
+        "name": "Los Angeles Kings",
+        "price": 1.51,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "betfair_ex_eu",
+    "title": "betfair_ex_eu",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Boston Bruins",
+        "price": 1.76
+       },
+       {
+        "name": "Los Angeles Kings",
+        "price": 2.22
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.96,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.98,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Boston Bruins",
+        "price": 2.62,
+        "point": -1.5
+       },
+       {
+        "name": "Los Angeles Kings",
+        "price": 1.53,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "fixture-2",
+  "sport_key": "icehockey_nhl",
+  "sport_title": "NHL",
+  "commence_time": "2026-11-18T00:00:00Z",
+  "home_team": "Florida Panthers",
+  "away_team": "Edmonton Oilers",
+  "bookmakers": [
+   {
+    "key": "pinnacle",
+    "title": "pinnacle",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Florida Panthers",
+        "price": 1.85
+       },
+       {
+        "name": "Edmonton Oilers",
+        "price": 2.02
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.9,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.97,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Florida Panthers",
+        "price": 2.78,
+        "point": -1.5
+       },
+       {
+        "name": "Edmonton Oilers",
+        "price": 1.45,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "veikkaus_fi",
+    "title": "veikkaus_fi",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Florida Panthers",
+        "price": 1.8
+       },
+       {
+        "name": "Edmonton Oilers",
+        "price": 1.98
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.85,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.95,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Florida Panthers",
+        "price": 2.7,
+        "point": -1.5
+       },
+       {
+        "name": "Edmonton Oilers",
+        "price": 1.47,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "coolbet",
+    "title": "coolbet",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Florida Panthers",
+        "price": 1.86
+       },
+       {
+        "name": "Edmonton Oilers",
+        "price": 2.0
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.91,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.95,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Florida Panthers",
+        "price": 2.8,
+        "point": -1.5
+       },
+       {
+        "name": "Edmonton Oilers",
+        "price": 1.44,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "betfair_ex_eu",
+    "title": "betfair_ex_eu",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Florida Panthers",
+        "price": 1.88
+       },
+       {
+        "name": "Edmonton Oilers",
+        "price": 2.04
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.93,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.99,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Florida Panthers",
+        "price": 2.82,
+        "point": -1.5
+       },
+       {
+        "name": "Edmonton Oilers",
+        "price": 1.46,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "marathonbet",
+    "title": "marathonbet",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Florida Panthers",
+        "price": 2.05
+       },
+       {
+        "name": "Draw",
+        "price": 4.1
+       },
+       {
+        "name": "Edmonton Oilers",
+        "price": 3.3
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "fixture-3",
+  "sport_key": "icehockey_nhl",
+  "sport_title": "NHL",
+  "commence_time": "2026-11-19T00:30:00Z",
+  "home_team": "Detroit Red Wings",
+  "away_team": "Boston Bruins",
+  "bookmakers": [
+   {
+    "key": "pinnacle",
+    "title": "pinnacle",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Detroit Red Wings",
+        "price": 2.1
+       },
+       {
+        "name": "Boston Bruins",
+        "price": 1.8
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 2.05,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.82,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Detroit Red Wings",
+        "price": 3.05,
+        "point": -1.5
+       },
+       {
+        "name": "Boston Bruins",
+        "price": 1.37,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "veikkaus_fi",
+    "title": "veikkaus_fi",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Detroit Red Wings",
+        "price": 2.05
+       },
+       {
+        "name": "Boston Bruins",
+        "price": 1.75
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 2.0,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.8,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Detroit Red Wings",
+        "price": 3.0,
+        "point": -1.5
+       },
+       {
+        "name": "Boston Bruins",
+        "price": 1.38,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "coolbet",
+    "title": "coolbet",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Detroit Red Wings",
+        "price": 1.95
+       },
+       {
+        "name": "Boston Bruins",
+        "price": 2.05
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 2.1,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.78,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Detroit Red Wings",
+        "price": 3.1,
+        "point": -1.5
+       },
+       {
+        "name": "Boston Bruins",
+        "price": 1.36,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "betfair_ex_eu",
+    "title": "betfair_ex_eu",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Detroit Red Wings",
+        "price": 2.12
+       },
+       {
+        "name": "Boston Bruins",
+        "price": 1.82
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 2.07,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.84,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Detroit Red Wings",
+        "price": 3.08,
+        "point": -1.5
+       },
+       {
+        "name": "Boston Bruins",
+        "price": 1.38,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "fixture-4",
+  "sport_key": "icehockey_nhl",
+  "sport_title": "NHL",
+  "commence_time": "2026-11-19T00:30:00Z",
+  "home_team": "New Jersey Devils",
+  "away_team": "Montreal Canadiens",
+  "bookmakers": [
+   {
+    "key": "pinnacle",
+    "title": "pinnacle",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "New Jersey Devils",
+        "price": 1.62
+       },
+       {
+        "name": "Montreal Canadiens",
+        "price": 2.4
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.95,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.92,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "New Jersey Devils",
+        "price": 2.35,
+        "point": -1.5
+       },
+       {
+        "name": "Montreal Canadiens",
+        "price": 1.6,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "veikkaus_fi",
+    "title": "veikkaus_fi",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "New Jersey Devils",
+        "price": 1.58
+       },
+       {
+        "name": "Montreal Canadiens",
+        "price": 2.3
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.9,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.88,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "New Jersey Devils",
+        "price": 2.3,
+        "point": -1.5
+       },
+       {
+        "name": "Montreal Canadiens",
+        "price": 1.62,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "coolbet",
+    "title": "coolbet",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "New Jersey Devils",
+        "price": 1.63
+       },
+       {
+        "name": "Montreal Canadiens",
+        "price": 2.38
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.96,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.91,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "New Jersey Devils",
+        "price": 2.38,
+        "point": -1.5
+       },
+       {
+        "name": "Montreal Canadiens",
+        "price": 1.59,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "betfair_ex_eu",
+    "title": "betfair_ex_eu",
+    "last_update": "2026-11-17T21:30:00Z",
+    "markets": [
+     {
+      "key": "h2h",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "New Jersey Devils",
+        "price": 1.65
+       },
+       {
+        "name": "Montreal Canadiens",
+        "price": 2.42
+       }
+      ]
+     },
+     {
+      "key": "totals",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": 1.98,
+        "point": 6.5
+       },
+       {
+        "name": "Under",
+        "price": 1.94,
+        "point": 6.5
+       }
+      ]
+     },
+     {
+      "key": "spreads",
+      "last_update": "2026-11-17T21:30:00Z",
+      "outcomes": [
+       {
+        "name": "New Jersey Devils",
+        "price": 2.4,
+        "point": -1.5
+       },
+       {
+        "name": "Montreal Canadiens",
+        "price": 1.61,
+        "point": 1.5
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+]

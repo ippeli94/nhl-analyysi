@@ -152,3 +152,50 @@ Goalies who did not play have `toi` `"00:00"`, `starter` `false` and zero shots.
 6. Shot type is missing on 21-28 % of shots. The mapper must treat a missing type as `other` (the `type` enum in the contract).
 7. Empty-net goals have no `goalieInNetId` (`goalie` = null in CachedGame).
 8. The schedule game object has no game date. Use `gameWeek[].date`.
+
+# The Odds API v4
+
+`odds__icehockey_nhl.json` is **käsin tehty — nauhoita uudelleen `tools/record_odds_fixture.py`:llä kun avain on saatavilla**.
+It follows the documented v4 shape (`GET /v4/sports/icehockey_nhl/odds`); nothing in it was recorded
+live. Event ids are placeholders (`fixture-1`...). Real ids are 32 hex characters and are never stored.
+The recorder writes `odds__icehockey_nhl__live.json` (ids `live-{n}`), which
+`test_live_fixture_parses_if_present` checks when it exists.
+
+## Response shape
+
+| Field | Path | Notes |
+|---|---|---|
+| events | root | JSON list; `[]` when nothing is on offer (costs nothing) |
+| event id | `[].id` | 32 hex chars live; never persisted |
+| start | `[].commence_time` | ISO UTC, `2026-11-18T00:00:00Z` |
+| teams | `[].home_team`, `[].away_team` | full display names, e.g. `Montreal Canadiens` (no accent); mapped by `teams.abbr_from_odds_name` |
+| bookmakers | `[].bookmakers[]` | `key`, `title`, `last_update`, `markets[]` |
+| market | `markets[].key` | `h2h`, `totals`, `spreads` |
+| h2h outcomes | `outcomes[]` | `name` = team name (or `Draw`), `price` decimal |
+| totals outcomes | `outcomes[]` | `name` = `Over` / `Under`, `price`, `point` = line |
+| spreads outcomes | `outcomes[]` | `name` = team name, `price`, `point` = that team's handicap (home -1.5 pairs with away +1.5) |
+
+Request: the key goes in the `x-api-key` header; `bookmakers` (10 keys), `markets=h2h,totals,spreads`,
+`oddsFormat=decimal`, `dateFormat=iso`, `commenceTimeFrom/To`.
+
+## Usage headers (every response)
+
+| Header | Meaning |
+|---|---|
+| `x-requests-remaining` | credits left in the period |
+| `x-requests-used` | credits used in the period |
+| `x-requests-last` | cost of this call (3 for 3 markets x 1 region) |
+
+## Hand-built fixture content
+
+Four events matching the schedule fixture: `2026020333` LAK @ BOS, `2026020335` EDM @ FLA,
+`2026020344` BOS @ DET (coolbet BOS price about 10 % above Pinnacle's fair price, a value pick),
+`2026020345` MTL @ NJD. Books `pinnacle`, `veikkaus_fi`, `coolbet`, `betfair_ex_eu`; totals 6.5
+(Pinnacle also 6.0 on LAK @ BOS); spreads +-1.5; `marathonbet` on EDM @ FLA has a three-outcome h2h.
+
+## Open questions (spec 13.4) to confirm from the first live recording
+
+1. Which markets does Veikkaus (`veikkaus_fi`) return: h2h only, or totals and spreads too?
+2. Do totals and spreads include overtime per book (regulation-only lines would differ)?
+3. Which total and spread lines does Pinnacle offer (only 6.5 and +-1.5, or several)?
+4. Does any bookmaker return a three-outcome `h2h` with `Draw`? (`--probe-3way` checks `h2h_3_way`.)

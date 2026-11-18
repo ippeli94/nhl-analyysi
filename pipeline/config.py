@@ -102,3 +102,30 @@ STARTER_LOOKBACK = 10
 STALE_HOURS = 14
 MODEL_VERSION = "1.1.0"
 SCHEMA_VERSION = 1
+
+# Odds (The Odds API v4, phase 2)
+ODDS_BASE = "https://api.the-odds-api.com/v4"
+ODDS_SPORT = "icehockey_nhl"
+ODDS_BOOKMAKERS = (
+    "veikkaus_fi", "unibet_fi", "leovegas_fi", "pinnacle", "betsson",
+    "coolbet", "nordicbet", "unibet_se", "betfair_ex_eu", "marathonbet",
+)
+ODDS_MARKETS = ("h2h", "totals", "spreads")
+ODDS_FALLBACK_REGIONS = "eu,fi"
+ODDS_ENV_KEY = "ODDS_API_KEY"
+ODDS_LOOKAHEAD_H = 36
+ODDS_NEXT_GAME_H = 24
+ODDS_MIN_REMAINING = 30
+ODDS_LOW_CREDITS = 60
+ODDS_REUSE_HOURS = 36
+ODDS_STALE_HOURS = 16
+ODDS_MATCH_TOLERANCE_H = 6
+ODDS_REF_BOOK = "pinnacle"
+ODDS_REF_MIN_BOOKS = 2
+ODDS_VIG_RANGE = (-0.01, 0.15)
+ODDS_EV_MIN = 0.03
+ODDS_EDGE_MIN = 0.02
+ODDS_SUSPICIOUS_GAP = 0.10
+ODDS_COMMISSION = {"betfair_ex_eu": 0.05}
+VEIKKAUS_BOOK = "veikkaus_fi"
+ODDS_FIXTURE = "odds__icehockey_nhl.json"

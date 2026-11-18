@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import unicodedata
+
 TEAM_NAMES: dict[str, str] = {
     "ANA": "Anaheim Ducks", "BOS": "Boston Bruins", "BUF": "Buffalo Sabres",
     "CAR": "Carolina Hurricanes", "CBJ": "Columbus Blue Jackets", "CGY": "Calgary Flames",
@@ -19,3 +21,20 @@ TEAM_NAMES: dict[str, str] = {
 
 def display_name(abbr: str, fallback: str) -> str:
     return TEAM_NAMES.get(abbr, fallback)
+
+
+ODDS_ALIASES: dict[str, str] = {"utah hockey club": "UTA"}
+
+
+def _normalise(name: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", name)
+    stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return " ".join(stripped.casefold().replace(".", "").split())
+
+
+_ODDS_MAP: dict[str, str] = {_normalise(n): a for a, n in TEAM_NAMES.items()} | ODDS_ALIASES
+
+
+def abbr_from_odds_name(name: str) -> str | None:
+    """Map a bookmaker/Odds API team name to an NHL abbreviation, or None if unknown."""
+    return _ODDS_MAP.get(_normalise(name))
