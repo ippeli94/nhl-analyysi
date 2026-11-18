@@ -340,3 +340,4 @@
 {"game_id":2026020340,"date":"2026-11-17","home":"MIN","away":"NSH","home_goals":7,"away_goals":3,"reg_home_goals":7,"reg_away_goals":3,"decided":"REG","home_won":true}
 {"game_id":2026020341,"date":"2026-11-17","home":"WPG","away":"OTT","home_goals":1,"away_goals":2,"reg_home_goals":1,"reg_away_goals":2,"decided":"REG","home_won":false}
 {"game_id":2026020343,"date":"2026-11-17","home":"SJS","away":"CGY","home_goals":2,"away_goals":5,"reg_home_goals":2,"reg_away_goals":5,"decided":"REG","home_won":false}
+{"game_id":2026020342,"date":"2026-11-17","home":"VGK","away":"DAL","home_goals":3,"away_goals":4,"reg_home_goals":3,"reg_away_goals":3,"decided":"OT","home_won":false}

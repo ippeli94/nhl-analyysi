@@ -1,14 +1,22 @@
 {
   "nhl": {
     "status": "ok",
-    "fetched_at": "2026-11-18T06:31:33Z",
-    "last_ok_at": "2026-11-18T06:31:33Z",
+    "fetched_at": "2026-11-18T15:00:58Z",
+    "last_ok_at": "2026-11-18T15:00:58Z",
     "note": null
   },
   "injuries": {
     "status": "ok",
-    "fetched_at": "2026-11-18T06:31:33Z",
-    "last_ok_at": "2026-11-18T06:31:33Z",
+    "fetched_at": "2026-11-18T15:00:58Z",
+    "last_ok_at": "2026-11-18T15:00:58Z",
     "note": null
+  },
+  "odds": {
+    "status": "failed",
+    "fetched_at": "2026-11-18T15:00:58Z",
+    "last_ok_at": null,
+    "note": "ODDS_API_KEY puuttuu",
+    "remaining": null,
+    "used": null
   }
 }
