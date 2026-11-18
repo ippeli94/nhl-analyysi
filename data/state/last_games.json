@@ -1,1457 +1,5 @@
 [
   {
-    "id": 2026020334,
-    "start_utc": "2026-11-18T00:30:00Z",
-    "nhl_date": "2026-11-17",
-    "state": "upcoming",
-    "home": {
-      "id": 14,
-      "abbr": "TBL",
-      "name": "Tampa Bay Lightning",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/TBL_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/TBL_dark.svg"
-    },
-    "away": {
-      "id": 15,
-      "abbr": "WSH",
-      "name": "Washington Capitals",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_dark.svg"
-    },
-    "prob": {
-      "home_win": 0.5912,
-      "away_win": 0.4088,
-      "reg_home": 0.4928,
-      "reg_draw": 0.1919,
-      "reg_away": 0.3153,
-      "confidence": "normal"
-    },
-    "xg": {
-      "home": 3.56,
-      "away": 2.93
-    },
-    "score": {
-      "most_likely": {
-        "home": 5,
-        "away": 2,
-        "p": 0.057
-      },
-      "top": [
-        {
-          "home": 5,
-          "away": 2,
-          "p": 0.057
-        },
-        {
-          "home": 4,
-          "away": 3,
-          "p": 0.0529
-        },
-        {
-          "home": 3,
-          "away": 2,
-          "p": 0.0513
-        },
-        {
-          "home": 4,
-          "away": 1,
-          "p": 0.0503
-        },
-        {
-          "home": 3,
-          "away": 4,
-          "p": 0.0488
-        }
-      ],
-      "matrix": [
-        [
-          0.0,
-          0.0028,
-          0.0034,
-          0.0104,
-          0.0044,
-          0.0028,
-          0.0016,
-          0.0008
-        ],
-        [
-          0.0041,
-          0.0,
-          0.0203,
-          0.0171,
-          0.0316,
-          0.0101,
-          0.0045,
-          0.0023
-        ],
-        [
-          0.0052,
-          0.0245,
-          0.0,
-          0.0452,
-          0.0261,
-          0.0371,
-          0.0083,
-          0.0056
-        ],
-        [
-          0.0194,
-          0.023,
-          0.0513,
-          0.0,
-          0.0488,
-          0.0202,
-          0.0252,
-          0.0057
-        ],
-        [
-          0.0095,
-          0.0503,
-          0.0333,
-          0.0529,
-          0.0,
-          0.03,
-          0.01,
-          0.0108
-        ],
-        [
-          0.0071,
-          0.0212,
-          0.057,
-          0.0258,
-          0.0308,
-          0.0,
-          0.0108,
-          0.0071
-        ],
-        [
-          0.0045,
-          0.0108,
-          0.0186,
-          0.0397,
-          0.0131,
-          0.0107,
-          0.0,
-          0.0047
-        ],
-        [
-          0.0043,
-          0.0095,
-          0.0162,
-          0.0139,
-          0.0192,
-          0.0089,
-          0.0055,
-          0.0023
-        ]
-      ],
-      "total": {
-        "mean": 6.91,
-        "over": {
-          "5.5": 0.6677,
-          "6.5": 0.571
-        }
-      },
-      "spread": {
-        "home_-1.5": 0.413,
-        "away_+1.5": 0.587,
-        "away_-1.5": 0.2471,
-        "home_+1.5": 0.7529
-      }
-    },
-    "periods": [
-      {
-        "n": 1,
-        "xg_home": 1.23,
-        "xg_away": 0.92,
-        "p_home_wins_period": 0.4234,
-        "p_away_wins_period": 0.2789,
-        "p_draw": 0.2977
-      },
-      {
-        "n": 2,
-        "xg_home": 1.25,
-        "xg_away": 1.13,
-        "p_home_wins_period": 0.3892,
-        "p_away_wins_period": 0.3271,
-        "p_draw": 0.2836
-      },
-      {
-        "n": 3,
-        "xg_home": 1.09,
-        "xg_away": 0.88,
-        "p_home_wins_period": 0.3956,
-        "p_away_wins_period": 0.2897,
-        "p_draw": 0.3147
-      }
-    ],
-    "factors": [
-      {
-        "key": "base",
-        "label": "Joukkuevahvuus",
-        "home": 3.3760140233624942,
-        "away": 2.9348272331341545,
-        "unit": "goals"
-      },
-      {
-        "key": "home_ice",
-        "label": "Kotietu",
-        "home": 1.0550908051072387,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "rest",
-        "label": "Lepo / back-to-back",
-        "home": 1.0,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "goalie",
-        "label": "Maalivahti",
-        "home": 0.9999080596274358,
-        "away": 0.9983811886735556,
-        "unit": "mult"
-      }
-    ],
-    "goalies": {
-      "home": {
-        "id": 8476883,
-        "name": "A. Vasilevskiy",
-        "status": "projected",
-        "gsax_per60": 0.04,
-        "p_start": 0.7,
-        "mult": 0.9983811886735556
-      },
-      "away": {
-        "id": 8480313,
-        "name": "L. Thompson",
-        "status": "projected",
-        "gsax_per60": 0.09,
-        "p_start": 0.7,
-        "mult": 0.9999080596274358
-      }
-    },
-    "lineup_changes": null,
-    "players": null,
-    "form": null,
-    "season_compare": null,
-    "h2h": null,
-    "insights": null,
-    "odds": null
-  },
-  {
-    "id": 2026020338,
-    "start_utc": "2026-11-18T00:30:00Z",
-    "nhl_date": "2026-11-17",
-    "state": "upcoming",
-    "home": {
-      "id": 16,
-      "abbr": "CHI",
-      "name": "Chicago Blackhawks",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/CHI_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/CHI_dark.svg"
-    },
-    "away": {
-      "id": 10,
-      "abbr": "TOR",
-      "name": "Toronto Maple Leafs",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/TOR_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg"
-    },
-    "prob": {
-      "home_win": 0.4031,
-      "away_win": 0.5969,
-      "reg_home": 0.3011,
-      "reg_draw": 0.2122,
-      "reg_away": 0.4867,
-      "confidence": "normal"
-    },
-    "xg": {
-      "home": 2.48,
-      "away": 3.08
-    },
-    "score": {
-      "most_likely": {
-        "home": 2,
-        "away": 3,
-        "p": 0.0679
-      },
-      "top": [
-        {
-          "home": 2,
-          "away": 3,
-          "p": 0.0679
-        },
-        {
-          "home": 1,
-          "away": 4,
-          "p": 0.062
-        },
-        {
-          "home": 2,
-          "away": 5,
-          "p": 0.0574
-        },
-        {
-          "home": 3,
-          "away": 2,
-          "p": 0.0574
-        },
-        {
-          "home": 3,
-          "away": 4,
-          "p": 0.0478
-        }
-      ],
-      "matrix": [
-        [
-          0.0,
-          0.008,
-          0.0095,
-          0.0311,
-          0.0138,
-          0.0077,
-          0.0043,
-          0.003
-        ],
-        [
-          0.0077,
-          0.0,
-          0.0419,
-          0.032,
-          0.062,
-          0.0205,
-          0.0124,
-          0.0068
-        ],
-        [
-          0.0064,
-          0.0363,
-          0.0,
-          0.0679,
-          0.0407,
-          0.0574,
-          0.0136,
-          0.0092
-        ],
-        [
-          0.0176,
-          0.0242,
-          0.0574,
-          0.0,
-          0.0478,
-          0.021,
-          0.0252,
-          0.0077
-        ],
-        [
-          0.0061,
-          0.0418,
-          0.0295,
-          0.0442,
-          0.0,
-          0.021,
-          0.0082,
-          0.0115
-        ],
-        [
-          0.0032,
-          0.0086,
-          0.0273,
-          0.0173,
-          0.0191,
-          0.0,
-          0.0069,
-          0.004
-        ],
-        [
-          0.0007,
-          0.0024,
-          0.0049,
-          0.0145,
-          0.0082,
-          0.0061,
-          0.0,
-          0.0016
-        ],
-        [
-          0.0006,
-          0.0028,
-          0.0026,
-          0.003,
-          0.0061,
-          0.0021,
-          0.0024,
-          0.0005
-        ]
-      ],
-      "total": {
-        "mean": 6.04,
-        "over": {
-          "5.5": 0.5254,
-          "6.5": 0.4211
-        }
-      },
-      "spread": {
-        "home_-1.5": 0.2303,
-        "away_+1.5": 0.7697,
-        "away_-1.5": 0.4021,
-        "home_+1.5": 0.5979
-      }
-    },
-    "periods": [
-      {
-        "n": 1,
-        "xg_home": 0.85,
-        "xg_away": 1.01,
-        "p_home_wins_period": 0.2971,
-        "p_away_wins_period": 0.3773,
-        "p_draw": 0.3256
-      },
-      {
-        "n": 2,
-        "xg_home": 0.84,
-        "xg_away": 1.14,
-        "p_home_wins_period": 0.2688,
-        "p_away_wins_period": 0.4236,
-        "p_draw": 0.3076
-      },
-      {
-        "n": 3,
-        "xg_home": 0.78,
-        "xg_away": 0.93,
-        "p_home_wins_period": 0.2897,
-        "p_away_wins_period": 0.3656,
-        "p_draw": 0.3447
-      }
-    ],
-    "factors": [
-      {
-        "key": "base",
-        "label": "Joukkuevahvuus",
-        "home": 2.362096305369073,
-        "away": 3.0748578953431527,
-        "unit": "goals"
-      },
-      {
-        "key": "home_ice",
-        "label": "Kotietu",
-        "home": 1.0550908051072387,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "rest",
-        "label": "Lepo / back-to-back",
-        "home": 1.0,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "goalie",
-        "label": "Maalivahti",
-        "home": 0.9941712522069017,
-        "away": 1.001865763774449,
-        "unit": "mult"
-      }
-    ],
-    "goalies": {
-      "home": {
-        "id": 8481519,
-        "name": "S. Knight",
-        "status": "projected",
-        "gsax_per60": -0.11,
-        "p_start": 0.7,
-        "mult": 1.001865763774449
-      },
-      "away": {
-        "id": 8476932,
-        "name": "A. Stolarz",
-        "status": "projected",
-        "gsax_per60": 0.05,
-        "p_start": 0.7,
-        "mult": 0.9941712522069017
-      }
-    },
-    "lineup_changes": null,
-    "players": null,
-    "form": null,
-    "season_compare": null,
-    "h2h": null,
-    "insights": null,
-    "odds": null
-  },
-  {
-    "id": 2026020339,
-    "start_utc": "2026-11-18T01:00:00Z",
-    "nhl_date": "2026-11-17",
-    "state": "upcoming",
-    "home": {
-      "id": 19,
-      "abbr": "STL",
-      "name": "St. Louis Blues",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/STL_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/STL_dark.svg"
-    },
-    "away": {
-      "id": 24,
-      "abbr": "ANA",
-      "name": "Anaheim Ducks",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/ANA_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/ANA_dark.svg"
-    },
-    "prob": {
-      "home_win": 0.5852,
-      "away_win": 0.4148,
-      "reg_home": 0.484,
-      "reg_draw": 0.1964,
-      "reg_away": 0.3196,
-      "confidence": "normal"
-    },
-    "xg": {
-      "home": 3.39,
-      "away": 2.85
-    },
-    "score": {
-      "most_likely": {
-        "home": 5,
-        "away": 2,
-        "p": 0.0609
-      },
-      "top": [
-        {
-          "home": 5,
-          "away": 2,
-          "p": 0.0609
-        },
-        {
-          "home": 4,
-          "away": 1,
-          "p": 0.0566
-        },
-        {
-          "home": 3,
-          "away": 2,
-          "p": 0.0559
-        },
-        {
-          "home": 4,
-          "away": 3,
-          "p": 0.0507
-        },
-        {
-          "home": 3,
-          "away": 4,
-          "p": 0.0497
-        }
-      ],
-      "matrix": [
-        [
-          0.0,
-          0.0051,
-          0.0033,
-          0.0114,
-          0.0058,
-          0.0024,
-          0.0013,
-          0.0013
-        ],
-        [
-          0.006,
-          0.0,
-          0.0233,
-          0.02,
-          0.0327,
-          0.0114,
-          0.0047,
-          0.0031
-        ],
-        [
-          0.006,
-          0.0274,
-          0.0,
-          0.0485,
-          0.0292,
-          0.0351,
-          0.0084,
-          0.0056
-        ],
-        [
-          0.021,
-          0.0241,
-          0.0559,
-          0.0,
-          0.0497,
-          0.0212,
-          0.0224,
-          0.0043
-        ],
-        [
-          0.0092,
-          0.0566,
-          0.0352,
-          0.0507,
-          0.0,
-          0.028,
-          0.0076,
-          0.01
-        ],
-        [
-          0.0067,
-          0.0185,
-          0.0609,
-          0.0264,
-          0.0267,
-          0.0,
-          0.0091,
-          0.0054
-        ],
-        [
-          0.0037,
-          0.0102,
-          0.016,
-          0.0342,
-          0.0121,
-          0.0107,
-          0.0,
-          0.0032
-        ],
-        [
-          0.0034,
-          0.0088,
-          0.0127,
-          0.0117,
-          0.0158,
-          0.0081,
-          0.006,
-          0.0016
-        ]
-      ],
-      "total": {
-        "mean": 6.69,
-        "over": {
-          "5.5": 0.6344,
-          "6.5": 0.5351
-        }
-      },
-      "spread": {
-        "home_-1.5": 0.4039,
-        "away_+1.5": 0.5961,
-        "away_-1.5": 0.2484,
-        "home_+1.5": 0.7516
-      }
-    },
-    "periods": [
-      {
-        "n": 1,
-        "xg_home": 1.04,
-        "xg_away": 0.88,
-        "p_home_wins_period": 0.3788,
-        "p_away_wins_period": 0.3068,
-        "p_draw": 0.3144
-      },
-      {
-        "n": 2,
-        "xg_home": 1.12,
-        "xg_away": 1.06,
-        "p_home_wins_period": 0.3645,
-        "p_away_wins_period": 0.3388,
-        "p_draw": 0.2967
-      },
-      {
-        "n": 3,
-        "xg_home": 1.23,
-        "xg_away": 0.91,
-        "p_home_wins_period": 0.4348,
-        "p_away_wins_period": 0.2735,
-        "p_draw": 0.2917
-      }
-    ],
-    "factors": [
-      {
-        "key": "base",
-        "label": "Joukkuevahvuus",
-        "home": 3.2304390982396063,
-        "away": 2.841823348634181,
-        "unit": "goals"
-      },
-      {
-        "key": "home_ice",
-        "label": "Kotietu",
-        "home": 1.0550908051072387,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "rest",
-        "label": "Lepo / back-to-back",
-        "home": 1.0,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "goalie",
-        "label": "Maalivahti",
-        "home": 0.9936340486661711,
-        "away": 1.0042871710398178,
-        "unit": "mult"
-      }
-    ],
-    "goalies": {
-      "home": {
-        "id": 8480981,
-        "name": "J. Hofer",
-        "status": "projected",
-        "gsax_per60": 0.56,
-        "p_start": 0.7,
-        "mult": 1.0042871710398178
-      },
-      "away": {
-        "id": 8476316,
-        "name": "L. Brossoit",
-        "status": "projected",
-        "gsax_per60": -0.2,
-        "p_start": 0.7,
-        "mult": 0.9936340486661711
-      }
-    },
-    "lineup_changes": null,
-    "players": null,
-    "form": null,
-    "season_compare": null,
-    "h2h": null,
-    "insights": null,
-    "odds": null
-  },
-  {
-    "id": 2026020340,
-    "start_utc": "2026-11-18T01:00:00Z",
-    "nhl_date": "2026-11-17",
-    "state": "upcoming",
-    "home": {
-      "id": 30,
-      "abbr": "MIN",
-      "name": "Minnesota Wild",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/MIN_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/MIN_dark.svg"
-    },
-    "away": {
-      "id": 18,
-      "abbr": "NSH",
-      "name": "Nashville Predators",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/NSH_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/NSH_dark.svg"
-    },
-    "prob": {
-      "home_win": 0.5899,
-      "away_win": 0.4101,
-      "reg_home": 0.4848,
-      "reg_draw": 0.2051,
-      "reg_away": 0.3101,
-      "confidence": "normal"
-    },
-    "xg": {
-      "home": 2.99,
-      "away": 2.46
-    },
-    "score": {
-      "most_likely": {
-        "home": 4,
-        "away": 1,
-        "p": 0.0672
-      },
-      "top": [
-        {
-          "home": 4,
-          "away": 1,
-          "p": 0.0672
-        },
-        {
-          "home": 3,
-          "away": 2,
-          "p": 0.0654
-        },
-        {
-          "home": 2,
-          "away": 3,
-          "p": 0.0574
-        },
-        {
-          "home": 5,
-          "away": 2,
-          "p": 0.0568
-        },
-        {
-          "home": 4,
-          "away": 3,
-          "p": 0.049
-        }
-      ],
-      "matrix": [
-        [
-          0.0,
-          0.0079,
-          0.0094,
-          0.0161,
-          0.0067,
-          0.0032,
-          0.0011,
-          0.0007
-        ],
-        [
-          0.0109,
-          0.0,
-          0.0386,
-          0.026,
-          0.0421,
-          0.0093,
-          0.0035,
-          0.0018
-        ],
-        [
-          0.0122,
-          0.041,
-          0.0,
-          0.0574,
-          0.0282,
-          0.034,
-          0.0058,
-          0.0021
-        ],
-        [
-          0.0322,
-          0.0334,
-          0.0654,
-          0.0,
-          0.0444,
-          0.0159,
-          0.0167,
-          0.0023
-        ],
-        [
-          0.0163,
-          0.0672,
-          0.0378,
-          0.049,
-          0.0,
-          0.0167,
-          0.0064,
-          0.0047
-        ],
-        [
-          0.0072,
-          0.0187,
-          0.0568,
-          0.0205,
-          0.0172,
-          0.0,
-          0.0047,
-          0.0025
-        ],
-        [
-          0.0044,
-          0.0093,
-          0.0137,
-          0.0256,
-          0.0089,
-          0.0058,
-          0.0,
-          0.0018
-        ],
-        [
-          0.0024,
-          0.0069,
-          0.0077,
-          0.0069,
-          0.0079,
-          0.0026,
-          0.0018,
-          0.0003
-        ]
-      ],
-      "total": {
-        "mean": 5.91,
-        "over": {
-          "5.5": 0.5069,
-          "6.5": 0.4074
-        }
-      },
-      "spread": {
-        "home_-1.5": 0.3991,
-        "away_+1.5": 0.6009,
-        "away_-1.5": 0.2386,
-        "home_+1.5": 0.7614
-      }
-    },
-    "periods": [
-      {
-        "n": 1,
-        "xg_home": 1.04,
-        "xg_away": 0.81,
-        "p_home_wins_period": 0.3985,
-        "p_away_wins_period": 0.2809,
-        "p_draw": 0.3205
-      },
-      {
-        "n": 2,
-        "xg_home": 1.11,
-        "xg_away": 0.82,
-        "p_home_wins_period": 0.4266,
-        "p_away_wins_period": 0.2664,
-        "p_draw": 0.307
-      },
-      {
-        "n": 3,
-        "xg_home": 0.85,
-        "xg_away": 0.83,
-        "p_home_wins_period": 0.3287,
-        "p_away_wins_period": 0.3207,
-        "p_draw": 0.3506
-      }
-    ],
-    "factors": [
-      {
-        "key": "base",
-        "label": "Joukkuevahvuus",
-        "home": 2.836203452614295,
-        "away": 2.427123905388531,
-        "unit": "goals"
-      },
-      {
-        "key": "home_ice",
-        "label": "Kotietu",
-        "home": 1.0550908051072387,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "rest",
-        "label": "Lepo / back-to-back",
-        "home": 1.0,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "goalie",
-        "label": "Maalivahti",
-        "home": 0.9994899987297727,
-        "away": 1.0126479002972375,
-        "unit": "mult"
-      }
-    ],
-    "goalies": {
-      "home": {
-        "id": 8482661,
-        "name": "J. Wallstedt",
-        "status": "projected",
-        "gsax_per60": 0.94,
-        "p_start": 0.7,
-        "mult": 1.0126479002972375
-      },
-      "away": {
-        "id": 8477424,
-        "name": "J. Saros",
-        "status": "projected",
-        "gsax_per60": 0.53,
-        "p_start": 0.7,
-        "mult": 0.9994899987297727
-      }
-    },
-    "lineup_changes": null,
-    "players": null,
-    "form": null,
-    "season_compare": null,
-    "h2h": null,
-    "insights": null,
-    "odds": null
-  },
-  {
-    "id": 2026020342,
-    "start_utc": "2026-11-18T03:00:00Z",
-    "nhl_date": "2026-11-17",
-    "state": "upcoming",
-    "home": {
-      "id": 54,
-      "abbr": "VGK",
-      "name": "Vegas Golden Knights",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/VGK_dark.svg"
-    },
-    "away": {
-      "id": 25,
-      "abbr": "DAL",
-      "name": "Dallas Stars",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/DAL_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/DAL_dark.svg"
-    },
-    "prob": {
-      "home_win": 0.5362,
-      "away_win": 0.4638,
-      "reg_home": 0.4272,
-      "reg_draw": 0.213,
-      "reg_away": 0.3598,
-      "confidence": "normal"
-    },
-    "xg": {
-      "home": 2.71,
-      "away": 2.48
-    },
-    "score": {
-      "most_likely": {
-        "home": 2,
-        "away": 3,
-        "p": 0.0661
-      },
-      "top": [
-        {
-          "home": 2,
-          "away": 3,
-          "p": 0.0661
-        },
-        {
-          "home": 3,
-          "away": 2,
-          "p": 0.0648
-        },
-        {
-          "home": 4,
-          "away": 1,
-          "p": 0.0613
-        },
-        {
-          "home": 1,
-          "away": 4,
-          "p": 0.0482
-        },
-        {
-          "home": 2,
-          "away": 1,
-          "p": 0.0472
-        }
-      ],
-      "matrix": [
-        [
-          0.0,
-          0.0132,
-          0.0103,
-          0.0279,
-          0.0083,
-          0.0031,
-          0.0017,
-          0.0012
-        ],
-        [
-          0.0106,
-          0.0,
-          0.0453,
-          0.0292,
-          0.0482,
-          0.0125,
-          0.0043,
-          0.0024
-        ],
-        [
-          0.0111,
-          0.0472,
-          0.0,
-          0.0661,
-          0.0344,
-          0.0368,
-          0.0058,
-          0.0031
-        ],
-        [
-          0.0328,
-          0.0352,
-          0.0648,
-          0.0,
-          0.0389,
-          0.0177,
-          0.0157,
-          0.0031
-        ],
-        [
-          0.0106,
-          0.0613,
-          0.0366,
-          0.0449,
-          0.0,
-          0.017,
-          0.0055,
-          0.0047
-        ],
-        [
-          0.0066,
-          0.0165,
-          0.0448,
-          0.0193,
-          0.0175,
-          0.0,
-          0.0039,
-          0.0017
-        ],
-        [
-          0.0028,
-          0.0084,
-          0.0099,
-          0.0189,
-          0.0057,
-          0.0045,
-          0.0,
-          0.0013
-        ],
-        [
-          0.0016,
-          0.0038,
-          0.0052,
-          0.0058,
-          0.0064,
-          0.0022,
-          0.0012,
-          0.0006
-        ]
-      ],
-      "total": {
-        "mean": 5.69,
-        "over": {
-          "5.5": 0.4684,
-          "6.5": 0.3639
-        }
-      },
-      "spread": {
-        "home_-1.5": 0.3459,
-        "away_+1.5": 0.6541,
-        "away_-1.5": 0.2782,
-        "home_+1.5": 0.7218
-      }
-    },
-    "periods": [
-      {
-        "n": 1,
-        "xg_home": 0.85,
-        "xg_away": 0.84,
-        "p_home_wins_period": 0.3267,
-        "p_away_wins_period": 0.3294,
-        "p_draw": 0.3439
-      },
-      {
-        "n": 2,
-        "xg_home": 1.07,
-        "xg_away": 0.89,
-        "p_home_wins_period": 0.3925,
-        "p_away_wins_period": 0.2928,
-        "p_draw": 0.3147
-      },
-      {
-        "n": 3,
-        "xg_home": 0.79,
-        "xg_away": 0.75,
-        "p_home_wins_period": 0.327,
-        "p_away_wins_period": 0.3054,
-        "p_draw": 0.3676
-      }
-    ],
-    "factors": [
-      {
-        "key": "base",
-        "label": "Joukkuevahvuus",
-        "home": 2.569548993414146,
-        "away": 2.4693882736650843,
-        "unit": "goals"
-      },
-      {
-        "key": "home_ice",
-        "label": "Kotietu",
-        "home": 1.0550908051072387,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "rest",
-        "label": "Lepo / back-to-back",
-        "home": 1.0,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "goalie",
-        "label": "Maalivahti",
-        "home": 1.0005132389435432,
-        "away": 1.0029140825266503,
-        "unit": "mult"
-      }
-    ],
-    "goalies": {
-      "home": {
-        "id": 8479394,
-        "name": "C. Hart",
-        "status": "projected",
-        "gsax_per60": -0.15,
-        "p_start": 0.7,
-        "mult": 1.0029140825266503
-      },
-      "away": {
-        "id": 8479979,
-        "name": "J. Oettinger",
-        "status": "projected",
-        "gsax_per60": 0.27,
-        "p_start": 0.7,
-        "mult": 1.0005132389435432
-      }
-    },
-    "lineup_changes": null,
-    "players": null,
-    "form": null,
-    "season_compare": null,
-    "h2h": null,
-    "insights": null,
-    "odds": null
-  },
-  {
-    "id": 2026020343,
-    "start_utc": "2026-11-18T03:00:00Z",
-    "nhl_date": "2026-11-17",
-    "state": "upcoming",
-    "home": {
-      "id": 28,
-      "abbr": "SJS",
-      "name": "San Jose Sharks",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/SJS_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/SJS_dark.svg"
-    },
-    "away": {
-      "id": 20,
-      "abbr": "CGY",
-      "name": "Calgary Flames",
-      "logo": "https://assets.nhle.com/logos/nhl/svg/CGY_light.svg",
-      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/CGY_dark.svg"
-    },
-    "prob": {
-      "home_win": 0.5343,
-      "away_win": 0.4657,
-      "reg_home": 0.4283,
-      "reg_draw": 0.209,
-      "reg_away": 0.3627,
-      "confidence": "normal"
-    },
-    "xg": {
-      "home": 2.85,
-      "away": 2.68
-    },
-    "score": {
-      "most_likely": {
-        "home": 3,
-        "away": 2,
-        "p": 0.0616
-      },
-      "top": [
-        {
-          "home": 3,
-          "away": 2,
-          "p": 0.0616
-        },
-        {
-          "home": 2,
-          "away": 3,
-          "p": 0.0583
-        },
-        {
-          "home": 4,
-          "away": 1,
-          "p": 0.056
-        },
-        {
-          "home": 5,
-          "away": 2,
-          "p": 0.0509
-        },
-        {
-          "home": 3,
-          "away": 4,
-          "p": 0.048
-        }
-      ],
-      "matrix": [
-        [
-          0.0,
-          0.0096,
-          0.009,
-          0.0184,
-          0.008,
-          0.0036,
-          0.0012,
-          0.001
-        ],
-        [
-          0.0077,
-          0.0,
-          0.0396,
-          0.0278,
-          0.0456,
-          0.0139,
-          0.0048,
-          0.0032
-        ],
-        [
-          0.0084,
-          0.0411,
-          0.0,
-          0.0583,
-          0.0328,
-          0.0398,
-          0.0074,
-          0.005
-        ],
-        [
-          0.0245,
-          0.0321,
-          0.0616,
-          0.0,
-          0.048,
-          0.0202,
-          0.0214,
-          0.0032
-        ],
-        [
-          0.0086,
-          0.056,
-          0.0367,
-          0.0445,
-          0.0,
-          0.0195,
-          0.0075,
-          0.0068
-        ],
-        [
-          0.0076,
-          0.0167,
-          0.0509,
-          0.0218,
-          0.0227,
-          0.0,
-          0.0052,
-          0.0037
-        ],
-        [
-          0.0038,
-          0.0084,
-          0.0102,
-          0.0227,
-          0.01,
-          0.0068,
-          0.0,
-          0.0012
-        ],
-        [
-          0.0009,
-          0.0055,
-          0.005,
-          0.006,
-          0.0081,
-          0.0039,
-          0.0017,
-          0.0005
-        ]
-      ],
-      "total": {
-        "mean": 6.05,
-        "over": {
-          "5.5": 0.5326,
-          "6.5": 0.4275
-        }
-      },
-      "spread": {
-        "home_-1.5": 0.3483,
-        "away_+1.5": 0.6517,
-        "away_-1.5": 0.2848,
-        "home_+1.5": 0.7152
-      }
-    },
-    "periods": [
-      {
-        "n": 1,
-        "xg_home": 0.82,
-        "xg_away": 0.9,
-        "p_home_wins_period": 0.3159,
-        "p_away_wins_period": 0.3433,
-        "p_draw": 0.3408
-      },
-      {
-        "n": 2,
-        "xg_home": 1.02,
-        "xg_away": 0.88,
-        "p_home_wins_period": 0.3856,
-        "p_away_wins_period": 0.2961,
-        "p_draw": 0.3183
-      },
-      {
-        "n": 3,
-        "xg_home": 1.0,
-        "xg_away": 0.9,
-        "p_home_wins_period": 0.3689,
-        "p_away_wins_period": 0.3121,
-        "p_draw": 0.319
-      }
-    ],
-    "factors": [
-      {
-        "key": "base",
-        "label": "Joukkuevahvuus",
-        "home": 2.6864846360398578,
-        "away": 2.672088544027966,
-        "unit": "goals"
-      },
-      {
-        "key": "home_ice",
-        "label": "Kotietu",
-        "home": 1.0550908051072387,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "rest",
-        "label": "Lepo / back-to-back",
-        "home": 1.0,
-        "away": 1.0,
-        "unit": "mult"
-      },
-      {
-        "key": "goalie",
-        "label": "Maalivahti",
-        "home": 1.0045541362903219,
-        "away": 1.002140926463841,
-        "unit": "mult"
-      }
-    ],
-    "goalies": {
-      "home": {
-        "id": 8482137,
-        "name": "Y. Askarov",
-        "status": "projected",
-        "gsax_per60": 0.11,
-        "p_start": 0.7,
-        "mult": 1.002140926463841
-      },
-      "away": {
-        "id": 8481692,
-        "name": "D. Wolf",
-        "status": "projected",
-        "gsax_per60": -0.33,
-        "p_start": 0.7,
-        "mult": 1.0045541362903219
-      }
-    },
-    "lineup_changes": null,
-    "players": null,
-    "form": null,
-    "season_compare": null,
-    "h2h": null,
-    "insights": null,
-    "odds": null
-  },
-  {
     "id": 2026020344,
     "start_utc": "2026-11-19T00:30:00Z",
     "nhl_date": "2026-11-18",
@@ -1471,199 +19,199 @@
       "logo_dark": "https://assets.nhle.com/logos/nhl/svg/BOS_dark.svg"
     },
     "prob": {
-      "home_win": 0.4645,
-      "away_win": 0.5355,
-      "reg_home": 0.3615,
-      "reg_draw": 0.2087,
-      "reg_away": 0.4298,
+      "home_win": 0.519,
+      "away_win": 0.481,
+      "reg_home": 0.3893,
+      "reg_draw": 0.2498,
+      "reg_away": 0.3609,
       "confidence": "normal"
     },
     "xg": {
-      "home": 2.73,
-      "away": 2.96
+      "home": 2.8,
+      "away": 2.66
     },
     "score": {
       "most_likely": {
         "home": 2,
         "away": 3,
-        "p": 0.0622
+        "p": 0.0731
       },
       "top": [
         {
           "home": 2,
           "away": 3,
-          "p": 0.0622
+          "p": 0.0731
         },
         {
           "home": 3,
           "away": 2,
-          "p": 0.0603
+          "p": 0.065
         },
         {
-          "home": 2,
-          "away": 5,
-          "p": 0.054
+          "home": 4,
+          "away": 3,
+          "p": 0.053
         },
         {
-          "home": 1,
-          "away": 4,
-          "p": 0.0527
+          "home": 4,
+          "away": 1,
+          "p": 0.052
         },
         {
-          "home": 3,
-          "away": 4,
-          "p": 0.0526
+          "home": 5,
+          "away": 2,
+          "p": 0.0475
         }
       ],
       "matrix": [
         [
           0.0,
-          0.0071,
-          0.0076,
-          0.0235,
-          0.0105,
+          0.0078,
+          0.0089,
+          0.0226,
+          0.0084,
+          0.0051,
+          0.0016,
+          0.0009
+        ],
+        [
+          0.0101,
+          0.0,
+          0.0414,
+          0.027,
+          0.0466,
+          0.0127,
           0.0061,
-          0.0029,
-          0.0019
+          0.0024
         ],
         [
-          0.0073,
+          0.0093,
+          0.0427,
           0.0,
-          0.038,
-          0.0259,
-          0.0527,
-          0.016,
-          0.0079,
-          0.0054
+          0.0731,
+          0.0312,
+          0.044,
+          0.0084,
+          0.0041
         ],
         [
-          0.0077,
-          0.0356,
+          0.0233,
+          0.029,
+          0.065,
           0.0,
-          0.0622,
-          0.0384,
-          0.054,
-          0.0098,
-          0.0076
+          0.0469,
+          0.0183,
+          0.0174,
+          0.0043
         ],
         [
-          0.0189,
-          0.0291,
-          0.0603,
+          0.0106,
+          0.052,
+          0.0355,
+          0.053,
           0.0,
-          0.0526,
-          0.0205,
-          0.025,
-          0.0067
+          0.0176,
+          0.0065,
+          0.0062
         ],
         [
-          0.0077,
-          0.0464,
-          0.0331,
-          0.0451,
+          0.0047,
+          0.0146,
+          0.0475,
+          0.0204,
+          0.0253,
           0.0,
-          0.0211,
-          0.008,
-          0.0102
+          0.0063,
+          0.0032
         ],
         [
-          0.0032,
-          0.0111,
-          0.0387,
-          0.021,
-          0.0211,
-          0.0,
-          0.006,
-          0.0054
-        ],
-        [
-          0.0015,
-          0.0054,
-          0.0066,
-          0.0217,
-          0.0075,
-          0.0088,
+          0.0024,
+          0.0074,
+          0.0092,
+          0.0194,
+          0.0063,
+          0.0052,
           0.0,
           0.002
         ],
         [
-          0.0006,
-          0.0024,
-          0.0044,
-          0.0045,
-          0.0074,
-          0.0047,
-          0.0023,
+          0.0014,
+          0.0036,
+          0.0043,
+          0.0039,
+          0.0073,
+          0.0039,
+          0.0014,
           0.0005
         ]
       ],
       "total": {
-        "mean": 6.17,
+        "mean": 5.94,
         "over": {
-          "5.5": 0.5499,
-          "6.5": 0.447
+          "5.5": 0.5125,
+          "6.5": 0.4145
         }
       },
       "spread": {
-        "home_-1.5": 0.2845,
-        "away_+1.5": 0.7155,
-        "away_-1.5": 0.3469,
-        "home_+1.5": 0.6531
+        "home_-1.5": 0.3162,
+        "away_+1.5": 0.6838,
+        "away_-1.5": 0.2861,
+        "home_+1.5": 0.7139
       }
     },
     "periods": [
       {
         "n": 1,
-        "xg_home": 0.86,
-        "xg_away": 0.98,
-        "p_home_wins_period": 0.3049,
-        "p_away_wins_period": 0.3687,
-        "p_draw": 0.3264
+        "xg_home": 0.88,
+        "xg_away": 0.88,
+        "p_home_wins_period": 0.3246,
+        "p_away_wins_period": 0.3354,
+        "p_draw": 0.34
       },
       {
         "n": 2,
-        "xg_home": 1.02,
-        "xg_away": 1.01,
-        "p_home_wins_period": 0.3448,
-        "p_away_wins_period": 0.3412,
-        "p_draw": 0.314
+        "xg_home": 1.05,
+        "xg_away": 0.91,
+        "p_home_wins_period": 0.3721,
+        "p_away_wins_period": 0.3082,
+        "p_draw": 0.3197
       },
       {
         "n": 3,
-        "xg_home": 0.85,
-        "xg_away": 0.97,
-        "p_home_wins_period": 0.3011,
-        "p_away_wins_period": 0.3673,
-        "p_draw": 0.3316
+        "xg_home": 0.86,
+        "xg_away": 0.87,
+        "p_home_wins_period": 0.3219,
+        "p_away_wins_period": 0.3322,
+        "p_draw": 0.3459
       }
     ],
     "factors": [
       {
         "key": "base",
         "label": "Joukkuevahvuus",
-        "home": 2.5905453940659835,
-        "away": 2.934357613091844,
+        "home": 2.555170369861334,
+        "away": 2.847935478732252,
         "unit": "goals"
       },
       {
         "key": "home_ice",
         "label": "Kotietu",
-        "home": 1.0550908051072387,
+        "home": 1.0589401828251532,
         "away": 1.0,
         "unit": "mult"
       },
       {
         "key": "rest",
         "label": "Lepo / back-to-back",
-        "home": 1.0,
-        "away": 1.0,
+        "home": 1.0329440651113047,
+        "away": 0.923888536716672,
         "unit": "mult"
       },
       {
         "key": "goalie",
         "label": "Maalivahti",
-        "home": 0.9999828443529741,
-        "away": 1.0095734148222821,
+        "home": 1.0000525262547768,
+        "away": 1.0093522724731896,
         "unit": "mult"
       }
     ],
@@ -1674,7 +222,7 @@
         "status": "projected",
         "gsax_per60": -0.6,
         "p_start": 0.7,
-        "mult": 1.0095734148222821
+        "mult": 1.0093522724731896
       },
       "away": {
         "id": 8480280,
@@ -1682,7 +230,7 @@
         "status": "projected",
         "gsax_per60": 0.34,
         "p_start": 0.7,
-        "mult": 0.9999828443529741
+        "mult": 1.0000525262547768
       }
     },
     "lineup_changes": null,
@@ -1713,184 +261,184 @@
       "logo_dark": "https://assets.nhle.com/logos/nhl/svg/MTL_dark.svg"
     },
     "prob": {
-      "home_win": 0.5857,
-      "away_win": 0.4143,
-      "reg_home": 0.4866,
-      "reg_draw": 0.2042,
-      "reg_away": 0.3092,
+      "home_win": 0.5895,
+      "away_win": 0.4105,
+      "reg_home": 0.4619,
+      "reg_draw": 0.2431,
+      "reg_away": 0.295,
       "confidence": "normal"
     },
     "xg": {
-      "home": 3.17,
-      "away": 2.61
+      "home": 3.18,
+      "away": 2.59
     },
     "score": {
       "most_likely": {
         "home": 3,
         "away": 2,
-        "p": 0.0612
+        "p": 0.0697
       },
       "top": [
         {
           "home": 3,
           "away": 2,
-          "p": 0.0612
-        },
-        {
-          "home": 4,
-          "away": 1,
-          "p": 0.0604
-        },
-        {
-          "home": 5,
-          "away": 2,
-          "p": 0.0581
+          "p": 0.0697
         },
         {
           "home": 2,
           "away": 3,
-          "p": 0.0578
+          "p": 0.0586
         },
         {
-          "home": 3,
-          "away": 4,
-          "p": 0.0478
+          "home": 4,
+          "away": 3,
+          "p": 0.0571
+        },
+        {
+          "home": 4,
+          "away": 1,
+          "p": 0.0568
+        },
+        {
+          "home": 5,
+          "away": 2,
+          "p": 0.053
         }
       ],
       "matrix": [
         [
           0.0,
-          0.0067,
+          0.0057,
           0.007,
-          0.0152,
-          0.0055,
-          0.0033,
-          0.0019,
-          0.001
+          0.0151,
+          0.0054,
+          0.0027,
+          0.0015,
+          0.0004
         ],
         [
           0.0073,
           0.0,
-          0.0316,
-          0.0211,
-          0.0395,
-          0.0072,
-          0.0042,
-          0.0022
+          0.0344,
+          0.0212,
+          0.0364,
+          0.0067,
+          0.0041,
+          0.0011
         ],
         [
-          0.0087,
-          0.0362,
+          0.0073,
+          0.0389,
           0.0,
-          0.0578,
-          0.028,
-          0.0372,
-          0.0072,
+          0.0586,
+          0.0287,
+          0.0347,
+          0.0064,
+          0.0027
+        ],
+        [
+          0.0269,
+          0.0292,
+          0.0697,
+          0.0,
+          0.0503,
+          0.017,
+          0.0165,
           0.0033
         ],
         [
-          0.0276,
-          0.0312,
-          0.0612,
-          0.0,
-          0.0478,
-          0.0192,
-          0.0175,
-          0.0032
-        ],
-        [
-          0.0111,
-          0.0604,
+          0.0118,
+          0.0568,
           0.0364,
-          0.0477,
+          0.0571,
           0.0,
-          0.0208,
-          0.0065,
+          0.0234,
+          0.0071,
           0.0067
         ],
         [
-          0.0077,
-          0.0178,
-          0.0581,
-          0.0245,
-          0.0231,
+          0.0073,
+          0.0181,
+          0.053,
+          0.0233,
+          0.0256,
           0.0,
-          0.0085,
-          0.003
+          0.0067,
+          0.0042
         ],
         [
-          0.0039,
-          0.0107,
-          0.0153,
-          0.0278,
-          0.0108,
-          0.0071,
+          0.0037,
+          0.011,
+          0.0123,
+          0.0258,
+          0.0092,
+          0.0099,
           0.0,
-          0.001
+          0.0021
         ],
         [
           0.0024,
-          0.0088,
-          0.012,
-          0.0086,
-          0.0112,
-          0.0046,
-          0.0029,
-          0.001
+          0.008,
+          0.0114,
+          0.0095,
+          0.0103,
+          0.0051,
+          0.0019,
+          0.0009
         ]
       ],
       "total": {
         "mean": 6.24,
         "over": {
-          "5.5": 0.561,
-          "6.5": 0.4658
+          "5.5": 0.5584,
+          "6.5": 0.4632
         }
       },
       "spread": {
-        "home_-1.5": 0.401,
-        "away_+1.5": 0.599,
-        "away_-1.5": 0.24,
-        "home_+1.5": 0.76
+        "home_-1.5": 0.3795,
+        "away_+1.5": 0.6205,
+        "away_-1.5": 0.2295,
+        "home_+1.5": 0.7705
       }
     },
     "periods": [
       {
         "n": 1,
-        "xg_home": 0.9,
-        "xg_away": 0.83,
-        "p_home_wins_period": 0.339,
-        "p_away_wins_period": 0.311,
-        "p_draw": 0.3499
+        "xg_home": 0.91,
+        "xg_away": 0.82,
+        "p_home_wins_period": 0.3407,
+        "p_away_wins_period": 0.3124,
+        "p_draw": 0.3468
       },
       {
         "n": 2,
         "xg_home": 1.2,
         "xg_away": 0.96,
-        "p_home_wins_period": 0.4075,
-        "p_away_wins_period": 0.2918,
-        "p_draw": 0.3008
+        "p_home_wins_period": 0.4069,
+        "p_away_wins_period": 0.2965,
+        "p_draw": 0.2966
       },
       {
         "n": 3,
         "xg_home": 1.07,
-        "xg_away": 0.82,
-        "p_home_wins_period": 0.4052,
-        "p_away_wins_period": 0.2748,
-        "p_draw": 0.32
+        "xg_away": 0.81,
+        "p_home_wins_period": 0.4036,
+        "p_away_wins_period": 0.2742,
+        "p_draw": 0.3222
       }
     ],
     "factors": [
       {
         "key": "base",
         "label": "Joukkuevahvuus",
-        "home": 3.0468583691133575,
-        "away": 2.6290879690523674,
+        "home": 3.0468705398831943,
+        "away": 2.6175737383862816,
         "unit": "goals"
       },
       {
         "key": "home_ice",
         "label": "Kotietu",
-        "home": 1.0550908051072387,
+        "home": 1.0589401828251532,
         "away": 1.0,
         "unit": "mult"
       },
@@ -1904,8 +452,8 @@
       {
         "key": "goalie",
         "label": "Maalivahti",
-        "home": 0.9865193932532089,
-        "away": 0.9919100259979872,
+        "home": 0.9866172513784265,
+        "away": 0.9906516950170634,
         "unit": "mult"
       }
     ],
@@ -1916,7 +464,7 @@
         "status": "projected",
         "gsax_per60": 0.19,
         "p_start": 0.7,
-        "mult": 0.9919100259979872
+        "mult": 0.9906516950170634
       },
       "away": {
         "id": 8484170,
@@ -1924,7 +472,7 @@
         "status": "projected",
         "gsax_per60": 0.89,
         "p_start": 0.7,
-        "mult": 0.9865193932532089
+        "mult": 0.9866172513784265
       }
     },
     "lineup_changes": null,
@@ -1955,144 +503,144 @@
       "logo_dark": "https://assets.nhle.com/logos/nhl/svg/COL_dark.svg"
     },
     "prob": {
-      "home_win": 0.4779,
-      "away_win": 0.5221,
-      "reg_home": 0.3843,
-      "reg_draw": 0.1914,
-      "reg_away": 0.4244,
+      "home_win": 0.4845,
+      "away_win": 0.5155,
+      "reg_home": 0.367,
+      "reg_draw": 0.2355,
+      "reg_away": 0.3975,
       "confidence": "normal"
     },
     "xg": {
       "home": 3.2,
-      "away": 3.37
+      "away": 3.35
     },
     "score": {
       "most_likely": {
         "home": 3,
         "away": 4,
-        "p": 0.0506
+        "p": 0.0551
       },
       "top": [
         {
           "home": 3,
           "away": 4,
-          "p": 0.0506
+          "p": 0.0551
         },
         {
-          "home": 2,
-          "away": 5,
-          "p": 0.0498
+          "home": 4,
+          "away": 3,
+          "p": 0.0541
         },
         {
           "home": 2,
           "away": 3,
-          "p": 0.0479
+          "p": 0.0536
         },
         {
-          "home": 5,
-          "away": 2,
-          "p": 0.0474
+          "home": 2,
+          "away": 5,
+          "p": 0.0499
         },
         {
           "home": 3,
           "away": 2,
-          "p": 0.0468
+          "p": 0.0493
         }
       ],
       "matrix": [
         [
           0.0,
-          0.0044,
-          0.0044,
-          0.0143,
-          0.0079,
-          0.0043,
-          0.0023,
-          0.0017
-        ],
-        [
-          0.0021,
-          0.0,
-          0.0239,
-          0.0176,
-          0.0417,
-          0.016,
-          0.0079,
-          0.007
-        ],
-        [
-          0.0041,
-          0.0211,
-          0.0,
-          0.0479,
-          0.0298,
-          0.0498,
-          0.0135,
-          0.0121
-        ],
-        [
-          0.0136,
-          0.0153,
-          0.0468,
-          0.0,
-          0.0506,
-          0.0246,
-          0.035,
-          0.0106
-        ],
-        [
+          0.0039,
+          0.0034,
+          0.0138,
           0.0068,
-          0.0407,
-          0.0296,
-          0.0464,
-          0.0,
-          0.0313,
-          0.0134,
-          0.0191
-        ],
-        [
           0.0044,
-          0.014,
-          0.0474,
-          0.0253,
-          0.0317,
-          0.0,
-          0.0129,
-          0.0096
+          0.0028,
+          0.0018
         ],
         [
-          0.0022,
-          0.0064,
-          0.0109,
-          0.0272,
-          0.0126,
-          0.0126,
-          0.0,
-          0.0078
-        ],
-        [
-          0.0014,
           0.004,
-          0.009,
-          0.0105,
-          0.0161,
-          0.0101,
-          0.0043,
-          0.0016
+          0.0,
+          0.0234,
+          0.0183,
+          0.0377,
+          0.0134,
+          0.0091,
+          0.0076
+        ],
+        [
+          0.0038,
+          0.0226,
+          0.0,
+          0.0536,
+          0.028,
+          0.0499,
+          0.013,
+          0.0104
+        ],
+        [
+          0.0121,
+          0.0147,
+          0.0493,
+          0.0,
+          0.0551,
+          0.025,
+          0.0322,
+          0.0112
+        ],
+        [
+          0.0065,
+          0.0405,
+          0.0264,
+          0.0541,
+          0.0,
+          0.0334,
+          0.0124,
+          0.0168
+        ],
+        [
+          0.0045,
+          0.0128,
+          0.0468,
+          0.0227,
+          0.0366,
+          0.0,
+          0.0117,
+          0.0085
+        ],
+        [
+          0.0015,
+          0.0061,
+          0.0116,
+          0.0272,
+          0.0121,
+          0.0133,
+          0.0,
+          0.0065
+        ],
+        [
+          0.0015,
+          0.0046,
+          0.0075,
+          0.0084,
+          0.0167,
+          0.0089,
+          0.0061,
+          0.0029
         ]
       ],
       "total": {
-        "mean": 7.03,
+        "mean": 7.02,
         "over": {
-          "5.5": 0.6786,
-          "6.5": 0.5847
+          "5.5": 0.6767,
+          "6.5": 0.5917
         }
       },
       "spread": {
-        "home_-1.5": 0.3138,
-        "away_+1.5": 0.6862,
-        "away_-1.5": 0.3453,
-        "home_+1.5": 0.6547
+        "home_-1.5": 0.2991,
+        "away_+1.5": 0.7009,
+        "away_-1.5": 0.3294,
+        "home_+1.5": 0.6706
       }
     },
     "periods": [
@@ -2100,39 +648,39 @@
         "n": 1,
         "xg_home": 1.07,
         "xg_away": 0.92,
-        "p_home_wins_period": 0.3904,
-        "p_away_wins_period": 0.3022,
-        "p_draw": 0.3074
+        "p_home_wins_period": 0.3919,
+        "p_away_wins_period": 0.302,
+        "p_draw": 0.3061
       },
       {
         "n": 2,
         "xg_home": 1.12,
-        "xg_away": 1.3,
-        "p_home_wins_period": 0.328,
-        "p_away_wins_period": 0.3953,
-        "p_draw": 0.2768
+        "xg_away": 1.29,
+        "p_home_wins_period": 0.3277,
+        "p_away_wins_period": 0.3889,
+        "p_draw": 0.2834
       },
       {
         "n": 3,
         "xg_home": 1.01,
-        "xg_away": 1.15,
-        "p_home_wins_period": 0.3153,
-        "p_away_wins_period": 0.3934,
-        "p_draw": 0.2913
+        "xg_away": 1.14,
+        "p_home_wins_period": 0.3142,
+        "p_away_wins_period": 0.3872,
+        "p_draw": 0.2986
       }
     ],
     "factors": [
       {
         "key": "base",
         "label": "Joukkuevahvuus",
-        "home": 3.041553920005175,
-        "away": 3.3703963319056265,
+        "home": 3.030036469553865,
+        "away": 3.349366261344837,
         "unit": "goals"
       },
       {
         "key": "home_ice",
         "label": "Kotietu",
-        "home": 1.0550908051072387,
+        "home": 1.0589401828251532,
         "away": 1.0,
         "unit": "mult"
       },
@@ -2146,8 +694,8 @@
       {
         "key": "goalie",
         "label": "Maalivahti",
-        "home": 0.9986669906252283,
-        "away": 1.0010792061233895,
+        "home": 0.9986776872042027,
+        "away": 1.0010691755234884,
         "unit": "mult"
       }
     ],
@@ -2158,7 +706,7 @@
         "status": "projected",
         "gsax_per60": -0.35,
         "p_start": 0.7,
-        "mult": 1.0010792061233895
+        "mult": 1.0010691755234884
       },
       "away": {
         "id": 8478406,
@@ -2166,7 +714,2911 @@
         "status": "projected",
         "gsax_per60": 0.3,
         "p_start": 0.7,
-        "mult": 0.9986669906252283
+        "mult": 0.9986776872042027
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020347,
+    "start_utc": "2026-11-20T00:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 10,
+      "abbr": "TOR",
+      "name": "Toronto Maple Leafs",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/TOR_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/TOR_dark.svg"
+    },
+    "away": {
+      "id": 26,
+      "abbr": "LAK",
+      "name": "Los Angeles Kings",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/LAK_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/LAK_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.4755,
+      "away_win": 0.5245,
+      "reg_home": 0.352,
+      "reg_draw": 0.2498,
+      "reg_away": 0.3982,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 2.69,
+      "away": 2.85
+    },
+    "score": {
+      "most_likely": {
+        "home": 2,
+        "away": 3,
+        "p": 0.0723
+      },
+      "top": [
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.0723
+        },
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0658
+        },
+        {
+          "home": 1,
+          "away": 4,
+          "p": 0.0528
+        },
+        {
+          "home": 3,
+          "away": 4,
+          "p": 0.0511
+        },
+        {
+          "home": 4,
+          "away": 3,
+          "p": 0.0495
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0087,
+          0.0084,
+          0.0254,
+          0.0092,
+          0.0057,
+          0.0029,
+          0.001
+        ],
+        [
+          0.0079,
+          0.0,
+          0.0442,
+          0.0294,
+          0.0528,
+          0.0141,
+          0.0055,
+          0.0046
+        ],
+        [
+          0.0094,
+          0.0396,
+          0.0,
+          0.0723,
+          0.0323,
+          0.0462,
+          0.0091,
+          0.0056
+        ],
+        [
+          0.0205,
+          0.0251,
+          0.0658,
+          0.0,
+          0.0511,
+          0.0231,
+          0.0206,
+          0.0051
+        ],
+        [
+          0.0073,
+          0.0461,
+          0.0323,
+          0.0495,
+          0.0,
+          0.0256,
+          0.0066,
+          0.0061
+        ],
+        [
+          0.0043,
+          0.0123,
+          0.0399,
+          0.0192,
+          0.0244,
+          0.0,
+          0.005,
+          0.0026
+        ],
+        [
+          0.0014,
+          0.006,
+          0.006,
+          0.0174,
+          0.0072,
+          0.0085,
+          0.0,
+          0.0009
+        ],
+        [
+          0.0011,
+          0.0038,
+          0.005,
+          0.0042,
+          0.0064,
+          0.003,
+          0.002,
+          0.0006
+        ]
+      ],
+      "total": {
+        "mean": 6.0,
+        "over": {
+          "5.5": 0.5179,
+          "6.5": 0.4225
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.2788,
+        "away_+1.5": 0.7212,
+        "away_-1.5": 0.3169,
+        "home_+1.5": 0.6831
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 0.81,
+        "xg_away": 0.96,
+        "p_home_wins_period": 0.2943,
+        "p_away_wins_period": 0.3602,
+        "p_draw": 0.3455
+      },
+      {
+        "n": 2,
+        "xg_home": 1.05,
+        "xg_away": 1.07,
+        "p_home_wins_period": 0.3449,
+        "p_away_wins_period": 0.3453,
+        "p_draw": 0.3098
+      },
+      {
+        "n": 3,
+        "xg_home": 0.83,
+        "xg_away": 0.82,
+        "p_home_wins_period": 0.3196,
+        "p_away_wins_period": 0.3259,
+        "p_draw": 0.3546
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 2.5306303615436434,
+        "away": 2.82079071931781,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 1.004669558154479,
+        "away": 1.0103895236467633,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8475683,
+        "name": "S. Bobrovsky",
+        "status": "projected",
+        "gsax_per60": -0.67,
+        "p_start": 0.7,
+        "mult": 1.0103895236467633
+      },
+      "away": {
+        "id": 8475311,
+        "name": "D. Kuemper",
+        "status": "projected",
+        "gsax_per60": -0.36,
+        "p_start": 0.7,
+        "mult": 1.004669558154479
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020348,
+    "start_utc": "2026-11-20T00:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 9,
+      "abbr": "OTT",
+      "name": "Ottawa Senators",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/OTT_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/OTT_dark.svg"
+    },
+    "away": {
+      "id": 4,
+      "abbr": "PHI",
+      "name": "Philadelphia Flyers",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/PHI_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/PHI_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.5971,
+      "away_win": 0.4029,
+      "reg_home": 0.4665,
+      "reg_draw": 0.25,
+      "reg_away": 0.2835,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 2.84,
+      "away": 2.25
+    },
+    "score": {
+      "most_likely": {
+        "home": 3,
+        "away": 2,
+        "p": 0.0785
+      },
+      "top": [
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0785
+        },
+        {
+          "home": 4,
+          "away": 1,
+          "p": 0.0683
+        },
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.067
+        },
+        {
+          "home": 2,
+          "away": 1,
+          "p": 0.0536
+        },
+        {
+          "home": 5,
+          "away": 2,
+          "p": 0.0514
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0101,
+          0.0096,
+          0.0202,
+          0.0062,
+          0.0029,
+          0.0008,
+          0.0005
+        ],
+        [
+          0.0132,
+          0.0,
+          0.048,
+          0.0251,
+          0.039,
+          0.0066,
+          0.0027,
+          0.0012
+        ],
+        [
+          0.0128,
+          0.0536,
+          0.0,
+          0.067,
+          0.0253,
+          0.0315,
+          0.0043,
+          0.0015
+        ],
+        [
+          0.0394,
+          0.0355,
+          0.0785,
+          0.0,
+          0.0446,
+          0.0151,
+          0.0105,
+          0.0013
+        ],
+        [
+          0.0148,
+          0.0683,
+          0.0348,
+          0.0475,
+          0.0,
+          0.0155,
+          0.0043,
+          0.0033
+        ],
+        [
+          0.0094,
+          0.0167,
+          0.0514,
+          0.0191,
+          0.017,
+          0.0,
+          0.0036,
+          0.0014
+        ],
+        [
+          0.003,
+          0.011,
+          0.0113,
+          0.019,
+          0.0053,
+          0.0042,
+          0.0,
+          0.0008
+        ],
+        [
+          0.0027,
+          0.0059,
+          0.0072,
+          0.0043,
+          0.0077,
+          0.0019,
+          0.0014,
+          0.0004
+        ]
+      ],
+      "total": {
+        "mean": 5.61,
+        "over": {
+          "5.5": 0.4466,
+          "6.5": 0.3594
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.3818,
+        "away_+1.5": 0.6182,
+        "away_-1.5": 0.2135,
+        "home_+1.5": 0.7865
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 0.84,
+        "xg_away": 0.64,
+        "p_home_wins_period": 0.3626,
+        "p_away_wins_period": 0.2642,
+        "p_draw": 0.3731
+      },
+      {
+        "n": 2,
+        "xg_home": 1.06,
+        "xg_away": 0.93,
+        "p_home_wins_period": 0.3783,
+        "p_away_wins_period": 0.3116,
+        "p_draw": 0.3101
+      },
+      {
+        "n": 3,
+        "xg_home": 0.93,
+        "xg_away": 0.68,
+        "p_home_wins_period": 0.3958,
+        "p_away_wins_period": 0.2525,
+        "p_draw": 0.3517
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 2.6993408624488238,
+        "away": 2.229094482980772,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 0.9935403134875564,
+        "away": 1.0105267430562987,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8481035,
+        "name": "S. Ersson",
+        "status": "projected",
+        "gsax_per60": -0.31,
+        "p_start": 0.7,
+        "mult": 1.0105267430562987
+      },
+      "away": {
+        "id": 8479361,
+        "name": "J. Woll",
+        "status": "projected",
+        "gsax_per60": 0.08,
+        "p_start": 0.7,
+        "mult": 0.9935403134875564
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020350,
+    "start_utc": "2026-11-20T00:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 5,
+      "abbr": "PIT",
+      "name": "Pittsburgh Penguins",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/PIT_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/PIT_dark.svg"
+    },
+    "away": {
+      "id": 19,
+      "abbr": "STL",
+      "name": "St. Louis Blues",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/STL_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/STL_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.4939,
+      "away_win": 0.5061,
+      "reg_home": 0.3703,
+      "reg_draw": 0.2468,
+      "reg_away": 0.3829,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 2.89,
+      "away": 2.87
+    },
+    "score": {
+      "most_likely": {
+        "home": 3,
+        "away": 2,
+        "p": 0.0654
+      },
+      "top": [
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0654
+        },
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.0629
+        },
+        {
+          "home": 4,
+          "away": 3,
+          "p": 0.0507
+        },
+        {
+          "home": 3,
+          "away": 4,
+          "p": 0.0506
+        },
+        {
+          "home": 1,
+          "away": 4,
+          "p": 0.0477
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0068,
+          0.0082,
+          0.0177,
+          0.0073,
+          0.0052,
+          0.0026,
+          0.0016
+        ],
+        [
+          0.0064,
+          0.0,
+          0.042,
+          0.027,
+          0.0477,
+          0.0142,
+          0.0061,
+          0.0051
+        ],
+        [
+          0.0073,
+          0.0394,
+          0.0,
+          0.0629,
+          0.0301,
+          0.046,
+          0.0102,
+          0.0049
+        ],
+        [
+          0.0198,
+          0.0238,
+          0.0654,
+          0.0,
+          0.0506,
+          0.0213,
+          0.023,
+          0.0063
+        ],
+        [
+          0.0083,
+          0.0455,
+          0.03,
+          0.0507,
+          0.0,
+          0.0266,
+          0.0069,
+          0.0101
+        ],
+        [
+          0.0043,
+          0.0131,
+          0.0424,
+          0.0227,
+          0.0249,
+          0.0,
+          0.0077,
+          0.004
+        ],
+        [
+          0.002,
+          0.0082,
+          0.0091,
+          0.0233,
+          0.0073,
+          0.007,
+          0.0,
+          0.0031
+        ],
+        [
+          0.0015,
+          0.0045,
+          0.0056,
+          0.0057,
+          0.0084,
+          0.0039,
+          0.0024,
+          0.0018
+        ]
+      ],
+      "total": {
+        "mean": 6.23,
+        "over": {
+          "5.5": 0.555,
+          "6.5": 0.4629
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.2972,
+        "away_+1.5": 0.7028,
+        "away_-1.5": 0.3068,
+        "home_+1.5": 0.6932
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 0.83,
+        "xg_away": 0.92,
+        "p_home_wins_period": 0.2992,
+        "p_away_wins_period": 0.3578,
+        "p_draw": 0.3431
+      },
+      {
+        "n": 2,
+        "xg_home": 1.14,
+        "xg_away": 0.96,
+        "p_home_wins_period": 0.3842,
+        "p_away_wins_period": 0.3099,
+        "p_draw": 0.3059
+      },
+      {
+        "n": 3,
+        "xg_home": 0.93,
+        "xg_away": 0.99,
+        "p_home_wins_period": 0.3196,
+        "p_away_wins_period": 0.3577,
+        "p_draw": 0.3227
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 2.732321758690553,
+        "away": 2.8633989635039443,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 1.0004819341629934,
+        "away": 1.0030308077497283,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8481668,
+        "name": "A. Silovs",
+        "status": "projected",
+        "gsax_per60": -0.33,
+        "p_start": 0.7,
+        "mult": 1.0030308077497283
+      },
+      "away": {
+        "id": 8480981,
+        "name": "J. Hofer",
+        "status": "projected",
+        "gsax_per60": 0.56,
+        "p_start": 0.7,
+        "mult": 1.0004819341629934
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020351,
+    "start_utc": "2026-11-20T00:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 15,
+      "abbr": "WSH",
+      "name": "Washington Capitals",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/WSH_secondary_dark.svg"
+    },
+    "away": {
+      "id": 7,
+      "abbr": "BUF",
+      "name": "Buffalo Sabres",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/BUF_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/BUF_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.5769,
+      "away_win": 0.4231,
+      "reg_home": 0.4627,
+      "reg_draw": 0.2272,
+      "reg_away": 0.3101,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 3.57,
+      "away": 3.03
+    },
+    "score": {
+      "most_likely": {
+        "home": 4,
+        "away": 3,
+        "p": 0.0555
+      },
+      "top": [
+        {
+          "home": 4,
+          "away": 3,
+          "p": 0.0555
+        },
+        {
+          "home": 5,
+          "away": 2,
+          "p": 0.0548
+        },
+        {
+          "home": 3,
+          "away": 4,
+          "p": 0.0533
+        },
+        {
+          "home": 4,
+          "away": 1,
+          "p": 0.0513
+        },
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0512
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.003,
+          0.0027,
+          0.0097,
+          0.0045,
+          0.0028,
+          0.0011,
+          0.0009
+        ],
+        [
+          0.0033,
+          0.0,
+          0.0214,
+          0.0135,
+          0.0303,
+          0.009,
+          0.0046,
+          0.0032
+        ],
+        [
+          0.0032,
+          0.0217,
+          0.0,
+          0.047,
+          0.0237,
+          0.0401,
+          0.0075,
+          0.0049
+        ],
+        [
+          0.0172,
+          0.0196,
+          0.0512,
+          0.0,
+          0.0533,
+          0.0218,
+          0.0235,
+          0.0068
+        ],
+        [
+          0.0081,
+          0.0513,
+          0.0307,
+          0.0555,
+          0.0,
+          0.0355,
+          0.0111,
+          0.0133
+        ],
+        [
+          0.0059,
+          0.0187,
+          0.0548,
+          0.0247,
+          0.0371,
+          0.0,
+          0.0133,
+          0.0076
+        ],
+        [
+          0.0036,
+          0.0104,
+          0.0151,
+          0.0354,
+          0.0143,
+          0.0147,
+          0.0,
+          0.0056
+        ],
+        [
+          0.0029,
+          0.009,
+          0.0147,
+          0.0158,
+          0.0211,
+          0.009,
+          0.0068,
+          0.0025
+        ]
+      ],
+      "total": {
+        "mean": 7.07,
+        "over": {
+          "5.5": 0.6835,
+          "6.5": 0.5967
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.3891,
+        "away_+1.5": 0.6109,
+        "away_-1.5": 0.2448,
+        "home_+1.5": 0.7552
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 1.23,
+        "xg_away": 1.02,
+        "p_home_wins_period": 0.406,
+        "p_away_wins_period": 0.2986,
+        "p_draw": 0.2954
+      },
+      {
+        "n": 2,
+        "xg_home": 1.28,
+        "xg_away": 1.01,
+        "p_home_wins_period": 0.4266,
+        "p_away_wins_period": 0.2948,
+        "p_draw": 0.2787
+      },
+      {
+        "n": 3,
+        "xg_home": 1.06,
+        "xg_away": 1.0,
+        "p_home_wins_period": 0.3559,
+        "p_away_wins_period": 0.3407,
+        "p_draw": 0.3034
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 3.373226275210427,
+        "away": 3.0294842103174093,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 0.9992931131283571,
+        "away": 1.0003011010345066,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8480313,
+        "name": "L. Thompson",
+        "status": "projected",
+        "gsax_per60": -0.01,
+        "p_start": 0.7,
+        "mult": 1.0003011010345066
+      },
+      "away": {
+        "id": 8481551,
+        "name": "C. Ellis",
+        "status": "projected",
+        "gsax_per60": -0.27,
+        "p_start": 0.7,
+        "mult": 0.9992931131283571
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020352,
+    "start_utc": "2026-11-20T00:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 12,
+      "abbr": "CAR",
+      "name": "Carolina Hurricanes",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/CAR_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/CAR_dark.svg"
+    },
+    "away": {
+      "id": 8,
+      "abbr": "MTL",
+      "name": "Montréal Canadiens",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/MTL_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/MTL_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.6943,
+      "away_win": 0.3057,
+      "reg_home": 0.5777,
+      "reg_draw": 0.2154,
+      "reg_away": 0.2069,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 3.73,
+      "away": 2.38
+    },
+    "score": {
+      "most_likely": {
+        "home": 5,
+        "away": 2,
+        "p": 0.069
+      },
+      "top": [
+        {
+          "home": 5,
+          "away": 2,
+          "p": 0.069
+        },
+        {
+          "home": 4,
+          "away": 1,
+          "p": 0.0684
+        },
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0679
+        },
+        {
+          "home": 4,
+          "away": 3,
+          "p": 0.0535
+        },
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.0478
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0037,
+          0.0029,
+          0.0093,
+          0.0027,
+          0.001,
+          0.0006,
+          0.0001
+        ],
+        [
+          0.0052,
+          0.0,
+          0.0255,
+          0.0151,
+          0.0228,
+          0.0057,
+          0.0015,
+          0.0006
+        ],
+        [
+          0.0092,
+          0.0327,
+          0.0,
+          0.0478,
+          0.0197,
+          0.0241,
+          0.0039,
+          0.0024
+        ],
+        [
+          0.0276,
+          0.0273,
+          0.0679,
+          0.0,
+          0.0422,
+          0.0141,
+          0.0129,
+          0.0025
+        ],
+        [
+          0.0178,
+          0.0684,
+          0.0329,
+          0.0535,
+          0.0,
+          0.022,
+          0.0061,
+          0.0043
+        ],
+        [
+          0.0125,
+          0.0301,
+          0.069,
+          0.0239,
+          0.0281,
+          0.0,
+          0.0067,
+          0.0028
+        ],
+        [
+          0.0077,
+          0.0181,
+          0.0202,
+          0.0348,
+          0.0093,
+          0.0087,
+          0.0,
+          0.0026
+        ],
+        [
+          0.006,
+          0.0165,
+          0.0221,
+          0.0177,
+          0.0169,
+          0.0066,
+          0.0031,
+          0.0008
+        ]
+      ],
+      "total": {
+        "mean": 6.5,
+        "over": {
+          "5.5": 0.6007,
+          "6.5": 0.504
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.4961,
+        "away_+1.5": 0.5039,
+        "away_-1.5": 0.1558,
+        "home_+1.5": 0.8442
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 1.1,
+        "xg_away": 0.79,
+        "p_home_wins_period": 0.3986,
+        "p_away_wins_period": 0.2694,
+        "p_draw": 0.3321
+      },
+      {
+        "n": 2,
+        "xg_home": 1.39,
+        "xg_away": 0.86,
+        "p_home_wins_period": 0.4792,
+        "p_away_wins_period": 0.2368,
+        "p_draw": 0.284
+      },
+      {
+        "n": 3,
+        "xg_home": 1.24,
+        "xg_away": 0.73,
+        "p_home_wins_period": 0.4763,
+        "p_away_wins_period": 0.222,
+        "p_draw": 0.3018
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 3.57309922062432,
+        "away": 2.4063328608149974,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 0.9866172513784265,
+        "away": 0.9882826053139542,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8481611,
+        "name": "P. Kochetkov",
+        "status": "projected",
+        "gsax_per60": 0.61,
+        "p_start": 0.7,
+        "mult": 0.9882826053139542
+      },
+      "away": {
+        "id": 8484170,
+        "name": "J. Fowler",
+        "status": "projected",
+        "gsax_per60": 0.89,
+        "p_start": 0.7,
+        "mult": 0.9866172513784265
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020354,
+    "start_utc": "2026-11-20T00:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 52,
+      "abbr": "WPG",
+      "name": "Winnipeg Jets",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/WPG_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/WPG_dark.svg"
+    },
+    "away": {
+      "id": 2,
+      "abbr": "NYI",
+      "name": "New York Islanders",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/NYI_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/NYI_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.506,
+      "away_win": 0.494,
+      "reg_home": 0.3755,
+      "reg_draw": 0.2542,
+      "reg_away": 0.3703,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 2.92,
+      "away": 2.91
+    },
+    "score": {
+      "most_likely": {
+        "home": 2,
+        "away": 3,
+        "p": 0.0672
+      },
+      "top": [
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.0672
+        },
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0656
+        },
+        {
+          "home": 3,
+          "away": 4,
+          "p": 0.0557
+        },
+        {
+          "home": 4,
+          "away": 3,
+          "p": 0.053
+        },
+        {
+          "home": 5,
+          "away": 2,
+          "p": 0.0454
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0069,
+          0.006,
+          0.0198,
+          0.0083,
+          0.0048,
+          0.0021,
+          0.0014
+        ],
+        [
+          0.0058,
+          0.0,
+          0.0343,
+          0.025,
+          0.0421,
+          0.0143,
+          0.0064,
+          0.005
+        ],
+        [
+          0.0065,
+          0.0385,
+          0.0,
+          0.0672,
+          0.0289,
+          0.0413,
+          0.0097,
+          0.0051
+        ],
+        [
+          0.0189,
+          0.0233,
+          0.0656,
+          0.0,
+          0.0557,
+          0.0214,
+          0.0233,
+          0.0061
+        ],
+        [
+          0.008,
+          0.0442,
+          0.0314,
+          0.053,
+          0.0,
+          0.0251,
+          0.0078,
+          0.0101
+        ],
+        [
+          0.0046,
+          0.014,
+          0.0454,
+          0.0239,
+          0.029,
+          0.0,
+          0.0088,
+          0.0041
+        ],
+        [
+          0.0022,
+          0.0078,
+          0.0084,
+          0.022,
+          0.0076,
+          0.0087,
+          0.0,
+          0.0024
+        ],
+        [
+          0.0011,
+          0.0047,
+          0.0069,
+          0.0067,
+          0.0091,
+          0.0049,
+          0.0027,
+          0.0021
+        ]
+      ],
+      "total": {
+        "mean": 6.32,
+        "over": {
+          "5.5": 0.5703,
+          "6.5": 0.4774
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.302,
+        "away_+1.5": 0.698,
+        "away_-1.5": 0.2939,
+        "home_+1.5": 0.7061
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 0.8,
+        "xg_away": 0.95,
+        "p_home_wins_period": 0.2816,
+        "p_away_wins_period": 0.381,
+        "p_draw": 0.3374
+      },
+      {
+        "n": 2,
+        "xg_home": 1.15,
+        "xg_away": 1.15,
+        "p_home_wins_period": 0.3562,
+        "p_away_wins_period": 0.3514,
+        "p_draw": 0.2923
+      },
+      {
+        "n": 3,
+        "xg_home": 0.97,
+        "xg_away": 0.81,
+        "p_home_wins_period": 0.3745,
+        "p_away_wins_period": 0.2836,
+        "p_draw": 0.3419
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 2.7606516275312316,
+        "away": 2.911547818165858,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 0.999038435429072,
+        "away": 1.0001392304999888,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8479973,
+        "name": "S. Skinner",
+        "status": "projected",
+        "gsax_per60": -0.01,
+        "p_start": 0.7,
+        "mult": 1.0001392304999888
+      },
+      "away": {
+        "id": 8478009,
+        "name": "I. Sorokin",
+        "status": "projected",
+        "gsax_per60": 0.51,
+        "p_start": 0.7,
+        "mult": 0.999038435429072
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020349,
+    "start_utc": "2026-11-20T00:30:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 14,
+      "abbr": "TBL",
+      "name": "Tampa Bay Lightning",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/TBL_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/TBL_dark.svg"
+    },
+    "away": {
+      "id": 22,
+      "abbr": "EDM",
+      "name": "Edmonton Oilers",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.5884,
+      "away_win": 0.4116,
+      "reg_home": 0.4626,
+      "reg_draw": 0.2529,
+      "reg_away": 0.2845,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 3.1,
+      "away": 2.5
+    },
+    "score": {
+      "most_likely": {
+        "home": 3,
+        "away": 2,
+        "p": 0.0689
+      },
+      "top": [
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0689
+        },
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.0609
+        },
+        {
+          "home": 4,
+          "away": 1,
+          "p": 0.0577
+        },
+        {
+          "home": 3,
+          "away": 4,
+          "p": 0.0522
+        },
+        {
+          "home": 5,
+          "away": 2,
+          "p": 0.0518
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0073,
+          0.0058,
+          0.0173,
+          0.005,
+          0.0025,
+          0.0014,
+          0.0007
+        ],
+        [
+          0.007,
+          0.0,
+          0.0418,
+          0.0222,
+          0.0356,
+          0.0084,
+          0.0032,
+          0.0019
+        ],
+        [
+          0.0092,
+          0.047,
+          0.0,
+          0.0609,
+          0.026,
+          0.0282,
+          0.0061,
+          0.0025
+        ],
+        [
+          0.027,
+          0.0282,
+          0.0689,
+          0.0,
+          0.0522,
+          0.0146,
+          0.0178,
+          0.0027
+        ],
+        [
+          0.0135,
+          0.0577,
+          0.0348,
+          0.0504,
+          0.0,
+          0.0235,
+          0.0063,
+          0.005
+        ],
+        [
+          0.009,
+          0.0221,
+          0.0518,
+          0.0194,
+          0.0269,
+          0.0,
+          0.0071,
+          0.0033
+        ],
+        [
+          0.0045,
+          0.0109,
+          0.0115,
+          0.0283,
+          0.0076,
+          0.0082,
+          0.0,
+          0.0022
+        ],
+        [
+          0.0032,
+          0.0061,
+          0.0087,
+          0.008,
+          0.0113,
+          0.0036,
+          0.0033,
+          0.0003
+        ]
+      ],
+      "total": {
+        "mean": 6.11,
+        "over": {
+          "5.5": 0.5341,
+          "6.5": 0.4368
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.3768,
+        "away_+1.5": 0.6232,
+        "away_-1.5": 0.2173,
+        "home_+1.5": 0.7827
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 0.93,
+        "xg_away": 0.77,
+        "p_home_wins_period": 0.356,
+        "p_away_wins_period": 0.2857,
+        "p_draw": 0.3583
+      },
+      {
+        "n": 2,
+        "xg_home": 1.2,
+        "xg_away": 0.93,
+        "p_home_wins_period": 0.4133,
+        "p_away_wins_period": 0.2839,
+        "p_draw": 0.3028
+      },
+      {
+        "n": 3,
+        "xg_home": 0.97,
+        "xg_away": 0.8,
+        "p_home_wins_period": 0.3754,
+        "p_away_wins_period": 0.2917,
+        "p_draw": 0.3329
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 2.9513372260500854,
+        "away": 2.5053473585377386,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 0.9914356707615508,
+        "away": 0.9985842511286613,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8476883,
+        "name": "A. Vasilevskiy",
+        "status": "projected",
+        "gsax_per60": 0.06,
+        "p_start": 0.7,
+        "mult": 0.9985842511286613
+      },
+      "away": {
+        "id": 8482221,
+        "name": "D. Levi",
+        "status": "projected",
+        "gsax_per60": 0.56,
+        "p_start": 0.7,
+        "mult": 0.9914356707615508
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020353,
+    "start_utc": "2026-11-20T01:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 16,
+      "abbr": "CHI",
+      "name": "Chicago Blackhawks",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/CHI_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/CHI_dark.svg"
+    },
+    "away": {
+      "id": 29,
+      "abbr": "CBJ",
+      "name": "Columbus Blue Jackets",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/CBJ_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/CBJ_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.4425,
+      "away_win": 0.5575,
+      "reg_home": 0.3163,
+      "reg_draw": 0.2512,
+      "reg_away": 0.4325,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 2.5,
+      "away": 2.86
+    },
+    "score": {
+      "most_likely": {
+        "home": 2,
+        "away": 3,
+        "p": 0.0735
+      },
+      "top": [
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.0735
+        },
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0693
+        },
+        {
+          "home": 1,
+          "away": 4,
+          "p": 0.0633
+        },
+        {
+          "home": 3,
+          "away": 4,
+          "p": 0.0581
+        },
+        {
+          "home": 4,
+          "away": 3,
+          "p": 0.0472
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0094,
+          0.0104,
+          0.0293,
+          0.0117,
+          0.0078,
+          0.0023,
+          0.0018
+        ],
+        [
+          0.0086,
+          0.0,
+          0.0441,
+          0.0329,
+          0.0633,
+          0.0144,
+          0.0079,
+          0.0054
+        ],
+        [
+          0.0093,
+          0.0446,
+          0.0,
+          0.0735,
+          0.0342,
+          0.0471,
+          0.01,
+          0.0062
+        ],
+        [
+          0.0208,
+          0.0235,
+          0.0693,
+          0.0,
+          0.0581,
+          0.0204,
+          0.0194,
+          0.0061
+        ],
+        [
+          0.0079,
+          0.0442,
+          0.0281,
+          0.0472,
+          0.0,
+          0.0197,
+          0.0064,
+          0.0054
+        ],
+        [
+          0.0033,
+          0.01,
+          0.0361,
+          0.0173,
+          0.0193,
+          0.0,
+          0.0059,
+          0.0026
+        ],
+        [
+          0.0015,
+          0.0047,
+          0.006,
+          0.013,
+          0.0067,
+          0.0049,
+          0.0,
+          0.0017
+        ],
+        [
+          0.0007,
+          0.002,
+          0.0029,
+          0.0026,
+          0.0049,
+          0.0015,
+          0.0013,
+          0.0004
+        ]
+      ],
+      "total": {
+        "mean": 5.83,
+        "over": {
+          "5.5": 0.4858,
+          "6.5": 0.3954
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.2473,
+        "away_+1.5": 0.7527,
+        "away_-1.5": 0.3456,
+        "home_+1.5": 0.6544
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 0.79,
+        "xg_away": 1.03,
+        "p_home_wins_period": 0.2749,
+        "p_away_wins_period": 0.3939,
+        "p_draw": 0.3312
+      },
+      {
+        "n": 2,
+        "xg_home": 0.91,
+        "xg_away": 0.95,
+        "p_home_wins_period": 0.3266,
+        "p_away_wins_period": 0.3399,
+        "p_draw": 0.3334
+      },
+      {
+        "n": 3,
+        "xg_home": 0.8,
+        "xg_away": 0.89,
+        "p_home_wins_period": 0.2968,
+        "p_away_wins_period": 0.3479,
+        "p_draw": 0.3553
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 2.379029586808199,
+        "away": 2.856325688991567,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 0.9931150653510905,
+        "away": 1.0021995699900996,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8481519,
+        "name": "S. Knight",
+        "status": "projected",
+        "gsax_per60": -0.1,
+        "p_start": 0.7,
+        "mult": 1.0021995699900996
+      },
+      "away": {
+        "id": 8475660,
+        "name": "C. Talbot",
+        "status": "projected",
+        "gsax_per60": 0.2,
+        "p_start": 0.7,
+        "mult": 0.9931150653510905
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020355,
+    "start_utc": "2026-11-20T01:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 20,
+      "abbr": "CGY",
+      "name": "Calgary Flames",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/CGY_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/CGY_dark.svg"
+    },
+    "away": {
+      "id": 30,
+      "abbr": "MIN",
+      "name": "Minnesota Wild",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/MIN_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/MIN_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.3456,
+      "away_win": 0.6544,
+      "reg_home": 0.241,
+      "reg_draw": 0.23,
+      "reg_away": 0.529,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 2.21,
+      "away": 3.17
+    },
+    "score": {
+      "most_likely": {
+        "home": 1,
+        "away": 4,
+        "p": 0.0763
+      },
+      "top": [
+        {
+          "home": 1,
+          "away": 4,
+          "p": 0.0763
+        },
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.0733
+        },
+        {
+          "home": 2,
+          "away": 5,
+          "p": 0.0595
+        },
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.055
+        },
+        {
+          "home": 3,
+          "away": 4,
+          "p": 0.0518
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0104,
+          0.0131,
+          0.0393,
+          0.0173,
+          0.0115,
+          0.0064,
+          0.0038
+        ],
+        [
+          0.0079,
+          0.0,
+          0.0466,
+          0.0351,
+          0.0763,
+          0.025,
+          0.0118,
+          0.01
+        ],
+        [
+          0.0072,
+          0.04,
+          0.0,
+          0.0733,
+          0.0401,
+          0.0595,
+          0.0131,
+          0.0114
+        ],
+        [
+          0.0137,
+          0.023,
+          0.055,
+          0.0,
+          0.0518,
+          0.0223,
+          0.0248,
+          0.0087
+        ],
+        [
+          0.005,
+          0.031,
+          0.0221,
+          0.0385,
+          0.0,
+          0.0211,
+          0.0066,
+          0.0068
+        ],
+        [
+          0.0025,
+          0.0068,
+          0.0237,
+          0.0132,
+          0.0158,
+          0.0,
+          0.0039,
+          0.0034
+        ],
+        [
+          0.001,
+          0.0024,
+          0.0028,
+          0.0131,
+          0.0049,
+          0.0044,
+          0.0,
+          0.001
+        ],
+        [
+          0.0007,
+          0.0009,
+          0.0018,
+          0.0018,
+          0.0037,
+          0.0016,
+          0.0007,
+          0.0002
+        ]
+      ],
+      "total": {
+        "mean": 5.83,
+        "over": {
+          "5.5": 0.4917,
+          "6.5": 0.3902
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.1831,
+        "away_+1.5": 0.8169,
+        "away_-1.5": 0.4466,
+        "home_+1.5": 0.5534
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 0.72,
+        "xg_away": 1.01,
+        "p_home_wins_period": 0.2639,
+        "p_away_wins_period": 0.3987,
+        "p_draw": 0.3374
+      },
+      {
+        "n": 2,
+        "xg_home": 0.73,
+        "xg_away": 1.11,
+        "p_home_wins_period": 0.2466,
+        "p_away_wins_period": 0.4398,
+        "p_draw": 0.3136
+      },
+      {
+        "n": 3,
+        "xg_home": 0.76,
+        "xg_away": 1.05,
+        "p_home_wins_period": 0.2619,
+        "p_away_wins_period": 0.4067,
+        "p_draw": 0.3314
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 2.063643330652888,
+        "away": 3.1558532533063812,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 1.0129881755971522,
+        "away": 1.0031399457155377,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8481692,
+        "name": "D. Wolf",
+        "status": "projected",
+        "gsax_per60": -0.24,
+        "p_start": 0.7,
+        "mult": 1.0031399457155377
+      },
+      "away": {
+        "id": 8482661,
+        "name": "J. Wallstedt",
+        "status": "projected",
+        "gsax_per60": 0.88,
+        "p_start": 0.7,
+        "mult": 1.0129881755971522
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020356,
+    "start_utc": "2026-11-20T02:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 21,
+      "abbr": "COL",
+      "name": "Colorado Avalanche",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/COL_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/COL_dark.svg"
+    },
+    "away": {
+      "id": 24,
+      "abbr": "ANA",
+      "name": "Anaheim Ducks",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/ANA_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/ANA_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.6493,
+      "away_win": 0.3507,
+      "reg_home": 0.5398,
+      "reg_draw": 0.2074,
+      "reg_away": 0.2528,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 4.13,
+      "away": 3.03
+    },
+    "score": {
+      "most_likely": {
+        "home": 5,
+        "away": 2,
+        "p": 0.0627
+      },
+      "top": [
+        {
+          "home": 5,
+          "away": 2,
+          "p": 0.0627
+        },
+        {
+          "home": 4,
+          "away": 3,
+          "p": 0.0576
+        },
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0459
+        },
+        {
+          "home": 3,
+          "away": 4,
+          "p": 0.0459
+        },
+        {
+          "home": 6,
+          "away": 3,
+          "p": 0.0453
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0013,
+          0.0019,
+          0.0063,
+          0.0027,
+          0.0016,
+          0.0007,
+          0.0006
+        ],
+        [
+          0.0021,
+          0.0,
+          0.0138,
+          0.0095,
+          0.021,
+          0.0059,
+          0.0037,
+          0.0015
+        ],
+        [
+          0.0041,
+          0.0177,
+          0.0,
+          0.0332,
+          0.0202,
+          0.0284,
+          0.0073,
+          0.0038
+        ],
+        [
+          0.0117,
+          0.016,
+          0.0459,
+          0.0,
+          0.0459,
+          0.0212,
+          0.0213,
+          0.0061
+        ],
+        [
+          0.0092,
+          0.0414,
+          0.0281,
+          0.0576,
+          0.0,
+          0.0339,
+          0.0116,
+          0.015
+        ],
+        [
+          0.0066,
+          0.0216,
+          0.0627,
+          0.0291,
+          0.038,
+          0.0,
+          0.016,
+          0.0092
+        ],
+        [
+          0.0053,
+          0.0147,
+          0.0209,
+          0.0453,
+          0.0163,
+          0.0176,
+          0.0,
+          0.0065
+        ],
+        [
+          0.0041,
+          0.0184,
+          0.0263,
+          0.0279,
+          0.034,
+          0.0148,
+          0.0091,
+          0.0034
+        ]
+      ],
+      "total": {
+        "mean": 7.57,
+        "over": {
+          "5.5": 0.754,
+          "6.5": 0.6723
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.4635,
+        "away_+1.5": 0.5365,
+        "away_-1.5": 0.202,
+        "home_+1.5": 0.798
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 1.24,
+        "xg_away": 1.01,
+        "p_home_wins_period": 0.3936,
+        "p_away_wins_period": 0.3124,
+        "p_draw": 0.2941
+      },
+      {
+        "n": 2,
+        "xg_home": 1.5,
+        "xg_away": 1.08,
+        "p_home_wins_period": 0.4677,
+        "p_away_wins_period": 0.2695,
+        "p_draw": 0.2628
+      },
+      {
+        "n": 3,
+        "xg_home": 1.4,
+        "xg_away": 0.94,
+        "p_home_wins_period": 0.4673,
+        "p_away_wins_period": 0.257,
+        "p_draw": 0.2756
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 3.9714277311182467,
+        "away": 3.035882275531041,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 0.9824604820027107,
+        "away": 0.9986776872042027,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8478406,
+        "name": "M. Blackwood",
+        "status": "projected",
+        "gsax_per60": 0.3,
+        "p_start": 0.7,
+        "mult": 0.9986776872042027
+      },
+      "away": {
+        "id": 8476316,
+        "name": "L. Brossoit",
+        "status": "projected",
+        "gsax_per60": -0.2,
+        "p_start": 0.7,
+        "mult": 0.9824604820027107
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020357,
+    "start_utc": "2026-11-20T02:40:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 55,
+      "abbr": "SEA",
+      "name": "Seattle Kraken",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/SEA_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/SEA_dark.svg"
+    },
+    "away": {
+      "id": 23,
+      "abbr": "VAN",
+      "name": "Vancouver Canucks",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/VAN_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/VAN_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.5715,
+      "away_win": 0.4285,
+      "reg_home": 0.4406,
+      "reg_draw": 0.2484,
+      "reg_away": 0.311,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 3.18,
+      "away": 2.76
+    },
+    "score": {
+      "most_likely": {
+        "home": 3,
+        "away": 2,
+        "p": 0.0666
+      },
+      "top": [
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0666
+        },
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.0586
+        },
+        {
+          "home": 4,
+          "away": 3,
+          "p": 0.0578
+        },
+        {
+          "home": 4,
+          "away": 1,
+          "p": 0.0534
+        },
+        {
+          "home": 5,
+          "away": 2,
+          "p": 0.0516
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0056,
+          0.0051,
+          0.0149,
+          0.0058,
+          0.0039,
+          0.0014,
+          0.0006
+        ],
+        [
+          0.0057,
+          0.0,
+          0.0315,
+          0.0211,
+          0.0351,
+          0.0085,
+          0.0043,
+          0.0035
+        ],
+        [
+          0.0064,
+          0.0406,
+          0.0,
+          0.0586,
+          0.0251,
+          0.0378,
+          0.0073,
+          0.005
+        ],
+        [
+          0.022,
+          0.0254,
+          0.0666,
+          0.0,
+          0.0494,
+          0.0202,
+          0.0218,
+          0.0048
+        ],
+        [
+          0.0102,
+          0.0534,
+          0.0327,
+          0.0578,
+          0.0,
+          0.0244,
+          0.0071,
+          0.0066
+        ],
+        [
+          0.0052,
+          0.0179,
+          0.0516,
+          0.023,
+          0.027,
+          0.0,
+          0.0104,
+          0.0043
+        ],
+        [
+          0.0043,
+          0.01,
+          0.0133,
+          0.0252,
+          0.0118,
+          0.0086,
+          0.0,
+          0.0036
+        ],
+        [
+          0.0027,
+          0.0072,
+          0.012,
+          0.0084,
+          0.0122,
+          0.0063,
+          0.0032,
+          0.0012
+        ]
+      ],
+      "total": {
+        "mean": 6.41,
+        "over": {
+          "5.5": 0.5827,
+          "6.5": 0.4928
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.3629,
+        "away_+1.5": 0.6371,
+        "away_-1.5": 0.2454,
+        "home_+1.5": 0.7546
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 1.05,
+        "xg_away": 0.91,
+        "p_home_wins_period": 0.3764,
+        "p_away_wins_period": 0.3032,
+        "p_draw": 0.3204
+      },
+      {
+        "n": 2,
+        "xg_home": 1.14,
+        "xg_away": 0.84,
+        "p_home_wins_period": 0.4202,
+        "p_away_wins_period": 0.2672,
+        "p_draw": 0.3126
+      },
+      {
+        "n": 3,
+        "xg_home": 0.99,
+        "xg_away": 1.01,
+        "p_home_wins_period": 0.3378,
+        "p_away_wins_period": 0.3479,
+        "p_draw": 0.3144
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 3.097063978294536,
+        "away": 2.738614188858567,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 0.9708636881751753,
+        "away": 1.0061855773682828,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8478916,
+        "name": "J. Daccord",
+        "status": "projected",
+        "gsax_per60": -0.66,
+        "p_start": 0.7,
+        "mult": 1.0061855773682828
+      },
+      "away": {
+        "id": 8482447,
+        "name": "L. Meriläinen",
+        "status": "projected",
+        "gsax_per60": -0.3,
+        "p_start": 0.7,
+        "mult": 0.9708636881751753
+      }
+    },
+    "lineup_changes": null,
+    "players": null,
+    "form": null,
+    "season_compare": null,
+    "h2h": null,
+    "insights": null,
+    "odds": null
+  },
+  {
+    "id": 2026020358,
+    "start_utc": "2026-11-20T03:00:00Z",
+    "nhl_date": "2026-11-19",
+    "state": "upcoming",
+    "home": {
+      "id": 54,
+      "abbr": "VGK",
+      "name": "Vegas Golden Knights",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/VGK_dark.svg"
+    },
+    "away": {
+      "id": 25,
+      "abbr": "DAL",
+      "name": "Dallas Stars",
+      "logo": "https://assets.nhle.com/logos/nhl/svg/DAL_light.svg",
+      "logo_dark": "https://assets.nhle.com/logos/nhl/svg/DAL_dark.svg"
+    },
+    "prob": {
+      "home_win": 0.5399,
+      "away_win": 0.4601,
+      "reg_home": 0.4097,
+      "reg_draw": 0.2579,
+      "reg_away": 0.3324,
+      "confidence": "normal"
+    },
+    "xg": {
+      "home": 2.72,
+      "away": 2.46
+    },
+    "score": {
+      "most_likely": {
+        "home": 3,
+        "away": 2,
+        "p": 0.0732
+      },
+      "top": [
+        {
+          "home": 3,
+          "away": 2,
+          "p": 0.0732
+        },
+        {
+          "home": 2,
+          "away": 3,
+          "p": 0.0662
+        },
+        {
+          "home": 4,
+          "away": 1,
+          "p": 0.0571
+        },
+        {
+          "home": 2,
+          "away": 1,
+          "p": 0.0515
+        },
+        {
+          "home": 1,
+          "away": 2,
+          "p": 0.0514
+        }
+      ],
+      "matrix": [
+        [
+          0.0,
+          0.0118,
+          0.01,
+          0.026,
+          0.0069,
+          0.0028,
+          0.0018,
+          0.0007
+        ],
+        [
+          0.0129,
+          0.0,
+          0.0514,
+          0.0265,
+          0.0466,
+          0.0102,
+          0.0051,
+          0.0023
+        ],
+        [
+          0.0115,
+          0.0515,
+          0.0,
+          0.0662,
+          0.0315,
+          0.0332,
+          0.0067,
+          0.0034
+        ],
+        [
+          0.032,
+          0.0323,
+          0.0732,
+          0.0,
+          0.0476,
+          0.0164,
+          0.0155,
+          0.0024
+        ],
+        [
+          0.0134,
+          0.0571,
+          0.0337,
+          0.0501,
+          0.0,
+          0.0192,
+          0.0052,
+          0.004
+        ],
+        [
+          0.0073,
+          0.0132,
+          0.0428,
+          0.0204,
+          0.0177,
+          0.0,
+          0.0039,
+          0.0016
+        ],
+        [
+          0.0021,
+          0.0069,
+          0.0079,
+          0.0183,
+          0.006,
+          0.0047,
+          0.0,
+          0.0009
+        ],
+        [
+          0.002,
+          0.0034,
+          0.0041,
+          0.0063,
+          0.0052,
+          0.0019,
+          0.0017,
+          0.0004
+        ]
+      ],
+      "total": {
+        "mean": 5.66,
+        "over": {
+          "5.5": 0.4604,
+          "6.5": 0.3679
+        }
+      },
+      "spread": {
+        "home_-1.5": 0.3284,
+        "away_+1.5": 0.6716,
+        "away_-1.5": 0.2591,
+        "home_+1.5": 0.7409
+      }
+    },
+    "periods": [
+      {
+        "n": 1,
+        "xg_home": 0.85,
+        "xg_away": 0.83,
+        "p_home_wins_period": 0.3208,
+        "p_away_wins_period": 0.3176,
+        "p_draw": 0.3617
+      },
+      {
+        "n": 2,
+        "xg_home": 1.08,
+        "xg_away": 0.89,
+        "p_home_wins_period": 0.3857,
+        "p_away_wins_period": 0.292,
+        "p_draw": 0.3223
+      },
+      {
+        "n": 3,
+        "xg_home": 0.79,
+        "xg_away": 0.74,
+        "p_home_wins_period": 0.3271,
+        "p_away_wins_period": 0.3015,
+        "p_draw": 0.3715
+      }
+    ],
+    "factors": [
+      {
+        "key": "base",
+        "label": "Joukkuevahvuus",
+        "home": 2.569365294823014,
+        "away": 2.45554581072959,
+        "unit": "goals"
+      },
+      {
+        "key": "home_ice",
+        "label": "Kotietu",
+        "home": 1.0589401828251532,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "rest",
+        "label": "Lepo / back-to-back",
+        "home": 1.0,
+        "away": 1.0,
+        "unit": "mult"
+      },
+      {
+        "key": "goalie",
+        "label": "Maalivahti",
+        "home": 1.000509934685455,
+        "away": 1.002891658309173,
+        "unit": "mult"
+      }
+    ],
+    "goalies": {
+      "home": {
+        "id": 8479394,
+        "name": "C. Hart",
+        "status": "projected",
+        "gsax_per60": -0.15,
+        "p_start": 0.7,
+        "mult": 1.002891658309173
+      },
+      "away": {
+        "id": 8479979,
+        "name": "J. Oettinger",
+        "status": "projected",
+        "gsax_per60": 0.27,
+        "p_start": 0.7,
+        "mult": 1.000509934685455
       }
     },
     "lineup_changes": null,
