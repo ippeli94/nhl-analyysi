@@ -332,6 +332,55 @@ def test_skip_when_credits_low(seeded, monkeypatch):
     assert src["status"] == "stale" and "25" in src["note"]
 
 
+def test_credit_skip_still_applies_fresh_snapshot(seeded, monkeypatch):
+    assert go(NOW, "--odds") == 0
+    f = seeded / "data/state/sources.json"
+    sources = json.loads(f.read_text(encoding="utf-8"))
+    sources["odds"]["remaining"] = 25
+    f.write_text(json.dumps(sources), encoding="utf-8")
+    monkeypatch.setattr(odds, "fetch_odds", lambda *a: pytest.fail("must not fetch"))
+    assert go("2026-11-17T21:37:00Z", "--odds") == 0
+    lat = latest_of(seeded)
+    assert any(g["odds"] for g in lat["games"])
+    assert sources_of(seeded)["odds"]["status"] == "stale"
+
+
+@pytest.mark.parametrize("content", ["{not json", '{"fetched_at": "2026-11-17T15:17:00Z"}'])
+def test_corrupt_odds_snapshot_is_ignored(seeded, content):
+    state = seeded / "data/state"
+    state.mkdir(parents=True)
+    (state / "odds.json").write_text(content, encoding="utf-8")
+    assert go() == 0
+    lat = latest_of(seeded)
+    assert lat["games"] and all(g["odds"] is None for g in lat["games"])
+
+
+def test_game_odds_failure_does_not_fail_run(seeded, monkeypatch):
+    from pipeline import value
+
+    def boom(*a):
+        raise ZeroDivisionError("x")
+
+    monkeypatch.setattr(value, "game_odds", boom)
+    assert go(NOW, "--odds") == 0
+    lat = latest_of(seeded)
+    assert all(g["odds"] is None for g in lat["games"])
+    src = sources_of(seeded)["odds"]
+    assert src["status"] == "failed" and src["note"] == "ZeroDivisionError"
+
+
+def test_started_game_in_fresh_snapshot_gets_no_history_row(seeded):
+    assert go(NOW, "--odds") == 0
+    rows = len(odds_history(seeded))
+    f = seeded / "data/state/odds.json"
+    snap = json.loads(f.read_text(encoding="utf-8"))
+    snap["fetched_at"] = "2026-11-18T00:05:00Z"
+    f.write_text(json.dumps(snap), encoding="utf-8")
+    assert go("2026-11-18T00:10:00Z", "--odds") == 0  # fetch happens, 333 has started
+    new = odds_history(seeded)[rows:]
+    assert 2026020333 not in [r["game_id"] for r in new]
+
+
 def test_skip_when_no_game_within_24h(seeded, monkeypatch):
     calls = []
     monkeypatch.setattr(odds, "fetch_odds", lambda *a: calls.append(a))

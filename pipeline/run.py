@@ -274,10 +274,16 @@ def _predict_all(
 
 def _fresh_snapshot(now: datetime) -> dict | None:
     """The stored odds snapshot when it is at most ODDS_REUSE_HOURS old."""
-    snapshot = _read_json(ODDS_STATE, None)
-    if not isinstance(snapshot, dict) or not snapshot.get("fetched_at"):
+    try:
+        snapshot = _read_json(ODDS_STATE, None)
+        if snapshot is None:
+            return None
+        if not isinstance(snapshot, dict) or not isinstance(snapshot.get("games"), dict):
+            raise ValueError("bad snapshot shape")
+        age = now - _parse_utc(snapshot["fetched_at"])
+    except Exception as exc:  # noqa: BLE001 - a damaged snapshot must never fail the run
+        logger.warning("odds snapshot ignored: %s", type(exc).__name__)
         return None
-    age = now - _parse_utc(snapshot["fetched_at"])
     return snapshot if age <= timedelta(hours=config.ODDS_REUSE_HOURS) else None
 
 
@@ -379,9 +385,25 @@ def run(
         snapshot, fetched_now = odds_stage(selected, state, now, with_odds)
         if snapshot:
             for g in games:
-                if g["state"] == "upcoming":
+                if g["state"] != "upcoming":
+                    continue
+                try:
                     books = snapshot["games"].get(str(g["id"]), {})
                     g["odds"] = value.game_odds(g, books, snapshot["fetched_at"])
+                except Exception as exc:  # noqa: BLE001 - odds must never fail the run
+                    logger.warning("odds for game %s failed: %s", g["id"], type(exc).__name__)
+                    g["odds"] = None
+                    previous = state.get("odds") or {}
+                    state["odds"] = {
+                        "status": "failed", "fetched_at": _iso(now),
+                        "last_ok_at": previous.get("last_ok_at"), "note": type(exc).__name__,
+                        "remaining": previous.get("remaining"), "used": previous.get("used"),
+                    }
+        odds_history = []
+        if fetched_now:
+            odds_history = tracking.odds_rows(
+                snapshot, [g for g in games if g["state"] == "upcoming"]
+            )
         latest = export.build_latest(games, state, next_game_date, now)
         errors = export.validate(latest)
         if errors:
@@ -393,7 +415,7 @@ def run(
         tracking.append_predictions(games, _iso(now))
         if fetched_now:
             _write_json(ODDS_STATE, snapshot)
-            tracking.append_odds(tracking.odds_rows(snapshot, games))
+            tracking.append_odds(odds_history)
         _write_json(LAST_GAMES, [_public(g) for g in games])
         _write_json(SOURCES_FILE, state)
         # started games without an earlier export are dropped by design (plan decision 3),
