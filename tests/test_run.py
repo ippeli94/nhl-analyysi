@@ -154,7 +154,7 @@ def test_extra_run_runs_when_early_game(seeded, monkeypatch, tmp_path):
     fixtures = tmp_path / "fx"
     fixtures.mkdir()
     for f in FIXTURES.glob("schedule__*.json"):
-        text = f.read_text(encoding="utf-8").replace("2026-11-18T00:00:00Z", "2026-11-17T17:00:00Z")
+        text = f.read_text(encoding="utf-8").replace("2026-11-18T00:00:00Z", "2026-11-17T15:00:00Z")
         (fixtures / f.name).write_text(text, encoding="utf-8")
     out = seeded / "gh_output"
     monkeypatch.setenv("GITHUB_OUTPUT", str(out))
@@ -183,11 +183,11 @@ def test_select_games_window():
 
 def test_needs_extra_run():
     now = dt("2026-11-21T13:00:00Z")
-    early = game(1, start="2026-11-21T16:00:00Z")
-    late = game(2, start="2026-11-21T18:00:00Z")
+    early = game(1, start="2026-11-21T14:30:00Z")
+    late = game(2, start="2026-11-21T16:00:00Z")  # after the 15:17 UTC scheduled run
     assert run.needs_extra_run([early, late], now)
     assert not run.needs_extra_run([late], now)
-    assert not run.needs_extra_run([game(3, "OFF", start="2026-11-21T16:00:00Z")], now)
+    assert not run.needs_extra_run([game(3, "OFF", start="2026-11-21T14:30:00Z")], now)
 
 
 def test_results_recorded_for_newly_cached_games(root):

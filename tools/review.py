@@ -9,7 +9,6 @@ Exit code: 0 no problems, 1 warnings only, 2 any error.
 from __future__ import annotations
 
 import argparse
-import gzip
 import json
 import os
 import re
@@ -17,7 +16,7 @@ import shutil
 import subprocess
 import sys
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -71,6 +70,7 @@ class Ctx:
     now: datetime
     mode: str  # "data" | "full"
     skip_tests: bool = False
+    memo: dict = field(default_factory=dict)  # per-run caches, so files are read once
 
 
 def _parse(ts: str) -> datetime:
@@ -225,13 +225,55 @@ def check_roster(ctx: Ctx) -> list[Problem]:
     return found
 
 
-def _cached(game_id: int) -> bool:
-    return game_id in cache.cached_ids(tracking.season_of(game_id))
+def _memo(ctx: Ctx, key: tuple, build: Callable[[], object]):
+    if key not in ctx.memo:
+        ctx.memo[key] = build()
+    return ctx.memo[key]
 
 
-def _has_result(game_id: int) -> bool:
+def _cached(ctx: Ctx, game_id: int) -> bool:
     season = tracking.season_of(game_id)
-    return game_id in {r["game_id"] for r in tracking.read_log("results", season)}
+    ids = _memo(ctx, ("cached", season), lambda: cache.cached_ids(season))
+    return game_id in ids
+
+
+def _history_file(ctx: Ctx, kind: str, season: str) -> Path:
+    return ctx.root / "data" / "history" / kind / f"{season}.jsonl"
+
+
+def _history(ctx: Ctx, kind: str, season: str) -> tuple[list[dict], list[int]]:
+    """Rows of one history log and the numbers of its unparseable lines."""
+
+    def build():
+        rows: list[dict] = []
+        bad: list[int] = []
+        f = _history_file(ctx, kind, season)
+        try:
+            lines = f.read_text(encoding="utf-8").splitlines() if f.exists() else []
+        except (OSError, UnicodeDecodeError):
+            return rows, [0]
+        for number, line in enumerate(lines, 1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except ValueError:
+                bad.append(number)
+                continue
+            if isinstance(row, dict):
+                rows.append(row)
+            else:
+                bad.append(number)
+        return rows, bad
+
+    return _memo(ctx, ("history", kind, season), build)
+
+
+def _has_result(ctx: Ctx, game_id: int) -> bool:
+    rows, _ = _history(ctx, "results", tracking.season_of(game_id))
+    ids = _memo(ctx, ("result_ids", tracking.season_of(game_id)),
+                lambda: {r.get("game_id") for r in rows})
+    return game_id in ids
 
 
 def check_sched(ctx: Ctx) -> list[Problem]:
@@ -247,7 +289,7 @@ def check_sched(ctx: Ctx) -> list[Problem]:
                 "ohjelman ottelu puuttuu latest.json:sta eikä ole päättynyt",
                 "tarkista pipeline/run.py ennustevaihe ja lokit")
         for game_id in ids
-        if game_id not in present and not _cached(game_id) and not _has_result(game_id)
+        if game_id not in present and not _cached(ctx, game_id) and not _has_result(ctx, game_id)
     ]
 
 
@@ -255,7 +297,7 @@ def _prediction_rows(ctx: Ctx) -> list[dict]:
     folder = ctx.root / "data" / "history" / "predictions"
     rows: list[dict] = []
     for f in sorted(folder.glob("*.jsonl")) if folder.is_dir() else []:
-        rows.extend(tracking.read_log("predictions", f.stem))
+        rows.extend(_history(ctx, "predictions", f.stem)[0])
     return rows
 
 
@@ -284,7 +326,7 @@ def check_fresh(ctx: Ctx) -> list[Problem]:
         Problem(WARNING, "FRESH", f"game {gid}",
                 "yli 24 h sitten päättynyt ottelu puuttuu välimuistista",
                 "aja python -m pipeline.backfill")
-        for gid in _long_over(ctx) if not _cached(gid)
+        for gid in _long_over(ctx) if not _cached(ctx, gid)
     ]
     return found
 
@@ -304,6 +346,15 @@ def check_source(ctx: Ctx) -> list[Problem]:
 
 def check_track(ctx: Ctx) -> list[Problem]:
     found = []
+    for kind in ("predictions", "results"):
+        folder = ctx.root / "data" / "history" / kind
+        for f in sorted(folder.glob("*.jsonl")) if folder.is_dir() else []:
+            bad = _history(ctx, kind, f.stem)[1]
+            if bad:
+                first = f"rivi {bad[0]}" if bad[0] else "tiedostoa ei voi lukea"
+                found.append(Problem(WARNING, "TRACK", f"data/history/{kind}/{f.name}",
+                                     f"{len(bad)} jäsentymätöntä riviä ({first})",
+                                     "korjaa tai poista rikkinäinen rivi"))
     rows = _prediction_rows(ctx)
     if rows and _games(ctx):
         newest = max(_parse(r["ts"]) for r in rows)
@@ -315,9 +366,38 @@ def check_track(ctx: Ctx) -> list[Problem]:
         Problem(WARNING, "TRACK", f"game {gid}",
                 "yli 24 h sitten päättyneellä ottelulla ei ole tulosta",
                 "tarkista tracking.record_results")
-        for gid in _long_over(ctx) if not _has_result(gid)
+        for gid in _long_over(ctx) if not _has_result(ctx, gid)
     ]
     return found
+
+
+def _season_files(ctx: Ctx) -> list[tuple[Path, dict | None]]:
+    """Cache files of the current (newest) season, read once; None marks an unreadable one."""
+
+    def build():
+        base = ctx.root / Path(*cache.GAMES_DIR)
+        seasons = sorted(p.name for p in base.iterdir()
+                         if p.is_dir() and re.fullmatch(r"\d{8}", p.name)) if base.is_dir() else []
+        if not seasons:
+            return []
+        out: list[tuple[Path, dict | None]] = []
+        for f in sorted((base / seasons[-1]).glob(f"*{cache.SUFFIX}")):
+            try:
+                out.append((f, cache.read(f)))
+            except cache.UNREADABLE:
+                out.append((f, None))
+        return out
+
+    return _memo(ctx, ("season_files",), build)
+
+
+def check_cache(ctx: Ctx) -> list[Problem]:
+    return [
+        Problem(ERROR, "CACHE", f.relative_to(ctx.root).as_posix(),
+                "välimuistitiedosto ei ole luettavissa",
+                "poista tiedosto ja aja python -m pipeline.backfill")
+        for f, rec in _season_files(ctx) if rec is None
+    ]
 
 
 def check_xg(ctx: Ctx) -> list[Problem]:
@@ -325,15 +405,8 @@ def check_xg(ctx: Ctx) -> list[Problem]:
     if not coefs_file.exists():
         return []
     cutoff = (ctx.now - XG_WINDOW).date().isoformat()
-    records = []
-    for season_dir in (ctx.root / Path(*cache.GAMES_DIR)).glob("*"):
-        for f in season_dir.glob(f"*{cache.SUFFIX}"):
-            try:
-                rec = json.loads(gzip.decompress(f.read_bytes()).decode("utf-8"))
-            except (OSError, ValueError):
-                continue
-            if rec["date"] >= cutoff:
-                records.append(rec)
+    records = [rec for _, rec in _season_files(ctx)
+               if rec is not None and rec.get("date", "") >= cutoff]
     if len(records) < XG_MIN_GAMES:
         return []
     df = xg.shots_frame(records)
@@ -389,7 +462,7 @@ def check_secret(ctx: Ctx) -> list[Problem]:
 
 CHECKS: list[Callable[[Ctx], list[Problem]]] = [
     check_lint, check_test, check_site, check_prob, check_roster, check_sched, check_fresh,
-    check_source, check_track, check_xg, check_secret,
+    check_source, check_track, check_cache, check_xg, check_secret,
 ]
 
 

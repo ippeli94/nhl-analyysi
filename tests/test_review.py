@@ -1,3 +1,4 @@
+import gzip
 import json
 from datetime import UTC, datetime, timedelta
 
@@ -208,6 +209,49 @@ def test_track_missing_result_is_warning(seeded):
     assert review.main(ARGS) == 1
     text = report(seeded)
     assert "[VAROITUS] TRACK" in text and "2025020100" in text
+
+
+def write_cache(root, game_id, kind=None):
+    p = root / "data/cache/games/20252026" / f"{game_id}.json.gz"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_bytes(b"\0" * 32 if kind == "zeros" else gzip.compress(b"{"))
+    return p
+
+
+@pytest.mark.parametrize("kind", ["zeros", "badjson"])
+def test_unreadable_cache_file_is_error(seeded, kind):
+    write_cache(seeded, 2025020100, kind)
+    assert review.main(ARGS) == 2
+    text = report(seeded)
+    assert "[VIRHE] CACHE" in text and "2025020100.json.gz" in text
+
+
+def test_unparseable_history_line_is_warning_not_crash(seeded):
+    now = datetime.now(UTC)
+    f = seeded / "data/history/results/20252026.jsonl"
+    f.parent.mkdir(parents=True)
+    f.write_text("{not json\n", encoding="utf-8")
+    pred = seeded / "data/history/predictions/20252026.jsonl"
+    pred.parent.mkdir(parents=True)
+    pred.write_text(json.dumps({"ts": iso(now), "game_id": 1, "start_utc": iso(now)})
+                    + "\n{broken\n", encoding="utf-8")
+    assert review.main(ARGS) == 1
+    text = report(seeded)
+    assert "[VAROITUS] TRACK" in text and "(+1 muuta samanlaista)" in text  # both logs flagged
+
+
+def test_cached_ids_are_built_once_per_season(seeded, monkeypatch):
+    now = datetime.now(UTC)
+    rows = [{"ts": iso(now - timedelta(hours=45)), "game_id": 2025020100 + i,
+             "start_utc": iso(now - timedelta(hours=40))} for i in range(5)]
+    f = seeded / "data/history/predictions/20252026.jsonl"
+    f.parent.mkdir(parents=True)
+    f.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    calls = []
+    real = review.cache.cached_ids
+    monkeypatch.setattr(review.cache, "cached_ids", lambda s: calls.append(s) or real(s))
+    review.main(ARGS)
+    assert calls.count("20252026") == 1
 
 
 def test_xg_skipped_with_few_games(seeded):

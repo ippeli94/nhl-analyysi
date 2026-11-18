@@ -33,7 +33,8 @@ export function fmtNum(x, digits = 1) {
   return x.toFixed(digits).replace(".", ",");
 }
 
-export const fmtScore = ({ home, away }) => `${home}–${away}`;
+// Shown next to team-ordered UI, which lists the away team on the left: away–home.
+export const fmtScore = ({ home, away }) => `${away}–${home}`;
 
 export function fmtSignedPct(mult) {
   const pct = (mult - 1) * 100;
@@ -56,7 +57,7 @@ export function freshness(latest, now = new Date()) {
   const age = now - new Date(latest.generated_at);
   const old = !Number.isFinite(age) || age > STALE_MS;
   if (old || !nhl || nhl.status !== "ok") return "stale";
-  if (sources.some((s) => s.status !== "ok") || latest.review?.worst === "error") return "warn";
+  if (sources.some((s) => s.status === "failed" || s.status === "stale") || latest.review?.worst === "error") return "warn";
   return "ok";
 }
 

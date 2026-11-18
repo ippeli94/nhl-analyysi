@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -24,6 +25,8 @@ def _append(kind: str, season: str, rows: list[dict]) -> None:
     with f.open("a", encoding="utf-8", newline="\n") as fh:
         for row in rows:
             fh.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n")
+        fh.flush()
+        os.fsync(fh.fileno())
 
 
 def log_row(game_obj: dict, ts: str) -> dict:

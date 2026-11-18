@@ -23,7 +23,7 @@ from pipeline.sources.nhl import ScheduledGame, SourceError
 logger = logging.getLogger(__name__)
 
 NHL_TZ = ZoneInfo("America/New_York")
-EXTRA_RUN_CUTOFF_UTC = (17, 17)  # the scheduled midday run (spec 4.3)
+EXTRA_RUN_CUTOFF_UTC = (15, 17)  # the next scheduled run after the 12:17 UTC extra run
 SCHEDULE_LOOKBACK_DAYS = 7
 SCHEDULE_WEEK_DAYS = 7
 OFFLINE_NOW_UTC = (15, 17)
@@ -70,7 +70,7 @@ def select_games(
 
 
 def needs_extra_run(games: list[ScheduledGame], now: datetime) -> bool:
-    """True when an upcoming game starts before today's 17:17 UTC scheduled run."""
+    """True when an upcoming game starts before today's 15:17 UTC scheduled run."""
     hour, minute = EXTRA_RUN_CUTOFF_UTC
     utc = now.astimezone(UTC)
     cutoff = utc.replace(hour=hour, minute=minute, second=0, microsecond=0)
@@ -187,7 +187,13 @@ def _read_json(parts: tuple[str, ...], default):
 def _write_json(parts: tuple[str, ...], obj) -> None:
     f = config.path(*parts)
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    text = json.dumps(obj, ensure_ascii=False, indent=2) + "\n"
+    tmp = f.with_name(f.name + ".tmp")
+    with tmp.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, f)
 
 
 def _public(game_obj: dict) -> dict:

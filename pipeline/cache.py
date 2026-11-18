@@ -10,6 +10,7 @@ import gzip
 import json
 import logging
 import os
+import zlib
 from pathlib import Path
 
 from pipeline import config, shots
@@ -125,13 +126,37 @@ def write(record: dict) -> Path:
     # write from leaving a partial file that would count as cached.
     payload = gzip.compress(data, mtime=0)
     tmp = target.with_name(target.name + ".tmp")
-    tmp.write_bytes(payload)
+    with tmp.open("wb") as fh:
+        fh.write(payload)
+        fh.flush()
+        os.fsync(fh.fileno())
     os.replace(tmp, target)
     return target
 
 
 def read(path: Path) -> dict:
     return json.loads(gzip.decompress(path.read_bytes()).decode("utf-8"))
+
+
+UNREADABLE = (OSError, EOFError, ValueError, zlib.error)
+
+
+def read_or_discard(path: Path) -> dict | None:
+    """Read a cache file; an unreadable one is logged and deleted, and None is returned.
+
+    A corrupt file (for example zero-filled after an interrupted run) must never wedge the
+    pipeline. Deleting it lets a later backfill or cache_finished fetch the game again.
+    """
+    try:
+        return read(path)
+    except UNREADABLE as exc:
+        logger.warning("unreadable cache file %s (%s: %s); deleting it", path,
+                       type(exc).__name__, exc)
+        try:
+            path.unlink()
+        except OSError as unlink_exc:
+            logger.warning("could not delete %s: %s", path, unlink_exc)
+        return None
 
 
 def cached_ids(season: str) -> set[int]:
@@ -143,9 +168,10 @@ def cached_ids(season: str) -> set[int]:
 
 def load_seasons(seasons: list[str]) -> list[dict]:
     records = [
-        read(game_path(season, game_id))
+        rec
         for season in seasons
         for game_id in cached_ids(season)
+        if (rec := read_or_discard(game_path(season, game_id))) is not None
     ]
     return sorted(records, key=lambda r: (r["date"], r["id"]))
 
@@ -175,7 +201,9 @@ def cache_finished(
         if season not in known:
             known[season] = cached_ids(season)
         if game["id"] in known[season]:
-            continue
+            if read_or_discard(game_path(season, game["id"])) is not None:
+                continue
+            known[season].discard(game["id"])
         attempts += 1
         if attempts % PROGRESS_EVERY == 0:
             logger.info("cache: %d games attempted, %d written, %d skipped",

@@ -29,7 +29,8 @@ test("fmtSignedPct", () => {
   assert.equal(fmtSignedPct(0.976), "−2,4 %");
   assert.equal(fmtSignedPct(1.01), "+1,0 %");
 });
-test("fmtScore", () => assert.equal(fmtScore({ home: 3, away: 2 }), "3–2"));
+test("fmtScore prints away-home to match the left-right team order", () =>
+  assert.equal(fmtScore({ home: 3, away: 2 }), "2–3"));
 test("ageText", () => {
   assert.equal(ageText(ago(12 * MIN), NOW), "12 min sitten");
   assert.equal(ageText(ago(3 * H), NOW), "3 h sitten");
@@ -42,10 +43,17 @@ test("freshness not stale at 13 h", () =>
   assert.equal(freshness(latest({ generated_at: ago(13 * H) }), NOW), "ok"));
 test("freshness stale when nhl source failed", () =>
   assert.equal(freshness(latest({ sources: [{ id: "nhl", status: "failed" }] }), NOW), "stale"));
-test("freshness warn when injuries unavailable", () =>
+test("freshness ok when injuries unavailable", () =>
   assert.equal(
     freshness(latest({ sources: [{ id: "nhl", status: "ok" }, { id: "injuries", status: "unavailable" }] }), NOW),
-    "warn"));
+    "ok"));
+test("freshness warn when a non-core source failed or is stale", () => {
+  for (const status of ["failed", "stale"]) {
+    assert.equal(
+      freshness(latest({ sources: [{ id: "nhl", status: "ok" }, { id: "injuries", status }] }), NOW),
+      "warn");
+  }
+});
 test("freshness warn when review worst is error", () =>
   assert.equal(freshness(latest({ review: { problems: 2, worst: "error" } }), NOW), "warn"));
 test("groupByDate sorts and groups", () => {

@@ -96,6 +96,43 @@ def test_cached_ids_and_load_seasons_sorted(root, reg_record):
     assert [r["id"] for r in cache.load_seasons([SEASON])] == [REG_GAME_ID, 2026020301]
 
 
+def _corrupt(path, kind):
+    good = path.read_bytes()
+    path.write_bytes(b"\0" * 64 if kind == "zeros" else good[: len(good) // 2])
+
+
+@pytest.mark.parametrize("kind", ["zeros", "truncated"])
+def test_write_leaves_no_tmp_file(root, reg_record, kind):
+    p = cache.write(reg_record)
+    assert not list(p.parent.glob("*.tmp"))
+
+
+@pytest.mark.parametrize("kind", ["zeros", "truncated"])
+def test_load_seasons_skips_and_deletes_corrupt_file(root, reg_record, kind, caplog):
+    bad = cache.write({**reg_record, "id": 2026020301, "date": "2026-11-20"})
+    cache.write(reg_record)
+    _corrupt(bad, kind)
+    with caplog.at_level(logging.WARNING):
+        records = cache.load_seasons([SEASON])
+    assert [r["id"] for r in records] == [REG_GAME_ID]
+    assert not bad.exists() and str(bad) in caplog.text
+
+
+@pytest.mark.parametrize("kind", ["zeros", "truncated"])
+def test_cache_finished_refetches_corrupt_cached_game(root, offline, reg_record, kind, caplog):
+    p = cache.write(reg_record)
+    _corrupt(p, kind)
+    with caplog.at_level(logging.WARNING):
+        written, skipped = cache.cache_finished([scheduled(REG_GAME_ID)])
+    assert written == [REG_GAME_ID] and skipped == []
+    assert cache.read(p) == reg_record and str(p) in caplog.text
+
+
+def test_cache_finished_leaves_readable_cached_game(root, offline, reg_record):
+    cache.write(reg_record)
+    assert cache.cache_finished([scheduled(REG_GAME_ID)]) == ([], [])
+
+
 def test_cache_finished_skips_cached_and_unfinished(root, offline, reg_record):
     cache.write(reg_record)
     written, skipped = cache.cache_finished([

@@ -38,6 +38,11 @@ def test_pipeline_has_concurrency_and_permissions():
     assert "workflow_dispatch" in text
 
 
+def test_pipeline_checks_out_the_triggering_ref():
+    step = _step_containing(_text("pipeline.yml"), "actions/checkout")
+    assert "ref: ${{ github.ref_name }}" in step
+
+
 def test_pipeline_extra_run_only_on_weekend_cron():
     text = _text("pipeline.yml")
     run_step = _step_containing(text, "id: run")
