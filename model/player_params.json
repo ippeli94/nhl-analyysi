@@ -1,0 +1,28 @@
+{
+  "half_life_days": 80.0,
+  "prior_toi_h": 2.5,
+  "xg_blend": 0.5,
+  "unassigned": 0.035,
+  "gate": {
+    "passed": true,
+    "season": "20252026",
+    "tune_season": "20242025",
+    "goalie_mode": "projected",
+    "points": {
+      "n": 44306,
+      "brier": 0.2061559600580814,
+      "logloss": 0.6000139555978411,
+      "brier_base": 0.2136218799769153,
+      "logloss_base": 0.7545624829673484
+    },
+    "goals": {
+      "n": 44306,
+      "brier": 0.12255705784139918,
+      "logloss": 0.39913857622472054,
+      "brier_base": 0.12769103115353578,
+      "logloss_base": 0.5550191707826704
+    },
+    "coverage": 0.9380703351612288,
+    "unassigned": 0.0392035617116003
+  }
+}
