@@ -117,3 +117,11 @@ def test_fast_and_plain_json_types():
             assert type(x) in (int, float, str)
 
     walk(r)
+
+
+def test_total_dist_sums_to_one_and_matches_over():
+    r = run()
+    dist = r["total_dist"]
+    assert len(dist) == 15
+    assert abs(sum(dist) - 1) < 1e-3
+    assert abs((1 - sum(dist[:6])) - r["score"]["total"]["over"]["5.5"]) < 1e-3

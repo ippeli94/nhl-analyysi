@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from pipeline import config, export
+from pipeline import config, export, value
 from pipeline.adjust import GoalieRatings
 from pipeline.config import ModelParams
 from pipeline.predict import predict_game
@@ -120,7 +120,7 @@ def test_unknown_source_status_is_rejected(g1):
 def test_later_phase_fields_accept_null_and_objects(g1):
     obj = latest([g1])
     game = obj["games"][0]
-    game["odds"] = {"fetched_at": "x", "h2h": []}
+    game["insights"] = {"note": "x"}
     game["players"] = []
     game["form"] = {"home": {}}
     game["h2h"] = None
@@ -156,3 +156,25 @@ def test_generated_at_is_utc_z(g1):
     obj = latest([g1])
     assert obj["generated_at"] == "2025-11-15T21:41:07Z"
     assert obj["generated_at"].endswith("Z")
+
+
+ODDS_BOOKS = {
+    "pinnacle": {"h2h": [1.58, 2.52], "h2h3": None, "totals": [[5.5, 1.9, 1.95]],
+                 "spreads": [[-1.5, 2.4, 1.6]]},
+    "coolbet": {"h2h": [1.66, 2.30], "h2h3": None, "totals": [[5.5, 2.0, 1.85]],
+                "spreads": []},
+}
+
+
+def test_odds_block_validates(g1):
+    g1["odds"] = value.game_odds(g1, ODDS_BOOKS, "2025-11-15T21:37:40Z")
+    assert g1["odds"]["markets"]
+    assert export.validate(latest([g1])) == []
+
+
+def test_odds_bad_flag_rejected(g1):
+    g1["odds"] = value.game_odds(g1, ODDS_BOOKS, "2025-11-15T21:37:40Z")
+    obj = latest([g1])
+    obj["games"][0]["odds"]["markets"][0]["outcomes"][0]["flag"] = "maybe"
+    errors = export.validate(obj)
+    assert errors and any("flag" in e or "maybe" in e for e in errors)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pipeline.config import N_SIMS, TOTAL_LINES, ModelParams
+from pipeline.config import N_SIMS, TOTAL_DIST_MAX, TOTAL_LINES, ModelParams
 
 MAX_SCORE = 7  # final scores are clipped to 0..7 in the matrix
 GOAL_DIST_MAX = 10  # regulation goal distribution: 0..9 and 10+
@@ -89,6 +89,8 @@ def simulate(
     ]
 
     total = fin_h + fin_a
+    tdist = np.bincount(np.minimum(total, TOTAL_DIST_MAX - 1), weights=w, minlength=TOTAL_DIST_MAX)
+    total_dist = [round(float(x), 5) for x in tdist / w.sum()]
     final_margin = fin_h - fin_a
     home_m15 = _wmean(final_margin >= 2, w)
     away_m15 = _wmean(final_margin <= -2, w)
@@ -125,5 +127,6 @@ def simulate(
         "prob": prob,
         "score": score,
         "periods": periods,
+        "total_dist": total_dist,
         "goal_dist": {"home": _goal_dist(reg_h, w), "away": _goal_dist(reg_a, w)},
     }

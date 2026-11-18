@@ -137,5 +137,5 @@ def predict_game(
         },
         **{k: None for k in NULL_KEYS},
         # private: stripped by export (keys starting with "_"); read by tracking.log_row
-        "_internal": {"lam_home": lam_h, "lam_away": lam_a},
+        "_internal": {"lam_home": lam_h, "lam_away": lam_a, "total_dist": sim["total_dist"]},
     }

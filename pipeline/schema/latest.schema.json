@@ -153,6 +153,105 @@
     },
     "goalie_or_null": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/goalie"}]},
     "later_phase": {"type": ["object", "array", "null"]},
+    "odds_veikkaus": {
+      "anyOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["price", "ev", "value"],
+          "properties": {
+            "price": {"type": "number", "exclusiveMinimum": 1},
+            "ev": {"type": ["number", "null"]},
+            "value": {"type": "boolean"}
+          }
+        }
+      ]
+    },
+    "odds_prob": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "odds": {
+      "type": "object",
+      "required": ["fetched_at", "markets", "picks"],
+      "properties": {
+        "fetched_at": {"type": "string"},
+        "markets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["key", "line", "ref", "outcomes", "books"],
+            "properties": {
+              "key": {"enum": ["h2h", "1x2", "totals", "spreads"]},
+              "line": {"type": ["number", "null"]},
+              "ref": {"enum": ["pinnacle", "median", null]},
+              "outcomes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["key", "p_model", "p_market", "best", "veikkaus",
+                               "edge", "ev", "value", "flag"],
+                  "properties": {
+                    "key": {"enum": ["home", "away", "draw", "over", "under"]},
+                    "p_model": {"$ref": "#/$defs/odds_prob"},
+                    "p_market": {"$ref": "#/$defs/odds_prob"},
+                    "best": {
+                      "anyOf": [
+                        {"type": "null"},
+                        {
+                          "type": "object",
+                          "required": ["book", "price"],
+                          "properties": {
+                            "book": {"type": "string"},
+                            "price": {"type": "number", "exclusiveMinimum": 1}
+                          }
+                        }
+                      ]
+                    },
+                    "veikkaus": {"$ref": "#/$defs/odds_veikkaus"},
+                    "edge": {"type": ["number", "null"]},
+                    "ev": {"type": ["number", "null"]},
+                    "value": {"type": "boolean"},
+                    "flag": {"enum": ["suspicious", null]}
+                  }
+                }
+              },
+              "books": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["book", "prices", "vig", "valid"],
+                  "properties": {
+                    "book": {"type": "string"},
+                    "prices": {"type": "array", "items": {"type": "number"}},
+                    "vig": {"type": "number"},
+                    "valid": {"type": "boolean"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "picks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["market", "line", "outcome", "book", "price", "p_model",
+                         "p_market", "edge", "ev", "flag", "veikkaus"],
+            "properties": {
+              "market": {"enum": ["h2h", "1x2", "totals", "spreads"]},
+              "line": {"type": ["number", "null"]},
+              "outcome": {"enum": ["home", "away", "draw", "over", "under"]},
+              "book": {"type": "string"},
+              "price": {"type": "number", "exclusiveMinimum": 1},
+              "p_model": {"$ref": "#/$defs/odds_prob"},
+              "p_market": {"$ref": "#/$defs/odds_prob"},
+              "edge": {"type": "number"},
+              "ev": {"type": "number"},
+              "flag": {"enum": ["suspicious", null]},
+              "veikkaus": {"$ref": "#/$defs/odds_veikkaus"}
+            }
+          }
+        }
+      }
+    },
     "game": {
       "type": "object",
       "required": [
@@ -186,7 +285,7 @@
         "season_compare": {"$ref": "#/$defs/later_phase"},
         "h2h": {"$ref": "#/$defs/later_phase"},
         "insights": {"$ref": "#/$defs/later_phase"},
-        "odds": {"$ref": "#/$defs/later_phase"}
+        "odds": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/odds"}]}
       },
       "additionalProperties": true
     }

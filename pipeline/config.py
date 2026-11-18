@@ -69,6 +69,7 @@ TRAIN_GAME_TYPES = (2,)
 # Simulation and markets
 N_SIMS = 10000
 TOTAL_LINES = (5.5, 6.5)
+TOTAL_DIST_MAX = 15  # final-total distribution: 0..13 and 14+
 EN_PROB_FALLBACK = {1: 0.30, 2: 0.15}
 EN_PROB_MIN_GAMES = 50
 
