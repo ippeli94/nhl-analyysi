@@ -178,3 +178,6 @@ PLAYER_MODEL_VERSION = "1.0.0"
 PLAYER_LOG_COLUMNS = (
     "id", "pos", "toi", "pts1", "pts2", "pts3", "g1", "g2", "g3", "base_pts1", "base_g1",
 )
+PLAYER_PRIOR_GRID = (2.5, 5.0, 10.0)
+PLAYER_HALF_LIFE_GRID = (40.0, 80.0)
+PLAYER_UNASSIGNED_RANGE = (0.0, 0.10)

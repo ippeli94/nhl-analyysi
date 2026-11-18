@@ -406,3 +406,16 @@ def test_refit_leaves_params_untouched_when_gate_fails(root, monkeypatch):
     assert backtest.main(REFIT) == 1
     assert (root / "model/params.json").read_bytes() == before
     assert "## Draw calibration" in (root / "reports/backtest.md").read_text(encoding="utf-8")
+
+
+# ---- player goal distributions ----
+
+def test_run_backtest_keep_goal_dist_columns(small):
+    default = run_backtest(small, GATE_SEASON, P, n_sims=SIMS)["rows"]
+    kept = run_backtest(small, GATE_SEASON, P, n_sims=SIMS, keep_goal_dist=True)["rows"]
+    assert list(default.columns) == backtest.ROW_COLUMNS
+    assert list(kept.columns) == backtest.ROW_COLUMNS + ["home", "away", "gd_home", "gd_away"]
+    pd.testing.assert_frame_equal(default, kept[backtest.ROW_COLUMNS])
+    r = kept.iloc[0]
+    assert len(r["gd_home"]) == 11 and abs(sum(r["gd_away"]) - 1) < 1e-3
+    assert r["home"] != r["away"]

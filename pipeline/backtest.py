@@ -26,6 +26,7 @@ ROW_COLUMNS = [
     "game_id", "date", "p_home", "y_home", "p_reg_draw", "y_reg_draw",
     "total_mean", "total_actual", "p_reg_home", "p_reg_away", "y_reg",
 ]
+GOAL_DIST_COLUMNS = ["home", "away", "gd_home", "gd_away"]
 LOGLOSS_CLIP = 1e-6
 DRAW_SECTION = "## Draw calibration"
 HALF_LIVES = (25, 40, 60)
@@ -64,6 +65,7 @@ def run_backtest(
     n_sims: int = 2000,
     gg: pd.DataFrame | None = None,
     goalie_mode: str = "none",
+    keep_goal_dist: bool = False,
 ) -> dict:
     """Predict every regular-season game of `season` using only earlier rows."""
     if goalie_mode not in GOALIE_MODES:
@@ -125,11 +127,16 @@ def run_backtest(
                 "p_reg_home": sim["prob"]["reg_home"], "p_reg_away": sim["prob"]["reg_away"],
                 "y_reg": 1 if g.score_reg == g.opp_score_reg
                 else (0 if g.score_reg > g.opp_score_reg else 2),
+                **({
+                    "home": home, "away": away,
+                    "gd_home": list(sim["credited_dist"]["home"]),
+                    "gd_away": list(sim["credited_dist"]["away"]),
+                } if keep_goal_dist else {}),
             })
         if (i + 1) % PROGRESS_EVERY == 0:
             logger.info("backtest %s [%s]: %d/%d dates", season, goalie_mode, i + 1, len(dates))
 
-    frame = pd.DataFrame(rows, columns=ROW_COLUMNS)
+    frame = pd.DataFrame(rows, columns=ROW_COLUMNS + (GOAL_DIST_COLUMNS if keep_goal_dist else []))
     clamp_share = (
         float(np.mean([g <= lo + 1e-9 or g >= hi - 1e-9 for g in gks])) if gks else 0.0
     )
