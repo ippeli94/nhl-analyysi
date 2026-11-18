@@ -262,3 +262,104 @@ def test_does_not_mutate_when_latest_unreadable(root):
     (root / "site/data").mkdir(parents=True)
     (root / "site/data/latest.json").write_text("{", encoding="utf-8")
     assert review.main(ARGS) == 2
+
+
+# --- odds ---------------------------------------------------------------------------------
+
+
+def odds_block(now, valid=False):
+    return {"fetched_at": iso(now), "picks": [], "markets": [
+        {"key": "h2h", "line": None, "ref": "pinnacle", "outcomes": [],
+         "books": [{"book": "coolbet", "prices": [1.5, 2.6], "vig": 0.0298, "valid": True},
+                   {"book": "betsson", "prices": [1.5, 2.6], "vig": 0.2, "valid": valid}]}]}
+
+
+def write_state(root, name, obj):
+    f = root / "data/state" / name
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(json.dumps(obj), encoding="utf-8")
+
+
+def seed_odds(root, hours_old=1, remaining=400, with_block=True, snapshot=None, now=None):
+    now = now or datetime.now(UTC)
+    edit(root, lambda o: o["games"][0].update(odds=odds_block(now) if with_block else None))
+    ok = iso(now - timedelta(hours=hours_old))
+    write_state(root, "sources.json", {"odds": {
+        "status": "ok", "fetched_at": ok, "last_ok_at": ok, "note": None,
+        "remaining": remaining, "used": 100}})
+    write_state(root, "odds.json", snapshot or {
+        "fetched_at": ok, "remaining": remaining, "games": {}, "unknown_teams": [],
+        "unmatched": []})
+
+
+@pytest.fixture
+def odds_root(seeded):
+    seed_odds(seeded)
+    edit(seeded, lambda o: o["games"][0]["odds"]["markets"][0]["books"][1].update(
+        vig=0.03, valid=True))
+    return seeded
+
+
+def test_clean_odds_is_ok(odds_root):
+    assert review.main(ARGS) == 0
+
+
+def test_no_odds_source_is_not_a_problem(seeded):
+    assert review.main(ARGS) == 0 and review.check_odds(
+        review.Ctx(seeded, latest(seeded), datetime.now(UTC), "data")) == []
+
+
+def test_stale_odds_is_warning(seeded):
+    seed_odds(seeded, hours_old=17, with_block=False)
+    assert review.main(ARGS) == 1
+    text = report(seeded)
+    assert "[VAROITUS] ODDS" in text and "17.0 h sitten" in text
+
+
+def test_low_credits_is_warning(odds_root):
+    seed_odds(odds_root, remaining=59, with_block=False)
+    assert review.main(ARGS) == 1
+    assert "krediittejä jäljellä 59" in report(odds_root)
+
+
+def test_invalid_vig_is_warning(seeded):
+    seed_odds(seeded)
+    assert review.main(ARGS) == 1
+    assert "betsson h2h: marginaali 20.0%" in report(seeded)
+
+
+def test_unknown_team_is_error(odds_root):
+    seed_odds(odds_root, snapshot={
+        "fetched_at": iso(datetime.now(UTC)), "remaining": 400, "games": {},
+        "unknown_teams": ["Utah Hockey Club"], "unmatched": []})
+    assert review.main(ARGS) == 2
+    text = report(odds_root)
+    assert "[VIRHE] ODDS" in text and "Utah Hockey Club" in text
+
+
+def test_unmatched_event_is_warning(odds_root):
+    seed_odds(odds_root, snapshot={
+        "fetched_at": iso(datetime.now(UTC)), "remaining": 400, "games": {},
+        "unknown_teams": [], "unmatched": [
+            {"home": "CAR", "away": "SEA", "commence_utc": "2026-11-18T00:00:00Z"}]})
+    assert review.main(ARGS) == 1
+    assert "SEA @ CAR 2026-11-18T00:00:00Z" in report(odds_root)
+
+
+def test_game_without_odds_is_warning_only_when_fresh(seeded):
+    seed_odds(seeded, with_block=False)
+    assert review.main(ARGS) == 1
+    assert "ei kertoimia yhdeltäkään välittäjältä" in report(seeded)
+    seed_odds(seeded, hours_old=17, with_block=False)
+    review.main(ARGS)
+    assert "ei kertoimia yhdeltäkään" not in report(seeded)
+
+
+def test_malformed_odds_files_never_crash(odds_root):
+    write_state(odds_root, "sources.json", {"odds": {"last_ok_at": "huomenna", "remaining": "x"}})
+    write_state(odds_root, "odds.json", ["rikki"])
+    assert review.main(ARGS) == 1
+    assert "tarkistus kaatui" not in report(odds_root)
+    (odds_root / "data/state/odds.json").write_text("{", encoding="utf-8")
+    assert review.main(ARGS) == 1
+    assert "ei ole luettavaa JSONia" in report(odds_root)

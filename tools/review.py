@@ -30,6 +30,7 @@ OK_TEXT = "OK — 0 ongelmaa\n"
 REPORT = ("reports", "review.md")
 LATEST = ("site", "data", "latest.json")
 SOURCES_FILE = ("data", "state", "sources.json")
+ODDS_FILE = ("data", "state", "odds.json")
 SCHEDULE_IDS = ("data", "state", "schedule_ids.json")
 SUBPROCESS_TIMEOUT_S = 600
 RECURSION_ENV = "REVIEW_RUNNING"
@@ -42,6 +43,8 @@ GOALIE_MULT_EDGES = config.GOALIE_MULT_CLAMP
 EDGE_EPS = 1e-6
 MAX_AGE_DATA = timedelta(hours=1)
 LATE_AFTER = timedelta(hours=24)
+ODDS_WINDOW = timedelta(hours=24)  # a game this close to generated_at should have odds
+ODDS_STALE = timedelta(hours=config.ODDS_STALE_HOURS)
 GAME_LENGTH = timedelta(hours=3)  # start -> assumed end
 XG_WINDOW = timedelta(days=7)
 XG_MIN_GAMES = 20
@@ -344,6 +347,100 @@ def check_source(ctx: Ctx) -> list[Problem]:
     ]
 
 
+def _odds_entry(ctx: Ctx):
+    sources = {s.get("id"): s for s in (ctx.latest or {}).get("sources") or []
+               if isinstance(s, dict)}
+    state = _read_json(ctx.root / Path(*SOURCES_FILE), {})
+    if isinstance(state, dict):
+        sources.update({k: v for k, v in state.items() if isinstance(v, dict)})
+    return sources.get("odds")
+
+
+def _vig_problems(g: dict) -> list[Problem]:
+    found = []
+    for market in (g.get("odds") or {}).get("markets") or []:
+        for b in market.get("books") or []:
+            if isinstance(b, dict) and b.get("valid") is False:
+                vig = b.get("vig")
+                shown = f"{vig:.1%}" if isinstance(vig, int | float) else "?"
+                found.append(Problem(WARNING, "ODDS", _gname(g),
+                                     f"{b.get('book')} {market.get('key')}: marginaali {shown}",
+                                     "tarkista välittäjän kertoimet tai ODDS_VIG_RANGE"))
+    return found
+
+
+def _snapshot_problems(snap: dict) -> list[Problem]:
+    where = "/".join(ODDS_FILE)
+    found = [Problem(ERROR, "ODDS", where, f"tuntematon joukkue: {name}",
+                     "lisää nimi pipeline/teams.py ODDS_ALIASES")
+             for name in snap.get("unknown_teams") or []]
+    for u in snap.get("unmatched") or []:
+        if isinstance(u, dict):
+            found.append(Problem(WARNING, "ODDS", where,
+                                 f"kerroinottelu ilman NHL-ottelua: {u.get('away')} @ "
+                                 f"{u.get('home')} {u.get('commence_utc')}",
+                                 "tarkista ajan toleranssi ja ohjelma"))
+    return found
+
+
+def check_odds(ctx: Ctx) -> list[Problem]:
+    entry = _odds_entry(ctx)
+    if entry is None:
+        return []
+    found: list[Problem] = []
+    games = [g for g in _games(ctx) if isinstance(g, dict)]
+    stale_hint = "tarkista ODDS_API_KEY ja ajon --odds-lippu"
+    try:
+        if not isinstance(entry, dict):
+            raise ValueError
+        last_ok = entry.get("last_ok_at")
+        age = ctx.now - _parse(last_ok) if last_ok else None
+        remaining = entry.get("remaining")
+        if age is not None and age > ODDS_STALE and any(
+                g.get("state") == "upcoming" for g in games):
+            found.append(Problem(WARNING, "ODDS", "odds",
+                                 f"kertoimet haettu {age.total_seconds() / 3600:.1f} h sitten",
+                                 stale_hint))
+        if (isinstance(remaining, int | float) and not isinstance(remaining, bool)
+                and remaining < config.ODDS_LOW_CREDITS):
+            found.append(Problem(WARNING, "ODDS", "odds", f"krediittejä jäljellä {remaining}",
+                                 "hakuja ohitetaan alle 30 krediitin; tarkista kuukauden kulutus"))
+    except (ValueError, TypeError, AttributeError):
+        found.append(Problem(WARNING, "ODDS", "data/state/sources.json",
+                             "odds-lähteen tila ei ole luettavissa", stale_hint))
+    snap_path = ctx.root / Path(*ODDS_FILE)
+    snap = _read_json(snap_path, None)
+    if snap is None and snap_path.exists():
+        found.append(Problem(WARNING, "ODDS", "/".join(ODDS_FILE),
+                             "tiedosto ei ole luettavaa JSONia",
+                             "poista tiedosto; seuraava --odds-ajo luo sen uudelleen"))
+    snap = snap if isinstance(snap, dict) else None
+    try:
+        for g in games:
+            found += _vig_problems(g)
+        if snap is not None:
+            found += _snapshot_problems(snap)
+    except (TypeError, AttributeError, KeyError):
+        found.append(Problem(WARNING, "ODDS", "data/state/odds.json",
+                             "kerroindata ei ole luettavissa",
+                             "tarkista pipeline/value.py ja odds.json"))
+    try:
+        fetched = _parse(snap["fetched_at"]) if snap and snap.get("fetched_at") else None
+        stamp = (ctx.latest or {}).get("generated_at")
+        if fetched is not None and stamp and ctx.now - fetched < ODDS_STALE:
+            generated = _parse(stamp)
+            for g in games:
+                if (g.get("state") == "upcoming" and g.get("odds") is None
+                        and timedelta(0) <= _parse(g["start_utc"]) - generated <= ODDS_WINDOW):
+                    found.append(Problem(WARNING, "ODDS", _gname(g),
+                                         "ei kertoimia yhdeltäkään välittäjältä",
+                                         "välittäjät eivät ehkä ole vielä avanneet kohdetta"))
+    except (ValueError, TypeError, KeyError, AttributeError):
+        found.append(Problem(WARNING, "ODDS", "data/state/odds.json",
+                             "haun ajankohta ei ole luettavissa", stale_hint))
+    return found
+
+
 def check_track(ctx: Ctx) -> list[Problem]:
     found = []
     for kind in ("predictions", "results"):
@@ -462,7 +559,7 @@ def check_secret(ctx: Ctx) -> list[Problem]:
 
 CHECKS: list[Callable[[Ctx], list[Problem]]] = [
     check_lint, check_test, check_site, check_prob, check_roster, check_sched, check_fresh,
-    check_source, check_track, check_cache, check_xg, check_secret,
+    check_source, check_odds, check_track, check_cache, check_xg, check_secret,
 ]
 
 
