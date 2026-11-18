@@ -53,7 +53,8 @@ export function ageText(generatedAt, now = new Date()) {
 export function freshness(latest, now = new Date()) {
   const sources = latest.sources || [];
   const nhl = sources.find((s) => s.id === "nhl");
-  const old = now - new Date(latest.generated_at) > STALE_MS;
+  const age = now - new Date(latest.generated_at);
+  const old = !Number.isFinite(age) || age > STALE_MS;
   if (old || !nhl || nhl.status !== "ok") return "stale";
   if (sources.some((s) => s.status !== "ok") || latest.review?.worst === "error") return "warn";
   return "ok";

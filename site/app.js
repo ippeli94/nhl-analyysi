@@ -204,7 +204,7 @@ function factorsSection(g) {
   const val = (f, v) => {
     if (f.unit === "goals") return `<span class="fv">${esc(fmtNum(v, 2))}</span>`;
     const txt = fmtSignedPct(v);
-    const cls = txt.endsWith("0,0 %") ? "" : txt.startsWith("−") ? " neg" : " pos";
+    const cls = Math.abs(v - 1) < 0.0005 ? "" : txt.startsWith("−") ? " neg" : " pos";
     return `<span class="fv${cls}">${esc(txt)}</span>`;
   };
   const rows = g.factors.map((f) =>

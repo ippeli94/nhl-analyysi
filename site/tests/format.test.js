@@ -58,3 +58,5 @@ test("groupByDate sorts and groups", () => {
   assert.deepEqual(g[1].games.map((x) => x.id), [1, 3]);
 });
 test("fmtDateTime", () => assert.equal(fmtDateTime("2026-11-16T00:00:00Z"), "16.11. 02.00"));
+test("freshness stale when generated_at is unparseable", () =>
+  assert.equal(freshness(latest({ generated_at: "not a date" }), NOW), "stale"));
