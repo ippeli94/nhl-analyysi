@@ -103,3 +103,59 @@ def make_goalie_games(
             "xg_faced": 28.0, "ga": int(rng.poisson(28 * (1 - delta))),
         })
     return pd.DataFrame(rows)
+
+
+def make_records(
+    games: list[tuple[str, str, str]],
+    skaters: dict[str, list[tuple[int, str]]],
+    seed: int = 0,
+) -> list[dict]:
+    """CachedGame dicts for (date, home, away) games; one non-empty-net shot per goal.
+
+    Goals, assists and TOI are deterministic in `seed`; a1/a2 of every goal are teammates
+    and the skater `a` counts are derived from them, so the record is internally consistent.
+    """
+    records = []
+    for i, (day, home, away) in enumerate(games):
+        rng = np.random.default_rng([seed, i])
+        shots, rows, score = [], [], {}
+        for team in (home, away):
+            roster = skaters[team]
+            goals = {pid: int(rng.poisson(0.04 if pos == "D" else 0.15)) for pid, pos in roster}
+            assists = {pid: 0 for pid, _ in roster}
+            for pid, n in goals.items():
+                for _ in range(n):
+                    mates = [q for q, _ in roster if q != pid]
+                    a1, a2 = (int(x) for x in rng.choice(mates, size=2, replace=False))
+                    assists[a1] += 1
+                    assists[a2] += 1
+                    shots.append({
+                        "p": int(rng.integers(1, 4)), "t": int(rng.integers(0, 1200)),
+                        "team": team, "shooter": pid, "goalie": 1, "x": 80.0, "y": 0.0,
+                        "dist": 10.0, "angle": 10.0, "type": "wrist", "sit": "1551",
+                        "strength": "5v5", "ev": "goal", "empty_net": False,
+                        "rebound": False, "rush": False, "a1": a1, "a2": a2,
+                    })
+            score[team] = sum(goals.values())
+            for pid, pos in roster:
+                lo, hi = (1100, 1400) if pos == "D" else (800, 1200)
+                rows.append({
+                    "id": pid, "name": f"P{pid}", "team": team, "pos": pos,
+                    "toi": int(rng.integers(lo, hi)), "g": goals[pid], "a": assists[pid],
+                    "sog": goals[pid] + int(rng.integers(0, 4)),
+                })
+        sc = {"home": score[home], "away": score[away]}
+        records.append({
+            "v": 1, "id": 2025020000 + i, "season": "20252026", "game_type": 2, "date": day,
+            "start_utc": f"{day}T23:00:00Z", "home": {"id": 1, "abbr": home},
+            "away": {"id": 2, "abbr": away}, "score": sc, "score_reg": dict(sc),
+            "decided": "REG", "shots": shots, "skaters": rows,
+            "goalies": [
+                {"id": 1, "name": "G1", "team": home, "started": True, "toi": 3600,
+                 "sa": 25, "saves": 25 - score[away], "ga": score[away]},
+                {"id": 2, "name": "G2", "team": away, "started": True, "toi": 3600,
+                 "sa": 25, "saves": 25 - score[home], "ga": score[home]},
+            ],
+            "penalties": [],
+        })
+    return records

@@ -54,6 +54,36 @@ def load_gate() -> dict | None:
     return _read_params_file().get("gate")
 
 
+@dataclass
+class PlayerParams:
+    half_life_days: float = 40.0
+    prior_toi_h: float = 5.0
+    xg_blend: float = 0.5
+    unassigned: float = 0.03
+
+
+def _read_player_params_file() -> dict:
+    params_file = path("model", "player_params.json")
+    if not params_file.exists():
+        return {}
+    return json.loads(params_file.read_text(encoding="utf-8"))
+
+
+def load_player_params() -> PlayerParams:
+    """Defaults overlaid with model/player_params.json; `gate` belongs to load_player_gate()."""
+    overrides = {k: v for k, v in _read_player_params_file().items() if k != "gate"}
+    known = {f.name for f in fields(PlayerParams)}
+    unknown = set(overrides) - known
+    if unknown:
+        raise ValueError(f"unknown keys in model/player_params.json: {sorted(unknown)}")
+    return replace(PlayerParams(), **overrides)
+
+
+def load_player_gate() -> dict | None:
+    """The `gate` object of model/player_params.json, or None if there is none."""
+    return _read_player_params_file().get("gate")
+
+
 # NHL API (spec 5.1)
 NHL_BASE = "https://api-web.nhle.com/v1"
 REQUESTS_PER_S = 3
@@ -135,3 +165,12 @@ ODDS_SUSPICIOUS_GAP = 0.10
 ODDS_COMMISSION = {"betfair_ex_eu": 0.05}
 VEIKKAUS_BOOK = "veikkaus_fi"
 ODDS_FIXTURE = "odds__icehockey_nhl.json"
+
+# Players (plan decisions 19-28)
+PLAYER_PRIOR_FALLBACK = {"F": (0.85, 2.1), "D": (0.25, 1.1)}  # (goals/60, points/60)
+PLAYER_PPG_FALLBACK = 2.7
+PLAYER_PPG_MAX = 3.0
+PLAYER_MODEL_VERSION = "1.0.0"
+PLAYER_LOG_COLUMNS = (
+    "id", "pos", "toi", "pts1", "pts2", "pts3", "g1", "g2", "g3", "base_pts1", "base_g1",
+)
