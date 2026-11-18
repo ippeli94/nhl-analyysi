@@ -299,3 +299,132 @@ def test_only_rows_before_asof():
         (2, "F", "2025-12-01", 1200, 0, 0, 0.0),
     ])
     assert [s["id"] for s in players.project_lineup(pg, "AAA", ASOF, "20252026")] == [1]
+
+
+def poisson_dist(mu, cap=10):
+    import math
+    pm = [math.exp(-mu) * mu**k / math.factorial(k) for k in range(cap)]
+    return pm + [1 - sum(pm)]
+
+
+DIST = poisson_dist(3.2)
+PP = PlayerParams(unassigned=0.03)
+
+
+def make_slots(n=18, base=100):
+    return [{"id": base + i, "name": f"S{i}", "pos": "D" if i >= 12 else "C",
+             "toi_proj": 18.0 - i * 0.5}
+            for i in range(n)]
+
+
+def make_rates(slots, g=0.8, p=2.0, ppg=2.7):
+    r = players._fallback_rates()
+    r.ppg = ppg
+    for i, s in enumerate(slots):
+        r.g60[s["id"]] = g + 0.02 * (18 - i)
+        r.p60[s["id"]] = p + 0.04 * (18 - i)
+    return r
+
+
+def test_binom_tails_known_numbers():
+    assert players.binom_tails([0, 0, 1] + [0] * 8, 0.5) == pytest.approx([0.75, 0.25, 0.0])
+
+
+def test_binom_tails_is_poisson_thinning():
+    t = players.binom_tails(poisson_dist(3.0), 0.1)
+    assert t[0] == pytest.approx(1 - np.exp(-0.3), abs=1e-3)
+
+
+def test_shares_sum_to_team_expectation():
+    slots = make_slots()
+    probs = players.player_probs(slots, make_rates(slots), DIST, PP)
+    mean = sum(i * x for i, x in enumerate(DIST))
+    assert sum(x["exp_goals"] for x in probs) == pytest.approx(0.97 * mean, rel=1e-6)
+    assert sum(x["exp_points"] for x in probs) <= 3 * mean
+
+
+def test_empty_slots():
+    assert players.player_probs([], players._fallback_rates(), DIST, PP) == []
+
+
+def test_tails_monotone_and_goals_below_points():
+    slots = make_slots()
+    rates = make_rates(slots)
+    rates.g60[slots[0]["id"]] = 2.0  # sniper
+    rates.p60[slots[0]["id"]] = 2.0  # a = 0
+    dist = [0.0] * 10 + [1.0]
+    probs = players.player_probs(slots, rates, dist, PP)
+    for x in probs:
+        assert x["p_points"][0] >= x["p_points"][1] >= x["p_points"][2]
+        assert x["p_goals"][0] >= x["p_goals"][1] >= x["p_goals"][2]
+        assert all(g <= p + 1e-12 for g, p in zip(x["p_goals"], x["p_points"], strict=True))
+        assert all(0 <= v <= 1 for v in x["p_goals"] + x["p_points"])
+
+
+def test_pi_capped_and_at_least_q():
+    slots = make_slots()
+    rates = make_rates(slots)
+    rates.p60[slots[1]["id"]] = 500.0
+    rates.g60[slots[2]["id"]] = 1.0
+    rates.p60[slots[2]["id"]] = 0.1  # sniper: points share below goal share
+    by = {x["id"]: x for x in players.player_probs(slots, rates, DIST, PP)}
+    assert by[slots[1]["id"]]["pi"] == pytest.approx(0.95)
+    assert by[slots[2]["id"]]["pi"] == pytest.approx(by[slots[2]["id"]]["q"])
+
+
+def test_debutant_probabilities_finite():
+    slots = make_slots()
+    rates = make_rates(slots)
+    new = {"id": 999, "name": None, "pos": "C", "toi_proj": 12.0}
+    probs = players.player_probs(slots + [new], rates, DIST, PP)
+    by = {x["id"]: x for x in probs}
+    assert 0 < by[999]["p_points"][0] < probs[0]["p_points"][0]
+    assert all(np.isfinite(v) for v in by[999]["p_points"] + by[999]["p_goals"])
+
+
+def test_team_block_top_is_union_and_rounded():
+    slots = make_slots()
+    rates = make_rates(slots)
+    d_id = slots[17]["id"]
+    rates.p60[d_id] = 9.0  # D with high points, low goals
+    rates.g60[d_id] = 0.05
+    sniper = slots[10]["id"]
+    rates.g60[sniper] = 3.0
+    rates.p60[sniper] = 3.0
+    probs = players.player_probs(slots, rates, DIST, PP)
+    b = players.team_block("AAA", probs, DIST, PP)
+    ids = {p["id"] for p in b["top"]}
+    assert 10 <= len(b["top"]) <= 20 and b["dressed"] == 18
+    assert all(p["odds"] is None and p["team"] == "AAA" for p in b["top"])
+    assert d_id in ids and sniper in ids
+    assert all(round(v, 4) == v for p in b["top"] for v in p["p_points"] + p["p_goals"])
+    assert players.team_block("AAA", [], DIST, PP) is None
+
+
+def make_pin(teams):
+    slots = make_slots()
+    rates = make_rates(slots)
+    lineups = {t: (slots if t in teams else []) for t in ("AAA", "BBB")}
+    base = {s["id"]: (0.3, 0.1) for s in slots}
+    return players.PlayerInputs(rates, lineups, base, PP)
+
+
+def test_game_players_one_team_missing():
+    block, log = players.game_players("AAA", "BBB", make_pin({"AAA"}), {"AAA": DIST, "BBB": DIST})
+    assert block["away"] is None and block["home"]["team"] == "AAA"
+    assert block["lineup"] == "projected" and list(log["teams"]) == ["AAA"]
+
+
+def test_game_players_none_when_both_missing():
+    assert players.game_players("AAA", "BBB", make_pin(set()), {"AAA": DIST, "BBB": DIST}) == (
+        None, None)
+
+
+def test_log_payload_columns():
+    block, log = players.game_players("AAA", "BBB", make_pin({"AAA", "BBB"}),
+                                      {"AAA": DIST, "BBB": DIST})
+    rows = log["teams"]["AAA"]["players"]
+    assert len(rows) == 18
+    assert all(len(r) == len(config.PLAYER_LOG_COLUMNS) for r in rows)
+    assert rows[0][-2:] == [0.3, 0.1]
+    assert log["teams"]["AAA"]["unassigned"] == 0.03

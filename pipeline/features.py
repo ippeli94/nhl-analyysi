@@ -89,7 +89,11 @@ def sim_params(tg: pd.DataFrame) -> dict:
         n = int(mask.sum())
         enough = n >= config.EN_PROB_MIN_GAMES
         en_prob[m] = float((leader_en[mask] >= 1).mean()) if enough else fallback
-    return {"league_period_share": share, "en_prob": en_prob}
+    ot_share = config.OT_GOAL_SHARE_FALLBACK
+    dh = tg[tg["is_home"] & tg["decided"].isin(["OT", "SO"])]
+    if len(dh) >= config.EN_PROB_MIN_GAMES:
+        ot_share = float((dh["decided"] == "OT").mean())
+    return {"league_period_share": share, "en_prob": en_prob, "ot_goal_share": ot_share}
 
 
 def last_played(tg: pd.DataFrame) -> dict[str, datetime.date]:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field, replace
 from datetime import date
 
@@ -201,3 +202,103 @@ def project_lineup(pg: pd.DataFrame, team: str, asof: date, season: str) -> list
     ]
     slots.sort(key=lambda s: (-s["toi_proj"], s["id"]))
     return slots
+
+
+def binom_tails(dist: list[float], q: float) -> list[float]:
+    """[P(X>=1), P(X>=2), P(X>=3)] for X | G ~ Binomial(G, q); bucket index = G (10+ counts 10)."""
+    out = []
+    for k in (1, 2, 3):
+        total = 0.0
+        for g, pg_ in enumerate(dist):
+            if pg_ <= 0 or g < k:
+                continue
+            below = sum(math.comb(g, j) * q**j * (1 - q) ** (g - j) for j in range(k))
+            total += pg_ * (1.0 - below)
+        out.append(min(1.0, max(0.0, total)))
+    return out
+
+
+def player_probs(
+    slots: list[Slot], rates: PlayerRates, dist: list[float], pp: PlayerParams
+) -> list[dict]:
+    if not slots:
+        return []
+    e_g, e_p = [], []
+    for s in slots:
+        g60, p60 = rates.rate(int(s["id"]), s["pos"])
+        e_g.append(g60 * s["toi_proj"] / 60.0)
+        e_p.append(p60 * s["toi_proj"] / 60.0)
+    sum_g, sum_p = sum(e_g), sum(e_p)
+    mean = sum(g * x for g, x in enumerate(dist))
+    n = len(slots)
+    out = []
+    for s, eg, ep in zip(slots, e_g, e_p, strict=True):
+        q = (1 - pp.unassigned) * (eg / sum_g if sum_g > 0 else 1.0 / n)
+        share_p = (1 - pp.unassigned) * rates.ppg * (ep / sum_p if sum_p > 0 else 1.0 / n)
+        pi = min(config.PLAYER_PI_MAX, max(q, share_p))
+        q = min(q, pi)
+        out.append({
+            "id": int(s["id"]), "name": s["name"], "pos": s["pos"], "toi_proj": s["toi_proj"],
+            "q": q, "pi": pi, "p_goals": binom_tails(dist, q), "p_points": binom_tails(dist, pi),
+            "exp_goals": q * mean, "exp_points": pi * mean,
+        })
+    out.sort(key=lambda x: (-x["p_points"][0], x["id"]))
+    return out
+
+
+def _r4(xs: list[float]) -> list[float]:
+    return [round(float(x), 4) for x in xs]
+
+
+def team_block(team: str, probs: list[dict], dist: list[float], pp: PlayerParams) -> dict | None:
+    if not probs:
+        return None
+    n = config.PLAYER_TOP_N
+    by_pts = sorted(probs, key=lambda x: (-x["p_points"][0], -x["p_goals"][0], x["id"]))
+    by_goals = sorted(probs, key=lambda x: (-x["p_goals"][0], x["id"]))
+    keep = {x["id"] for x in by_pts[:n]} | {x["id"] for x in by_goals[:n]}
+    top = [
+        {
+            "id": x["id"], "name": x["name"], "team": team, "pos": x["pos"],
+            "toi_proj": round(x["toi_proj"], 1),
+            "p_points": _r4(x["p_points"]), "p_goals": _r4(x["p_goals"]),
+            "exp_goals": round(x["exp_goals"], 3), "exp_points": round(x["exp_points"], 3),
+            "odds": None,
+        }
+        for x in by_pts if x["id"] in keep
+    ]
+    return {
+        "team": team, "dressed": len(probs),
+        "goals_mean": round(sum(g * x for g, x in enumerate(dist)), 3),
+        "exp_goals": round(sum(x["exp_goals"] for x in probs), 3),
+        "exp_points": round(sum(x["exp_points"] for x in probs), 3),
+        "unassigned": pp.unassigned, "top": top,
+    }
+
+
+def game_players(
+    home: str, away: str, pin: PlayerInputs, credited: dict[str, list[float]]
+) -> tuple[dict | None, dict | None]:
+    blocks: dict[str, dict | None] = {}
+    teams: dict[str, dict] = {}
+    for side, team in (("home", home), ("away", away)):
+        dist = credited[side] if side in credited else credited[team]
+        probs = player_probs(pin.lineups.get(team, []), pin.rates, dist, pin.pp)
+        blocks[side] = team_block(team, probs, dist, pin.pp)
+        if not probs:
+            continue
+        rows = []
+        for x in probs:
+            b_p, b_g = pin.baseline.get(x["id"], (None, None))
+            rows.append([
+                x["id"], x["pos"], x["toi_proj"], *_r4(x["p_points"]), *_r4(x["p_goals"]),
+                None if b_p is None else round(float(b_p), 4),
+                None if b_g is None else round(float(b_g), 4),
+            ])
+        teams[team] = {
+            "goals_mean": round(sum(g * v for g, v in enumerate(dist)), 3),
+            "unassigned": pin.pp.unassigned, "players": rows,
+        }
+    if blocks["home"] is None and blocks["away"] is None:
+        return None, None
+    return {"lineup": "projected", "home": blocks["home"], "away": blocks["away"]}, {"teams": teams}

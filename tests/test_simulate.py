@@ -1,10 +1,16 @@
+import hashlib
+import json
 import time
 from dataclasses import replace
 
 import numpy as np
+import pytest
 
 from pipeline.config import ModelParams
 from pipeline.simulate import simulate
+
+# sha256 of the pre-credited_dist simulate() output (seed 11, n 5000), taken at commit 406ffe2
+GOLDEN = "42ca7e8d122601e1854a58f9d4bcf6ca6bb2f3ae0f48a6d66f397084faa69cfd"
 
 P = ModelParams()
 SP = {"league_period_share": [0.3, 0.35, 0.35], "en_prob": {1: 0.3, 2: 0.15}}
@@ -125,3 +131,37 @@ def test_total_dist_sums_to_one_and_matches_over():
     assert len(dist) == 15
     assert abs(sum(dist) - 1) < 1e-3
     assert abs((1 - sum(dist[:6])) - r["score"]["total"]["over"]["5.5"]) < 1e-3
+
+
+LH, LA = lam(3.2), lam(2.8)
+
+
+def test_credited_dist_sums_to_one_and_adds_ot_goal():
+    out = simulate(LH, LA, dict(SP, ot_goal_share=0.6), P, seed=1)
+    for side in ("home", "away"):
+        assert sum(out["credited_dist"][side]) == pytest.approx(1, abs=1e-4)
+        assert len(out["credited_dist"][side]) == 11
+
+    def mean(d):
+        return sum(i * x for i, x in enumerate(d))
+
+    p_ot_home = out["prob"]["home_win"] - out["prob"]["reg_home"]
+    assert mean(out["credited_dist"]["home"]) == pytest.approx(
+        mean(out["goal_dist"]["home"]) + 0.6 * p_ot_home, abs=2e-3
+    )
+
+
+def test_credited_dist_leaves_other_outputs_unchanged():
+    a = simulate(LH, LA, dict(SP, ot_goal_share=0.0), P, seed=1)
+    b = simulate(LH, LA, dict(SP, ot_goal_share=0.6), P, seed=1)
+    for key in ("prob", "score", "periods", "total_dist", "goal_dist"):
+        assert a[key] == b[key]
+    assert a["credited_dist"] != b["credited_dist"]
+    assert a["credited_dist"]["home"] == pytest.approx(a["goal_dist"]["home"], abs=1e-4)
+
+
+def test_existing_outputs_byte_identical_without_credited_key():
+    out = simulate(LH, LA, SP, P, seed=11, n=5000)
+    rest = {k: v for k, v in out.items() if k != "credited_dist"}
+    assert set(out) == {"prob", "score", "periods", "total_dist", "goal_dist", "credited_dist"}
+    assert hashlib.sha256(json.dumps(rest, sort_keys=True).encode()).hexdigest() == GOLDEN

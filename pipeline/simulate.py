@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from pipeline.config import N_SIMS, TOTAL_DIST_MAX, TOTAL_LINES, ModelParams
+from pipeline.config import (
+    N_SIMS,
+    OT_GOAL_SHARE_FALLBACK,
+    TOTAL_DIST_MAX,
+    TOTAL_LINES,
+    ModelParams,
+)
 
 MAX_SCORE = 7  # final scores are clipped to 0..7 in the matrix
 GOAL_DIST_MAX = 10  # regulation goal distribution: 0..9 and 10+
@@ -23,6 +29,18 @@ def _goal_dist(goals: np.ndarray, w: np.ndarray) -> list[float]:
     g = np.minimum(goals, GOAL_DIST_MAX)
     dist = np.bincount(g, weights=w, minlength=GOAL_DIST_MAX + 1) / w.sum()
     return [round(float(x), 4) for x in dist]
+
+
+def _credited_dist(
+    reg: np.ndarray, ot_win: np.ndarray, w: np.ndarray, s: float
+) -> list[float]:
+    """Regulation goals plus the overtime winner's goal with probability s (decision 21)."""
+    size = GOAL_DIST_MAX + 1
+    base = np.bincount(np.minimum(reg, GOAL_DIST_MAX), weights=w * (1 - s * ot_win), minlength=size)
+    plus = np.bincount(
+        np.minimum(reg + 1, GOAL_DIST_MAX), weights=w * s * ot_win, minlength=size
+    )
+    return [round(float(x), 5) for x in (base + plus) / w.sum()]
 
 
 def simulate(
@@ -67,6 +85,8 @@ def simulate(
     home_ot = rng.random(n) < p_home_ot
     fin_h = reg_h + (tied & home_ot)
     fin_a = reg_a + (tied & ~home_ot)
+
+    s = float(sp.get("ot_goal_share", OT_GOAL_SHARE_FALLBACK))
 
     # 6. results
     prob = {
@@ -129,4 +149,8 @@ def simulate(
         "periods": periods,
         "total_dist": total_dist,
         "goal_dist": {"home": _goal_dist(reg_h, w), "away": _goal_dist(reg_a, w)},
+        "credited_dist": {
+            "home": _credited_dist(reg_h, tied & home_ot, w, s),
+            "away": _credited_dist(reg_a, tied & ~home_ot, w, s),
+        },
     }

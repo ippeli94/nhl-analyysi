@@ -138,3 +138,21 @@ def test_real_fixtures_build():
     tg = features.team_games(recs, {}, 0.6)
     assert len(tg) == 4
     assert not tg["target"].isna().any()
+
+
+def ot_games(n_ot, n_so):
+    recs = []
+    for i in range(n_ot + n_so):
+        d = "OT" if i < n_ot else "SO"
+        recs.append(game(i + 1, "2025-11-01", home="AAA", away=f"A{i}", score=(2, 1),
+                         score_reg=(1, 1), decided=d))
+    return recs
+
+
+def test_ot_goal_share_estimated_and_fallback():
+    sp = features.sim_params(features.team_games(ot_games(60, 40), {}, 0.6))
+    assert sp["ot_goal_share"] == 0.6
+    sp = features.sim_params(features.team_games(ot_games(2, 8), {}, 0.6))
+    assert sp["ot_goal_share"] == 0.6  # fallback (10 games)
+    sp = features.sim_params(features.team_games(ot_games(10, 60), {}, 0.6))
+    assert sp["ot_goal_share"] == pytest.approx(10 / 70)

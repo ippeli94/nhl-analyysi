@@ -171,6 +171,9 @@ PLAYER_PRIOR_FALLBACK = {"F": (0.85, 2.1), "D": (0.25, 1.1)}  # (goals/60, point
 PLAYER_PPG_FALLBACK = 2.7
 PLAYER_PPG_MAX = 3.0
 PLAYER_TOI_GAMES = 5
+PLAYER_TOP_N = 10
+PLAYER_PI_MAX = 0.95
+OT_GOAL_SHARE_FALLBACK = 0.6
 PLAYER_MODEL_VERSION = "1.0.0"
 PLAYER_LOG_COLUMNS = (
     "id", "pos", "toi", "pts1", "pts2", "pts3", "g1", "g2", "g3", "base_pts1", "base_g1",
