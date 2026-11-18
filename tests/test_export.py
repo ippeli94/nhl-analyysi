@@ -121,10 +121,32 @@ def test_later_phase_fields_accept_null_and_objects(g1):
     obj = latest([g1])
     game = obj["games"][0]
     game["insights"] = {"note": "x"}
-    game["players"] = []
     game["form"] = {"home": {}}
     game["h2h"] = None
     assert export.validate(obj) == []
+
+
+def player_block():
+    top = [{"id": 8478403, "name": None, "team": "CAR", "pos": "C", "toi_proj": 19.4,
+            "p_points": [0.6, 0.2, 0.07], "p_goals": [0.3, 0.06, 0.008],
+            "exp_goals": 0.4, "exp_points": 0.95, "odds": None}]
+    side = {"team": "CAR", "dressed": 18, "goals_mean": 3.2, "exp_goals": 3.1,
+            "exp_points": 8.3, "unassigned": 0.03, "top": top}
+    return {"lineup": "projected", "home": side, "away": None}
+
+
+def test_players_block_validates(g1):
+    obj = latest([g1])
+    obj["games"][0]["players"] = player_block()
+    assert export.validate(obj) == []
+
+
+def test_players_bad_lengths_rejected(g1):
+    obj = latest([g1])
+    obj["games"][0]["players"] = player_block()
+    obj["games"][0]["players"]["home"]["top"][0]["p_points"] = [0.6, 0.2]
+    errors = export.validate(obj)
+    assert errors and any("p_points" in e for e in errors)
 
 
 def test_goalie_status_enum_and_null_goalie(g1):

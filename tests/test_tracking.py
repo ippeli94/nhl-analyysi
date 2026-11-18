@@ -185,3 +185,51 @@ def test_draw_gap_warn_threshold():
 
 def test_draw_gap_none_without_matches():
     assert tracking.draw_gap([], [], "20262027") is None
+
+
+def player_game_obj(gid=2025020321, state="upcoming"):
+    from pipeline.adjust import GoalieRatings
+    from pipeline.predict import predict_game
+    from tests.test_predict import PS, SP, P, ratings, synthetic_pin
+
+    g = predict_game(dict(GAME, id=gid), ratings(), PS, SP, P, {}, GoalieRatings(), {},
+                     synthetic_pin())
+    g["state"] = state
+    return g
+
+
+def test_player_log_roundtrip(root):
+    assert tracking.append_players([player_game_obj()], "2025-11-15T15:17:00Z") == 1
+    rows = tracking.read_log("players", "20252026")
+    assert rows[0]["player_model"] == config.PLAYER_MODEL_VERSION
+    assert set(rows[0]["teams"]) == {"CAR", "SEA"}
+    team_rows = rows[0]["teams"]["CAR"]["players"]
+    assert len(team_rows) == 18
+    assert all(len(r) == len(config.PLAYER_LOG_COLUMNS) for r in team_rows)
+
+
+def test_started_game_writes_no_player_row(root):
+    assert tracking.append_players([player_game_obj(state="started")], "x") == 0
+    assert tracking.append_players([game_obj()], "x") == 0  # no player payload
+    assert tracking.read_log("players", "20252026") == []
+
+
+def _prow(ts, start, team="CAR", ids=(1, 2, 3)):
+    rows = [[i, "C", 18.0, 0.5, 0.2, 0.1, 0.2, 0.05, 0.01, 0.4, 0.15] for i in ids]
+    return {"ts": ts, "player_model": "1.0.0", "game_id": 7, "start_utc": start,
+            "teams": {team: {"goals_mean": 3.0, "unassigned": 0.03, "players": rows}}}
+
+
+def test_player_outcomes_official_and_dressed_only():
+    start = "2025-11-16T00:00:00Z"
+    rows = [_prow("2025-11-15T10:00:00Z", start), _prow("2025-11-15T20:00:00Z", start),
+            _prow("2025-11-16T01:00:00Z", start)]
+    rows[0]["teams"]["CAR"]["players"][0][3] = 0.99  # superseded run
+    record = {"id": 7, "skaters": [
+        {"id": 1, "team": "CAR", "g": 1, "a": 0}, {"id": 2, "team": "CAR", "g": 0, "a": 1},
+        {"id": 9, "team": "CAR", "g": 2, "a": 0}]}  # 3 scratched, 9 not projected
+    df = tracking.player_outcomes(rows, [record])
+    assert list(df["player"]) == [1, 2]
+    assert list(df["y_pts"]) == [1, 1] and list(df["y_g"]) == [1, 0]
+    assert list(df["p_pts1"]) == [0.5, 0.5] and list(df["base_g1"]) == [0.15, 0.15]
+    assert list(df.columns) == tracking.OUTCOME_COLUMNS

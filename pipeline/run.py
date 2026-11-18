@@ -22,6 +22,7 @@ from pipeline import (
     config,
     export,
     features,
+    players,
     predict,
     ratings,
     tracking,
@@ -240,8 +241,44 @@ def _load_coefs() -> dict:
     return xg.load_coefs(coefs_file)
 
 
+def players_enabled(offline: Path | None) -> bool:
+    """Offline runs always fill players; online runs only when the player gate has passed."""
+    if offline is not None:
+        return True
+    return (config.load_player_gate() or {}).get("passed") is True
+
+
+def _player_context(records: list[dict], coefs: dict, p, today: date, season: str):
+    """(player_games, rates, params), or None (with a warning) when they cannot be built."""
+    try:
+        pp = config.load_player_params()
+        pg = players.player_games(records, coefs)
+        rates = players.player_rates(pg, today, p, pp, season)
+        return pg, rates, pp
+    except Exception as exc:  # noqa: BLE001 - players must never fail the run
+        logger.warning("players disabled for this run: %s", type(exc).__name__)
+        return None
+
+
+def _player_inputs(ctx, game: ScheduledGame, season: str) -> players.PlayerInputs | None:
+    pg, rates, pp = ctx
+    day = date.fromisoformat(game["nhl_date"])
+    try:
+        lineups = {
+            t: players.project_lineup(pg, t, day, season)
+            for t in (game["home"]["abbr"], game["away"]["abbr"])
+        }
+        slots = [s for lineup in lineups.values() for s in lineup]
+        baseline = players.baseline_probs(pg, day, season, slots)
+        return players.PlayerInputs(rates, lineups, baseline, pp)
+    except Exception as exc:  # noqa: BLE001 - one game's players never fail the run
+        logger.warning("player inputs for game %s failed: %s", game["id"], type(exc).__name__)
+        return None
+
+
 def _predict_all(
-    selected: list[ScheduledGame], records: list[dict], season: str, today: date, now: datetime
+    selected: list[ScheduledGame], records: list[dict], season: str, today: date, now: datetime,
+    with_players: bool = False,
 ) -> list[dict]:
     p = config.load_params()
     coefs = _load_coefs()
@@ -252,6 +289,7 @@ def _predict_all(
     played = features.last_played(tg) if len(tg) else {}
     gg = adjust.goalie_games(records, coefs)
     gr = adjust.goalie_ratings(gg, today, p, season=season)
+    ctx = _player_context(records, coefs, p, today, season) if with_players else None
 
     frozen = {g["id"]: g for g in _read_json(LAST_GAMES, [])}
     out: list[dict] = []
@@ -268,7 +306,8 @@ def _predict_all(
             t: adjust.project_starters(gg, t, day, season=season)
             for t in (game["home"]["abbr"], game["away"]["abbr"])
         }
-        out.append(predict.predict_game(game, r, ps, sp, p, played, gr, starters))
+        pin = _player_inputs(ctx, game, season) if ctx is not None else None
+        out.append(predict.predict_game(game, r, ps, sp, p, played, gr, starters, pin))
     return out
 
 
@@ -377,7 +416,9 @@ def run(
         logger.info("cache: %d written, %d skipped", len(written), len(skipped))
         season = _current_season(selected, week)
         records = cache.load_seasons([_season_before(season), season])
-        games = _predict_all(selected, records, season, today, now)
+        games = _predict_all(
+            selected, records, season, today, now, players_enabled(offline)
+        )
 
         state: dict = {
             "nhl": {
@@ -437,6 +478,7 @@ def run(
         # Everything above can fail without leaving anything durable behind.
         tracking.record_results([_result_record(rec) for rec in records])
         tracking.append_predictions(games, _iso(now))
+        tracking.append_players(games, _iso(now))
         if fetched_now:
             _write_json(ODDS_STATE, snapshot)
             tracking.append_odds(odds_history)

@@ -14,14 +14,9 @@ def _logloss(p: np.ndarray, y: np.ndarray) -> float:
     return float(-np.mean(y * np.log(p) + (1 - y) * np.log(1 - p)))
 
 
-def score(p_home: np.ndarray, y_home: np.ndarray, base_rate: float) -> dict:
-    p = np.asarray(p_home, dtype=float)
-    y = np.asarray(y_home, dtype=float)
-    n = len(p)
-    if n == 0:
-        return {"n": 0, "brier": None, "logloss": None, "accuracy": None,
-                "brier_base": None, "logloss_base": None, "calibration": []}
-    base = np.full(n, base_rate, dtype=float)
+def calibration_bins(p: np.ndarray, y: np.ndarray) -> list[dict]:
+    p = np.asarray(p, dtype=float)
+    y = np.asarray(y, dtype=float)
     idx = np.minimum(np.floor(np.clip(p, 0.0, 1.0) / BIN_WIDTH + 1e-9).astype(int), N_BINS - 1)
     calibration = []
     for b in range(N_BINS):
@@ -32,6 +27,35 @@ def score(p_home: np.ndarray, y_home: np.ndarray, base_rate: float) -> dict:
                 "n": int(mask.sum()), "p_mean": float(p[mask].mean()),
                 "y_mean": float(y[mask].mean()),
             })
+    return calibration
+
+
+def binary_vs_base(p: np.ndarray, y: np.ndarray, base: np.ndarray | None) -> dict:
+    p = np.asarray(p, dtype=float)
+    y = np.asarray(y, dtype=float)
+    if len(p) == 0:
+        return {"n": 0, "brier": None, "logloss": None, "brier_base": None,
+                "logloss_base": None, "calibration": []}
+    b = None if base is None else np.asarray(base, dtype=float)
+    return {
+        "n": len(p),
+        "brier": float(np.mean((p - y) ** 2)),
+        "logloss": _logloss(p, y),
+        "brier_base": None if b is None else float(np.mean((b - y) ** 2)),
+        "logloss_base": None if b is None else _logloss(b, y),
+        "calibration": calibration_bins(p, y),
+    }
+
+
+def score(p_home: np.ndarray, y_home: np.ndarray, base_rate: float) -> dict:
+    p = np.asarray(p_home, dtype=float)
+    y = np.asarray(y_home, dtype=float)
+    n = len(p)
+    if n == 0:
+        return {"n": 0, "brier": None, "logloss": None, "accuracy": None,
+                "brier_base": None, "logloss_base": None, "calibration": []}
+    base = np.full(n, base_rate, dtype=float)
+    calibration = calibration_bins(p, y)
     return {
         "n": n,
         "brier": float(np.mean((p - y) ** 2)),

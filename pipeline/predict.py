@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import date, timedelta
 
 import numpy as np
 
-from pipeline import config
+from pipeline import config, players
 from pipeline.adjust import GoalieRatings, goalie_block, goalie_mult
 from pipeline.config import ModelParams
+from pipeline.players import PlayerInputs
 from pipeline.ratings import (
     PeriodShares,
     Ratings,
@@ -21,7 +23,9 @@ from pipeline.simulate import simulate
 from pipeline.sources.nhl import ScheduledGame
 from pipeline.teams import display_name
 
-NULL_KEYS = ("lineup_changes", "players", "form", "season_compare", "h2h", "insights", "odds")
+logger = logging.getLogger(__name__)
+
+NULL_KEYS = ("lineup_changes", "form", "season_compare", "h2h", "insights", "odds")
 
 
 def _clamp(x: float) -> float:
@@ -89,6 +93,7 @@ def predict_game(
     last_played: dict[str, date],
     gr: GoalieRatings,
     starters: dict[str, list[tuple[int, float]]],
+    pin: PlayerInputs | None = None,
 ) -> dict:
     home, away = game["home"]["abbr"], game["away"]["abbr"]
     yesterday = date.fromisoformat(game["nhl_date"]) - timedelta(days=1)
@@ -114,6 +119,14 @@ def predict_game(
     low = min(r.n_games.get(home, 0), r.n_games.get(away, 0)) < config.LOW_CONFIDENCE_MIN_GAMES
     prob = dict(sim["prob"], confidence="low" if low else "normal")
 
+    block, payload = None, None
+    if pin is not None:
+        try:
+            block, payload = players.game_players(home, away, pin, sim["credited_dist"])
+        except Exception as exc:  # noqa: BLE001 - one game's players never fail the run
+            logger.warning("players for game %s failed: %s", game["id"], type(exc).__name__)
+            block, payload = None, None
+
     return {
         "id": game["id"],
         "start_utc": game["start_utc"],
@@ -136,7 +149,8 @@ def predict_game(
             "away": goalie_block(st_away, away, gr, p),
         },
         **{k: None for k in NULL_KEYS},
+        "players": block,
         # private: stripped by export (keys starting with "_"); read by tracking.log_row
         "_internal": {"lam_home": lam_h, "lam_away": lam_a, "total_dist": sim["total_dist"],
-                      "credited_dist": sim["credited_dist"]},
+                      "credited_dist": sim["credited_dist"], "players_log": payload},
     }

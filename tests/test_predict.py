@@ -156,3 +156,41 @@ def test_calibration_bins_cover_all_rows():
 def test_bin_edge_is_robust_to_float_error():
     m = score(np.array([0.30, 0.3499]), np.array([1, 0]), 0.5)
     assert [(b["lo"], b["n"]) for b in m["calibration"]] == [(0.3, 2)]
+
+
+def synthetic_pin(teams=("CAR", "SEA")):
+    from pipeline import players
+    from pipeline.config import PlayerParams
+
+    slots = [{"id": 100 + i, "name": f"S{i}", "pos": "D" if i >= 12 else "C",
+              "toi_proj": 18.0 - i * 0.5} for i in range(18)]
+    rates = players._fallback_rates()
+    lineups = {t: slots for t in teams}
+    base = {s["id"]: (0.3, 0.1) for s in slots}
+    return players.PlayerInputs(rates, lineups, base, PlayerParams())
+
+
+def test_predict_game_with_players_fills_block():
+    g = predict_game(GAME, ratings(), PS, SP, P, {}, GoalieRatings(), {}, synthetic_pin())
+    assert len(g["players"]["home"]["top"]) >= 5
+    assert g["players"]["away"]["team"] == "SEA"
+    assert "credited_dist" in g["_internal"] and g["_internal"]["players_log"]["teams"]
+    json.dumps(g["players"])
+
+
+def test_predict_game_without_pin_keeps_null():
+    g = run()
+    assert g["players"] is None and g["_internal"]["players_log"] is None
+    assert "credited_dist" in g["_internal"]
+
+
+def test_player_failure_gives_null(monkeypatch):
+    from pipeline import players
+
+    def boom(*a, **k):
+        raise RuntimeError("x")
+
+    monkeypatch.setattr(players, "game_players", boom)
+    g = predict_game(GAME, ratings(), PS, SP, P, {}, GoalieRatings(), {}, synthetic_pin())
+    assert g["players"] is None and g["_internal"]["players_log"] is None
+    assert g["prob"]["home_win"] > 0

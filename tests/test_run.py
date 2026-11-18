@@ -457,3 +457,46 @@ def test_offline_without_odds_flag_has_no_odds_source(seeded):
 def test_latest_has_calibration(seeded):
     assert go() == 0
     assert "calibration" in latest_of(seeded)
+
+
+def by_id(lat):
+    return {g["id"]: g for g in lat["games"]}
+
+
+def test_offline_run_fills_players_where_history_exists(seeded):
+    assert go() == 0
+    lat = latest_of(seeded)
+    g = by_id(lat)[2026020338]  # TOR @ CHI; TOR has a cached fixture game
+    assert g["players"]["away"]["team"] == "TOR" and len(g["players"]["away"]["top"]) >= 5
+    assert g["players"]["home"] is None and export.validate(lat) == []
+    assert by_id(lat)[2026020333]["players"] is None  # LAK @ BOS: no history
+    assert tracking.read_log("players", SEASON)
+
+
+def test_online_without_player_gate_has_no_players(seeded, monkeypatch):
+    root = seeded
+    online_with_gate(root, monkeypatch)
+    monkeypatch.setattr(run, "_load_coefs", lambda: xg.load_coefs(run.XG_COEFS_STUB))
+    assert run.players_enabled(None) is False
+    assert run.main(["--now", NOW]) == 0
+    lat = latest_of(root)
+    assert lat["games"] and all(g["players"] is None for g in lat["games"])
+    assert tracking.read_log("players", SEASON) == []
+
+
+def test_player_gate_enables_online(root):
+    (root / "model").mkdir()
+    (root / "model/player_params.json").write_text('{"gate": {"passed": true}}', encoding="utf-8")
+    assert run.players_enabled(None) is True
+    assert run.players_enabled(FIXTURES) is True
+
+
+def test_started_game_keeps_frozen_players(seeded):
+    assert go() == 0
+    first = by_id(latest_of(seeded))
+    assert go("2026-11-18T00:40:00Z") == 0
+    second = by_id(latest_of(seeded))
+    started = second[2026020338]
+    assert started["state"] == "started"
+    assert started["players"] == first[2026020338]["players"]
+    assert started["players"] is not None

@@ -7,6 +7,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+import pandas as pd
+
 from pipeline import config, value
 
 
@@ -95,8 +97,35 @@ def append_odds(rows: list[dict]) -> int:
     return len(rows)
 
 
+def player_log_row(game_obj: dict, ts: str) -> dict | None:
+    """One player log row (plan decision 28); None when the game has no player payload."""
+    payload = (game_obj.get("_internal") or {}).get("players_log")
+    if not payload or not payload.get("teams"):
+        return None
+    return {
+        "ts": ts,
+        "player_model": config.PLAYER_MODEL_VERSION,
+        "game_id": game_obj["id"],
+        "start_utc": game_obj["start_utc"],
+        "teams": payload["teams"],
+    }
+
+
+def append_players(game_objs: list[dict], ts: str) -> int:
+    by_season: dict[str, list[dict]] = {}
+    for g in game_objs:
+        if g["state"] != "upcoming":
+            continue
+        row = player_log_row(g, ts)
+        if row is not None:
+            by_season.setdefault(season_of(g["id"]), []).append(row)
+    for season, rows in by_season.items():
+        _append("players", season, rows)
+    return sum(len(rows) for rows in by_season.values())
+
+
 def read_log(kind: str, season: str) -> list[dict]:
-    if kind not in ("predictions", "results", "odds"):
+    if kind not in ("predictions", "results", "odds", "players"):
         raise ValueError(f"unknown log kind: {kind}")
     f = _file(kind, season)
     if not f.exists():
@@ -165,3 +194,32 @@ def draw_gap(pred_rows: list[dict], result_rows: list[dict], season: str) -> dic
         "model": model, "actual": actual, "gap": gap,
         "warn": n >= config.DRAW_MONITOR_MIN_GAMES and abs(gap) > config.DRAW_MONITOR_GAP,
     }
+
+
+OUTCOME_COLUMNS = [
+    "game_id", "player", "team", "p_pts1", "p_g1", "base_pts1", "base_g1", "y_pts", "y_g",
+]
+
+
+def player_outcomes(rows: list[dict], records: list[dict]) -> pd.DataFrame:
+    """One row per projected player who dressed: official player row joined with the box score."""
+    cols = {name: i for i, name in enumerate(config.PLAYER_LOG_COLUMNS)}
+    by_game = {rec["id"]: rec for rec in records}
+    out = []
+    for gid, row in sorted(official(rows).items()):
+        rec = by_game.get(gid)
+        if rec is None:
+            continue
+        dressed = {(sk["team"], sk["id"]): sk for sk in rec["skaters"]}
+        for team, block in row["teams"].items():
+            for vals in block["players"]:
+                sk = dressed.get((team, vals[cols["id"]]))
+                if sk is None:
+                    continue
+                out.append({
+                    "game_id": gid, "player": vals[cols["id"]], "team": team,
+                    "p_pts1": vals[cols["pts1"]], "p_g1": vals[cols["g1"]],
+                    "base_pts1": vals[cols["base_pts1"]], "base_g1": vals[cols["base_g1"]],
+                    "y_pts": int(sk["g"] + sk["a"] >= 1), "y_g": int(sk["g"] >= 1),
+                })
+    return pd.DataFrame(out, columns=OUTCOME_COLUMNS)

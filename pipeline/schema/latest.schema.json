@@ -172,6 +172,48 @@
       }
     },
     "goalie_or_null": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/goalie"}]},
+    "prob3": {
+      "type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/prob"}
+    },
+    "player": {
+      "type": "object",
+      "required": ["id", "name", "team", "pos", "toi_proj", "p_points", "p_goals",
+                   "exp_goals", "exp_points", "odds"],
+      "properties": {
+        "id": {"type": "integer"},
+        "name": {"type": ["string", "null"]},
+        "team": {"type": "string", "minLength": 1},
+        "pos": {"enum": ["C", "L", "R", "D"]},
+        "toi_proj": {"$ref": "#/$defs/nonneg"},
+        "p_points": {"$ref": "#/$defs/prob3"},
+        "p_goals": {"$ref": "#/$defs/prob3"},
+        "exp_goals": {"$ref": "#/$defs/nonneg"},
+        "exp_points": {"$ref": "#/$defs/nonneg"},
+        "odds": {"const": null}
+      }
+    },
+    "team_players": {
+      "type": "object",
+      "required": ["team", "dressed", "goals_mean", "exp_goals", "exp_points", "unassigned", "top"],
+      "properties": {
+        "team": {"type": "string", "minLength": 1},
+        "dressed": {"type": "integer", "minimum": 0},
+        "goals_mean": {"$ref": "#/$defs/nonneg"},
+        "exp_goals": {"$ref": "#/$defs/nonneg"},
+        "exp_points": {"$ref": "#/$defs/nonneg"},
+        "unassigned": {"$ref": "#/$defs/prob"},
+        "top": {"type": "array", "items": {"$ref": "#/$defs/player"}}
+      }
+    },
+    "players": {
+      "type": "object",
+      "required": ["lineup", "home", "away"],
+      "properties": {
+        "lineup": {"enum": ["projected", "confirmed"]},
+        "home": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/team_players"}]},
+        "away": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/team_players"}]}
+      }
+    },
     "later_phase": {"type": ["object", "array", "null"]},
     "odds_veikkaus": {
       "anyOf": [
@@ -300,7 +342,7 @@
           }
         },
         "lineup_changes": {"$ref": "#/$defs/later_phase"},
-        "players": {"$ref": "#/$defs/later_phase"},
+        "players": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/players"}]},
         "form": {"$ref": "#/$defs/later_phase"},
         "season_compare": {"$ref": "#/$defs/later_phase"},
         "h2h": {"$ref": "#/$defs/later_phase"},
