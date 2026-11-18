@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from pipeline import cache, config, export, predict, run, tracking, xg
-from pipeline.sources import injuries, nhl
+from pipeline.sources import injuries, nhl, odds
 from pipeline.sources.nhl import SourceError
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -244,3 +244,144 @@ def test_cached_game_without_result_row_is_recorded_next_run(seeded):
     }
     assert go() == 0  # idempotent
     assert len(tracking.read_log("results", SEASON)) == 2
+
+
+def sources_of(root):
+    return {s["id"]: s for s in latest_of(root)["sources"]}
+
+
+def odds_history(root):
+    return tracking.read_log("odds", SEASON)
+
+
+def test_offline_odds_run_fills_odds(seeded):
+    assert go(NOW, "--odds") == 0
+    lat = latest_of(seeded)
+    games = {g["id"]: g for g in lat["games"]}
+    assert games[2026020333]["odds"]["markets"][0]["key"] == "h2h"
+    assert len([g for g in lat["games"] if g["odds"]]) == 4
+    assert any(g["odds"] and g["odds"]["picks"] for g in lat["games"])
+    assert sources_of(seeded)["odds"]["status"] == "ok"
+    assert export.validate(lat) == [] and odds_history(seeded)
+    assert (seeded / "data/state/odds.json").exists()
+    row = tracking.read_log("predictions", SEASON)[-1]
+    assert "market" in row and "picks" in row
+
+
+def test_run_without_odds_flag_reuses_fresh_snapshot(seeded):
+    assert go(NOW, "--odds") == 0
+    first = latest_of(seeded)
+    rows = len(odds_history(seeded))
+    assert go("2026-11-17T21:37:00Z") == 0
+    second = latest_of(seeded)
+    fetched = {g["odds"]["fetched_at"] for g in second["games"] if g["odds"]}
+    assert fetched == {NOW}
+    assert len(odds_history(seeded)) == rows
+    assert second["games"][0]["odds"]["markets"] == first["games"][0]["odds"]["markets"]
+
+
+def test_snapshot_older_than_36h_is_not_used(seeded):
+    assert go(NOW, "--odds") == 0
+    f = seeded / "data/state/odds.json"
+    snap = json.loads(f.read_text(encoding="utf-8"))
+    snap["fetched_at"] = "2026-11-16T02:17:00Z"  # 37 h before NOW
+    f.write_text(json.dumps(snap), encoding="utf-8")
+    assert go() == 0
+    assert all(g["odds"] is None for g in latest_of(seeded)["games"])
+
+
+def test_odds_failure_does_not_fail_run(seeded, monkeypatch):
+    assert go(NOW, "--odds") == 0
+
+    def boom(now, key):
+        raise SourceError("Odds API HTTP 401")
+
+    monkeypatch.setattr(odds, "fetch_odds", boom)
+    assert go("2026-11-17T21:37:00Z", "--odds") == 0
+    lat = latest_of(seeded)
+    src = {s["id"]: s for s in lat["sources"]}["odds"]
+    assert src["status"] == "failed" and "401" in src["note"]
+    assert any(g["odds"] for g in lat["games"])  # previous snapshot, still fresh
+
+
+def test_malformed_payload_marks_failed_without_key(seeded, monkeypatch):
+    monkeypatch.setenv(config.ODDS_ENV_KEY, "secret-key-value")
+    monkeypatch.setattr(
+        odds, "fetch_odds", lambda now, key: odds.OddsResponse([1], 400, 100, 3, False)
+    )
+    monkeypatch.setattr(odds, "parse_events", lambda raw: raw["x"])  # TypeError
+    assert go(NOW, "--odds") == 0
+    src = sources_of(seeded)["odds"]
+    assert src["status"] == "failed" and src["note"] == "TypeError"
+    assert not (seeded / "data/state/odds.json").exists()
+    assert "secret-key-value" not in json.dumps(latest_of(seeded))
+
+
+def test_skip_when_credits_low(seeded, monkeypatch):
+    state = seeded / "data/state"
+    state.mkdir(parents=True)
+    (state / "sources.json").write_text(json.dumps({"odds": {
+        "status": "ok", "fetched_at": "2026-11-17T09:00:00Z", "last_ok_at": "2026-11-17T09:00:00Z",
+        "note": None, "remaining": 25, "used": 475,
+    }}), encoding="utf-8")
+    calls = []
+    monkeypatch.setattr(odds, "fetch_odds", lambda *a: calls.append(a))
+    assert go(NOW, "--odds") == 0
+    assert calls == []
+    src = sources_of(seeded)["odds"]
+    assert src["status"] == "stale" and "25" in src["note"]
+
+
+def test_skip_when_no_game_within_24h(seeded, monkeypatch):
+    calls = []
+    monkeypatch.setattr(odds, "fetch_odds", lambda *a: calls.append(a))
+    far = game(1, start="2026-11-18T21:17:00Z")  # 30 h after NOW
+    state = {}
+    assert run.odds_stage([far], state, dt(NOW), True) == (None, False)
+    assert calls == [] and "odds" not in state
+    started = game(2, "LIVE", start="2026-11-17T15:00:00Z")
+    assert run.odds_stage([started], state, dt(NOW), True) == (None, False)
+    assert calls == []
+
+
+def test_no_fetch_without_flag_even_with_game_soon(seeded, monkeypatch):
+    calls = []
+    monkeypatch.setattr(odds, "fetch_odds", lambda *a: calls.append(a))
+    assert go() == 0 and calls == []
+
+
+def test_empty_odds_response_is_ok_with_note(seeded, monkeypatch):
+    monkeypatch.setattr(odds, "fetch_odds", lambda now, key: odds.OddsResponse([], 480, 20, 0))
+    assert go(NOW, "--odds") == 0
+    src = sources_of(seeded)["odds"]
+    assert src["status"] == "ok" and src["note"] == "Ei kertoimia tarjolla"
+    assert all(g["odds"] is None for g in latest_of(seeded)["games"])
+
+
+def test_remaining_credits_in_note_and_state(seeded, monkeypatch):
+    events = json.loads((FIXTURES / config.ODDS_FIXTURE).read_text(encoding="utf-8"))
+    monkeypatch.setattr(
+        odds, "fetch_odds",
+        lambda now, key: odds.OddsResponse(events, 480, 20, 3, True),
+    )
+    assert go(NOW, "--odds") == 0
+    assert sources_of(seeded)["odds"]["note"] == (
+        "Krediittejä jäljellä 480 · varahaku alueilla eu,fi"
+    )
+    saved = json.loads((seeded / "data/state/sources.json").read_text(encoding="utf-8"))
+    assert saved["odds"]["remaining"] == 480 and saved["odds"]["used"] == 20
+
+
+def test_started_game_keeps_frozen_odds(seeded):
+    assert go(NOW, "--odds") == 0
+    first = {g["id"]: g for g in latest_of(seeded)["games"]}
+    assert first[2026020333]["odds"]
+    assert go("2026-11-18T00:10:00Z", "--odds") == 0
+    second = {g["id"]: g for g in latest_of(seeded)["games"]}
+    assert second[2026020333]["state"] == "started"
+    assert second[2026020333]["odds"] == first[2026020333]["odds"]
+
+
+def test_offline_without_odds_flag_has_no_odds_source(seeded):
+    assert go() == 0
+    assert set(sources_of(seeded)) == {"nhl", "injuries"}

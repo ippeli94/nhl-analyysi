@@ -1,6 +1,6 @@
 """Pipeline orchestration (spec 4.1, 4.3, 4.4): fetch, cache, model, predict, track, export.
 
-CLI: python -m pipeline.run [--offline DIR] [--now ISO] [--extra-if-early]
+CLI: python -m pipeline.run [--offline DIR] [--now ISO] [--extra-if-early] [--odds]
 """
 
 from __future__ import annotations
@@ -16,8 +16,19 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from pipeline import adjust, cache, config, export, features, predict, ratings, tracking, xg
-from pipeline.sources import injuries, nhl
+from pipeline import (
+    adjust,
+    cache,
+    config,
+    export,
+    features,
+    predict,
+    ratings,
+    tracking,
+    value,
+    xg,
+)
+from pipeline.sources import injuries, nhl, odds
 from pipeline.sources.nhl import ScheduledGame, SourceError
 
 logger = logging.getLogger(__name__)
@@ -35,6 +46,7 @@ XG_COEFS_STUB = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / 
 LAST_GAMES = ("data", "state", "last_games.json")
 SOURCES_FILE = ("data", "state", "sources.json")
 SCHEDULE_IDS = ("data", "state", "schedule_ids.json")
+ODDS_STATE = ("data", "state", "odds.json")
 
 
 def _iso(now: datetime) -> str:
@@ -260,7 +272,70 @@ def _predict_all(
     return out
 
 
-def run(offline: Path | None, now: datetime, extra_if_early: bool) -> int:
+def _fresh_snapshot(now: datetime) -> dict | None:
+    """The stored odds snapshot when it is at most ODDS_REUSE_HOURS old."""
+    snapshot = _read_json(ODDS_STATE, None)
+    if not isinstance(snapshot, dict) or not snapshot.get("fetched_at"):
+        return None
+    age = now - _parse_utc(snapshot["fetched_at"])
+    return snapshot if age <= timedelta(hours=config.ODDS_REUSE_HOURS) else None
+
+
+def _odds_note(resp: odds.OddsResponse) -> str:
+    if not resp.events:
+        note = "Ei kertoimia tarjolla"
+    elif resp.remaining is None:
+        note = "Kertoimet haettu"
+    else:
+        note = f"Krediittejä jäljellä {resp.remaining}"
+    if resp.fallback:
+        note += f" · varahaku alueilla {config.ODDS_FALLBACK_REGIONS}"
+    return note
+
+
+def odds_stage(
+    selected: list[ScheduledGame], state: dict, now: datetime, fetch: bool
+) -> tuple[dict | None, bool]:
+    """Odds snapshot for this run and whether it was fetched now (spec 4.1 step 7, 6.11)."""
+    previous = _fresh_snapshot(now)
+    if not fetch:
+        return previous, False
+    horizon = timedelta(hours=config.ODDS_NEXT_GAME_H)
+    if not any(
+        not is_started(g, now) and _parse_utc(g["start_utc"]) - now <= horizon for g in selected
+    ):
+        return previous, False
+    entry = state.get("odds") or {}
+    remaining = entry.get("remaining")
+    if isinstance(remaining, int) and remaining < config.ODDS_MIN_REMAINING:
+        state["odds"] = dict(
+            entry, status="stale", note=f"Haku ohitettu: krediittejä jäljellä {remaining}"
+        )
+        return previous, False
+
+    def fetch_and_match() -> tuple[odds.OddsResponse, dict]:
+        try:
+            resp = odds.fetch_odds(now, os.environ.get(config.ODDS_ENV_KEY))
+            matched = odds.match_events(odds.parse_events(resp.events), selected)
+        except SourceError:
+            raise
+        except Exception as exc:  # noqa: BLE001 - keep arbitrary messages (and keys) out of state
+            raise SourceError(type(exc).__name__) from None
+        return resp, matched
+
+    result = optional_source("odds", fetch_and_match, state, now)
+    if result is None:
+        state["odds"].update(remaining=entry.get("remaining"), used=entry.get("used"))
+        return previous, False
+    resp, matched = result
+    state["odds"].update(remaining=resp.remaining, used=resp.used, note=_odds_note(resp))
+    snapshot = {"fetched_at": _iso(now), "remaining": resp.remaining, **matched}
+    return snapshot, True
+
+
+def run(
+    offline: Path | None, now: datetime, extra_if_early: bool, with_odds: bool = False
+) -> int:
     today_str = nhl_today(now)
     today = date.fromisoformat(today_str)
     sources = _read_json(SOURCES_FILE, {})
@@ -291,6 +366,8 @@ def run(offline: Path | None, now: datetime, extra_if_early: bool) -> int:
             },
             "injuries": sources.get("injuries") or {},
         }
+        if sources.get("odds"):
+            state["odds"] = sources["odds"]
 
         def offline_injuries() -> list[dict]:
             raise SourceError("offline mode")
@@ -299,6 +376,12 @@ def run(offline: Path | None, now: datetime, extra_if_early: bool) -> int:
             "injuries", offline_injuries if offline is not None else injuries.fetch, state, now,
             failed_status="unavailable", note_on_fail=INJURIES_NOTE,
         )
+        snapshot, fetched_now = odds_stage(selected, state, now, with_odds)
+        if snapshot:
+            for g in games:
+                if g["state"] == "upcoming":
+                    books = snapshot["games"].get(str(g["id"]), {})
+                    g["odds"] = value.game_odds(g, books, snapshot["fetched_at"])
         latest = export.build_latest(games, state, next_game_date, now)
         errors = export.validate(latest)
         if errors:
@@ -308,6 +391,9 @@ def run(offline: Path | None, now: datetime, extra_if_early: bool) -> int:
         # Everything above can fail without leaving anything durable behind.
         tracking.record_results([_result_record(rec) for rec in records])
         tracking.append_predictions(games, _iso(now))
+        if fetched_now:
+            _write_json(ODDS_STATE, snapshot)
+            tracking.append_odds(tracking.odds_rows(snapshot, games))
         _write_json(LAST_GAMES, [_public(g) for g in games])
         _write_json(SOURCES_FILE, state)
         # started games without an earlier export are dropped by design (plan decision 3),
@@ -334,6 +420,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--offline", metavar="DIR", help="read NHL responses from fixtures")
     parser.add_argument("--now", metavar="ISO", help="override the current time")
     parser.add_argument("--extra-if-early", action="store_true")
+    parser.add_argument("--odds", action="store_true", help="fetch bookmaker odds this run")
     args = parser.parse_args(argv)
 
     offline = Path(args.offline) if args.offline else None
@@ -347,7 +434,7 @@ def main(argv: list[str] | None = None) -> int:
     previous_dir = config.OFFLINE_DIR
     config.OFFLINE_DIR = offline
     try:
-        return run(offline, now, args.extra_if_early)
+        return run(offline, now, args.extra_if_early, args.odds)
     except Exception:
         logger.exception("run failed unexpectedly")
         return 1
