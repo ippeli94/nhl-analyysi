@@ -34,7 +34,10 @@ jobs:
 
       - name: Run pipeline
         id: run
-        run: python -m pipeline.run${{ github.event.schedule == '17 12 * * 0,6' && ' --extra-if-early' || '' }}
+        env:
+          ODDS_API_KEY: ${{ (github.event.schedule == '17 15 * * *' || github.event.schedule == '37 21 * * *' || github.event_name == 'workflow_dispatch') && secrets.ODDS_API_KEY || '' }}
+          ODDS_FLAG: ${{ (github.event.schedule == '17 15 * * *' || github.event.schedule == '37 21 * * *' || github.event_name == 'workflow_dispatch') && '--odds' || '' }}
+        run: python -m pipeline.run $ODDS_FLAG${{ github.event.schedule == '17 12 * * 0,6' && ' --extra-if-early' || '' }}
 
       - name: Review
         id: review

@@ -82,8 +82,18 @@ def test_train_defaults_are_two_latest_completed_seasons_and_current_test():
     assert "timeout-minutes: 30" in text
 
 
-def test_no_secret_reference_in_phase_1():
-    for name in ("ci.yml", "pipeline.yml", "backfill.yml", "train_xg.yml"):
+def test_odds_secret_only_in_run_step():
+    text = _text("pipeline.yml")
+    assert text.count("secrets.") == 1
+    step = _step_containing(text, "id: run")
+    assert "secrets.ODDS_API_KEY" in step and "--odds" in step
+    for cond in ("'17 15 * * *'", "'37 21 * * *'", "github.event_name == 'workflow_dispatch'"):
+        assert step.count(cond) == 2, cond     # key and flag share the same condition
+    assert "'43 6 * * *'" not in step
+
+
+def test_other_workflows_have_no_secrets():    # ci, backfill, train_xg
+    for name in ("ci.yml", "backfill.yml", "train_xg.yml"):
         assert "secrets." not in _text(name), name
 
 

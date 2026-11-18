@@ -28,6 +28,14 @@ GitHub Actions ajaa putkea kolme kertaa vuorokaudessa. Ajat ovat UTC:ssä, suoma
 
 Viikonloppuisin on lisäksi ajo 12:17 UTC (14.17), jos ensimmäinen peli alkaa sen jälkeen. Manuaaliset ajot löytyvät välilehdeltä **Actions**: `backfill` (historian lataus) ja `train_xg` (xG-mallin uudelleenopetus).
 
+## Kertoimet (The Odds API)
+
+Kertoimet haetaan The Odds API -palvelusta. Avain annetaan GitHubiin kohdassa Settings → Secrets and variables → Actions → `ODDS_API_KEY`. Paikallisesti avain annetaan vain ympäristömuuttujana, ei koskaan tiedostoon.
+
+Kertoimia haetaan kello 17.17 ja 23.37 Suomen aikaa sekä manuaaliajoissa. Muut ajot käyttävät viimeisintä hakua, jos se on alle 36 tuntia vanha. Haun epäonnistuminen ei kaada ajoa. Kuukaudessa kuluu noin 186 krediittiä 500:sta.
+
+Lähde ei tarjoa NHL:n 1X2-kertoimia (kotivoitto, tasapeli, vierasvoitto) perusmarkkinana. Sivu näyttää siksi mallin laskemat 1X2-kertoimet ilman marginaalia sekä pienimmän Veikkauksen kertoimen, jolla vedosta voi pitää arvopelinä.
+
 ## Jos ajo epäonnistuu tai tarkistus hälyttää
 
 GitHub lähettää sähköpostin, kun ajo päättyy virheeseen. Lue `reports/review.md`, korjaa ongelma paikallisesti, aja `python tools/review.py` uudelleen ja työnnä korjaus repoon. Jos tarkistus löytää virheen (koodi 2), julkaisua ei tehdä ja edellinen sivu jää näkyviin.
