@@ -304,7 +304,13 @@ def run(offline: Path | None, now: datetime, extra_if_early: bool) -> int:
         tracking.append_predictions(games, _iso(now))
         _write_json(LAST_GAMES, [_public(g) for g in games])
         _write_json(SOURCES_FILE, state)
-        _write_json(SCHEDULE_IDS, [g["id"] for g in selected])
+        # started games without an earlier export are dropped by design (plan decision 3),
+        # so they are not "missing" for the SCHED check
+        exported = {g["id"] for g in games}
+        _write_json(
+            SCHEDULE_IDS,
+            [g["id"] for g in selected if g["id"] in exported or not is_started(g, now)],
+        )
         export.write_latest(latest)
     except (SourceError, FileNotFoundError) as exc:
         logger.error("run failed: %s", exc)

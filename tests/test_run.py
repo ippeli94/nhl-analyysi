@@ -133,6 +133,8 @@ def test_started_game_without_previous_export_is_dropped(seeded):
     assert go("2026-11-18T00:10:00Z") == 0
     ids = {g["id"] for g in latest_of(seeded)["games"]}
     assert 2026020333 not in ids and 2026020344 in ids
+    sched = json.loads((seeded / "data/state/schedule_ids.json").read_text(encoding="utf-8"))
+    assert 2026020333 not in sched and set(sched) == ids
 
 
 def test_online_run_refuses_without_gate(root, capsys):
