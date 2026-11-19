@@ -1,22 +1,22 @@
 {
   "nhl": {
     "status": "ok",
-    "fetched_at": "2026-11-19T10:12:00Z",
-    "last_ok_at": "2026-11-19T10:12:00Z",
+    "fetched_at": "2026-11-19T11:13:27Z",
+    "last_ok_at": "2026-11-19T11:13:27Z",
     "note": null
   },
   "injuries": {
     "status": "ok",
-    "fetched_at": "2026-11-19T10:12:00Z",
-    "last_ok_at": "2026-11-19T10:12:00Z",
+    "fetched_at": "2026-11-19T11:13:27Z",
+    "last_ok_at": "2026-11-19T11:13:27Z",
     "note": null
   },
   "odds": {
     "status": "ok",
-    "fetched_at": "2026-11-19T10:12:00Z",
-    "last_ok_at": "2026-11-19T10:12:00Z",
-    "note": "Krediittejä jäljellä 473",
-    "remaining": 473,
-    "used": 27
+    "fetched_at": "2026-11-19T11:13:27Z",
+    "last_ok_at": "2026-11-19T11:13:27Z",
+    "note": "Krediittejä jäljellä 470",
+    "remaining": 470,
+    "used": 30
   }
 }
