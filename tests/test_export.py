@@ -122,7 +122,7 @@ def test_unknown_source_status_is_rejected(g1):
 def test_later_phase_fields_accept_null_and_objects(g1):
     obj = latest([g1])
     game = obj["games"][0]
-    game["insights"] = {"note": "x"}
+    game["insights"] = [{"id": "b2b", "team": None, "severity": 2, "text": "x"}]
     game["form"] = {"home": {}}
     game["h2h"] = None
     assert export.validate(obj) == []

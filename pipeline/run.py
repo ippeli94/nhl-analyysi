@@ -16,6 +16,8 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import pandas as pd
+
 from pipeline import (
     adjust,
     cache,
@@ -23,9 +25,11 @@ from pipeline import (
     context,
     export,
     features,
+    insights,
     players,
     predict,
     ratings,
+    teamstats,
     tracking,
     value,
     xg,
@@ -280,7 +284,7 @@ def _player_inputs(ctx, game: ScheduledGame, season: str) -> players.PlayerInput
 def _predict_all(
     selected: list[ScheduledGame], records: list[dict], season: str, today: date, now: datetime,
     with_players: bool = False,
-) -> list[dict]:
+) -> tuple[list[dict], pd.DataFrame]:
     p = config.load_params()
     coefs = _load_coefs()
     tg = features.team_games(records, coefs, p.xg_weight)
@@ -312,7 +316,27 @@ def _predict_all(
         obj.update(context.game_context(
             tg, records, game["home"]["abbr"], game["away"]["abbr"], season, day))
         out.append(obj)
-    return out
+    return out, tg
+
+
+def _attach_insights(
+    games: list[dict], tg: pd.DataFrame, records: list[dict], season: str, today: date
+) -> None:
+    """Fill insights of upcoming games; runs after odds and lineup changes are attached."""
+    try:
+        league = teamstats.league_stats(tg, records, _load_coefs(), season, today)
+    except Exception as exc:  # noqa: BLE001 - insights must never fail the run
+        logger.warning("league stats failed: %s", type(exc).__name__)
+        league = {}
+    for g in games:
+        if g["state"] != "upcoming":
+            continue
+        try:
+            stats = insights.schedule_stats(league, tg, g, season)
+            g["insights"] = insights.game_insights(g, stats)
+        except Exception as exc:  # noqa: BLE001 - one game's insights never fail the run
+            logger.warning("insights for game %s failed: %s", g["id"], type(exc).__name__)
+            g["insights"] = None
 
 
 _DROPPABLE = ("players", "form", "season_compare", "h2h", "insights", "lineup_changes")
@@ -441,7 +465,7 @@ def run(
         logger.info("cache: %d written, %d skipped", len(written), len(skipped))
         season = _current_season(selected, week)
         records = cache.load_seasons([_season_before(season), season])
-        games = _predict_all(
+        games, tg = _predict_all(
             selected, records, season, today, now, players_enabled(offline)
         )
 
@@ -478,6 +502,7 @@ def run(
                         "last_ok_at": previous.get("last_ok_at"), "note": type(exc).__name__,
                         "remaining": previous.get("remaining"), "used": previous.get("used"),
                     }
+        _attach_insights(games, tg, records, season, today)
         odds_history = []
         if fetched_now:
             odds_history = tracking.odds_rows(

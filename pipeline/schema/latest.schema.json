@@ -278,6 +278,16 @@
       }
     },
     "later_phase": {"type": ["object", "array", "null"]},
+    "insight": {
+      "type": "object",
+      "required": ["id", "team", "severity", "text"],
+      "properties": {
+        "id": {"type": "string"},
+        "team": {"type": ["string", "null"]},
+        "severity": {"type": "integer", "minimum": 1, "maximum": 3},
+        "text": {"type": "string", "minLength": 1}
+      }
+    },
     "odds_veikkaus": {
       "anyOf": [
         {"type": "null"},
@@ -409,7 +419,9 @@
         "form": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/form"}]},
         "season_compare": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/season_compare"}]},
         "h2h": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/h2h"}]},
-        "insights": {"$ref": "#/$defs/later_phase"},
+        "insights": {
+          "anyOf": [{"type": "null"}, {"type": "array", "maxItems": 6, "items": {"$ref": "#/$defs/insight"}}]
+        },
         "odds": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/odds"}]}
       },
       "additionalProperties": true

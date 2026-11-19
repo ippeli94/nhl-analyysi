@@ -77,6 +77,7 @@ def test_offline_run_end_to_end(seeded):
     assert sorted(ids) == sorted(g["id"] for g in latest["games"])
     assert all(set(g["goalies"]) == {"home", "away"} for g in latest["games"])
     assert all("_internal" not in g for g in latest["games"])
+    assert all(isinstance(g["insights"], list) for g in latest["games"])
     assert latest["next_game_date"] is None
 
 
