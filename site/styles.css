@@ -399,4 +399,9 @@ a, button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .stable td { text-align: right; }
 
 .bankroll { display: inline-flex; align-items: center; gap: var(--s2); margin-bottom: var(--s4); font-size: var(--fs-sm); color: var(--muted); }
-.bankroll input { width: 7em; }
+.bankroll input {
+  width: 7em; min-height: 44px; padding: 0 var(--s3);
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 10px; font: inherit; font-size: var(--fs-md);
+}
+.bankroll input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
