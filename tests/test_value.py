@@ -254,7 +254,7 @@ def test_veikkaus_block_and_value_flag():
     }
     o = outcome(market(value.game_odds(make_game(), books, TS), "h2h"), "home")
     assert o["veikkaus"] == {"price": 1.55, "ev": pytest.approx(0.642 * 1.55 - 1, abs=1e-4),
-                             "value": False}
+                             "value": False, "stake": None}
     assert o["value"] is True  # the best price qualifies even though Veikkaus does not
     books["veikkaus_fi"] = bm(h2h=[1.66, 2.50])
     odds = value.game_odds(make_game(), books, TS)
@@ -357,3 +357,56 @@ def test_frontend_ev_threshold_matches_config():
     text = (config.ROOT / "site" / "format.js").read_text(encoding="utf-8")
     found = re.search(r"VALUE_EV_MIN = ([0-9.]+)", text)
     assert found and float(found.group(1)) == config.ODDS_EV_MIN
+
+
+def test_kelly_stake_known_number():
+    # p = 0.5*0.6 + 0.5*0.5 = 0.55, b = 1 -> f* = 0.10 -> quarter Kelly 0.025
+    assert value.kelly_stake("coolbet", 2.0, 0.6, 0.5, None) == pytest.approx(0.025)
+
+
+def test_kelly_stake_capped():
+    # p = 0.7, b = 2 -> f* = 0.55 -> 0.1375, capped
+    assert value.kelly_stake("coolbet", 3.0, 0.8, 0.6, None) == config.KELLY_CAP == 0.03
+
+
+def test_kelly_stake_none_without_edge_or_probs_or_when_suspicious():
+    assert value.kelly_stake("coolbet", 1.5, 0.5, 0.5, None) is None  # f* < 0
+    assert value.kelly_stake("coolbet", 2.0, 0.5, 0.5, None) is None  # f* == 0
+    assert value.kelly_stake("coolbet", 2.0, None, 0.5, None) is None
+    assert value.kelly_stake("coolbet", 2.0, 0.6, None, None) is None
+    assert value.kelly_stake("coolbet", 3.0, 0.8, 0.6, "suspicious") is None
+
+
+def test_kelly_stake_betfair_uses_net_price():
+    # net b = 0.95 -> f* = (0.95*0.55 - 0.45)/0.95 -> 0.25 * 0.07632 = 0.0191
+    bf = value.kelly_stake("betfair_ex_eu", 2.0, 0.6, 0.5, None)
+    assert bf == pytest.approx(0.0191, abs=1e-4)
+    assert bf < value.kelly_stake("coolbet", 2.0, 0.6, 0.5, None)
+
+
+def test_pick_stake_end_to_end():
+    books = {"pinnacle": bm(h2h=[1.58, 2.52]), "coolbet": bm(h2h=[1.70, 2.30])}
+    pick = value.game_odds(make_game(), books, TS)["picks"][0]
+    # p_market 0.6147 -> p = 0.62835, b = 0.70, f* = 0.09742 -> 0.0244
+    assert pick["stake"] == pytest.approx(0.0244, abs=2e-4)
+    assert 0 <= pick["stake"] <= config.KELLY_CAP
+    assert pick["veikkaus"] is None
+
+
+def test_pick_stake_none_when_flagged():
+    books = {"pinnacle": bm(h2h=[1.58, 2.52]), "coolbet": bm(h2h=[1.70, 2.30])}
+    pick = value.game_odds(make_game(home_win=0.80), books, TS)["picks"][0]
+    assert pick["flag"] == "suspicious"
+    assert pick["stake"] is None
+
+
+def test_veikkaus_stake():
+    books = {"pinnacle": bm(h2h=[1.58, 2.52]), "coolbet": bm(h2h=[1.70, 2.30]),
+             "veikkaus_fi": bm(h2h=[1.66, 2.50])}
+    pick = value.game_odds(make_game(), books, TS)["picks"][0]
+    # b = 0.66, p = 0.62835 -> f* = 0.06524 -> 0.0163
+    assert pick["veikkaus"]["stake"] == pytest.approx(0.0163, abs=2e-4)
+    assert pick["veikkaus"]["stake"] < pick["stake"]
+    books["veikkaus_fi"] = bm(h2h=[1.50, 2.70])  # no edge at 1.50
+    pick = value.game_odds(make_game(), books, TS)["picks"][0]
+    assert pick["veikkaus"]["stake"] is None

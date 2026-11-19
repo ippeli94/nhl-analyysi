@@ -3,7 +3,7 @@ import {
   fmtSignedPct, ageText, freshness, groupByDate,
   fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
   playerName, fmtToi, topOf, gamePlayers, tonightPlayers,
-  formSeq, pct1, signedPct, kindLabel, sourceLabel,
+  formSeq, pct1, signedPct, kindLabel, sourceLabel, stakeText, parseBankroll,
 } from "./format.js";
 
 const DATA_URL = "data/latest.json";
@@ -158,15 +158,27 @@ const VALUE_MARKETS = [
   ["all", "Kaikki"], ["h2h", "Voittaja"], ["1x2", "1X2"], ["totals", "Yli/alle"], ["spreads", "Tasoitus"],
 ];
 let valueFilter = { market: "all", veikkausOnly: false, showFlagged: false };
+const BANKROLL_KEY = "nhl.bankroll";
+function loadBankroll() {
+  try { return parseBankroll(localStorage.getItem(BANKROLL_KEY)); } catch { return null; }
+}
+function saveBankroll(text) {
+  try {
+    const n = parseBankroll(text);
+    if (n == null) localStorage.removeItem(BANKROLL_KEY); else localStorage.setItem(BANKROLL_KEY, String(n));
+  } catch { /* storage unavailable */ }
+}
+let bankroll = loadBankroll();
 
-function pickCard({ game, pick }) {
+function pickCard({ game, pick }) {  // uses module-level bankroll
   const v = pick.veikkaus;
   const flagged = !!pick.flag;
   return `<a class="card pick${flagged ? " flagged" : ""}" href="#/ottelu/${esc(game.id)}">` +
     `<div class="pick-row"><span class="pick-label">${esc(pickLabel(pick, game))} · ${esc(bookName(pick.book))} ${esc(fmtOdds(pick.price))}</span>` +
       `<span class="pick-ev">EV ${esc(fmtEv(pick.ev))}</span></div>` +
     `<div class="pick-sub">Malli ${esc(fmtPct1(pick.p_model))} · Markkina ${esc(fmtPct1(pick.p_market))} · edge ${esc(fmtPp(pick.edge))}</div>` +
-    `<div class="pick-sub">${v ? `Veikkaus ${esc(fmtOdds(v.price))} (EV ${esc(fmtEv(v.ev))})` : "Veikkaus: ei kerrointa"}</div>` +
+    `<div class="pick-sub">Panos: ${esc(stakeText(pick.stake, bankroll))}</div>` +
+    `<div class="pick-sub">${v ? `Veikkaus ${esc(fmtOdds(v.price))} (EV ${esc(fmtEv(v.ev))}) · Panos: ${esc(stakeText(v.stake, bankroll))}` : "Veikkaus: ei kerrointa"}</div>` +
     `<div class="pick-sub">${esc(game.away.abbr)} @ ${esc(game.home.abbr)} · ${esc(fmtDate(game.nhl_date))} ${esc(fmtTime(game.start_utc))}</div>` +
     (flagged
       ? `<div class="pick-flag">${badge("Todennäköisemmin mallin virhe", "warn")}` +
@@ -181,7 +193,8 @@ function valueControls() {
   const tog = (key, label) =>
     `<button type="button" class="toggle" data-vtoggle="${esc(key)}" aria-pressed="${valueFilter[key]}">${esc(label)}</button>`;
   return `<div class="seg" role="group" aria-label="Markkina">${seg}</div>` +
-    `<div class="toggles">${tog("veikkausOnly", "Vain Veikkaus")}${tog("showFlagged", "Näytä varoitusleimalliset")}</div>`;
+    `<div class="toggles">${tog("veikkausOnly", "Vain Veikkaus")}${tog("showFlagged", "Näytä varoitusleimalliset")}</div>` +
+    `<label class="bankroll">Kassa (€) <input type="text" inputmode="decimal" id="bankroll" size="8" value="${esc(bankroll ?? "")}"></label>`;
 }
 
 function valueView(latest) {
@@ -196,7 +209,8 @@ function valueView(latest) {
     : `<section class="empty"><p>Ei ylikertoimia juuri nyt.</p></section>`;
   return head + fetched + valueControls() + body +
     `<p class="note foot">Markkina = Pinnaclen marginaaliton todennäköisyys, tai välittäjien mediaani jos Pinnacle puuttuu. ` +
-    `Ylikerroin: EV vähintään 3 % ja ero markkinaan vähintään 2 prosenttiyksikköä.</p>`;
+    `Ylikerroin: EV vähintään 3 % ja ero markkinaan vähintään 2 prosenttiyksikköä.</p>` +
+    `<p class="note foot">Panos = ¼ Kelly kutistetulla todennäköisyydellä (malli ja markkina puoliksi), enintään 3 % kassasta. Ei sijoitusneuvo.</p>`;
 }
 
 /* ---------- players ---------- */
@@ -756,6 +770,13 @@ $("view").addEventListener("click", (ev) => {
   else if (btn.dataset.pscope) playerFilter = { ...playerFilter, scope: btn.dataset.pscope };
   else if (btn.dataset.vmarket) valueFilter = { ...valueFilter, market: btn.dataset.vmarket };
   else valueFilter = { ...valueFilter, [btn.dataset.vtoggle]: !valueFilter[btn.dataset.vtoggle] };
+  render();
+});
+$("view").addEventListener("change", (ev) => {
+  const t = ev.target;
+  if (!(t instanceof Element) || t.id !== "bankroll") return;
+  saveBankroll(t.value);
+  bankroll = parseBankroll(t.value);
   render();
 });
 document.addEventListener("visibilitychange", async () => {
