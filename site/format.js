@@ -191,3 +191,26 @@ export function tonightPlayers(latest, kind, n = 10) {
   rows.sort((a, b) => (b.player[k][0] - a.player[k][0]) || playerName(a.player).localeCompare(playerName(b.player), "fi"));
   return rows.slice(0, n);
 }
+
+/* ---------- context helpers (form, lineup, performance) ---------- */
+const FORM_CLS = { V: "w", H: "l", J: "otl" };
+// seq is newest first; V win, H regulation loss, J overtime/shootout loss.
+export const formSeq = (seq) =>
+  [...(seq || "")].map((letter) => ({ letter, cls: FORM_CLS[letter] ?? "" }));
+
+export const pct1 = (x) => (x == null ? "—" : `${(x * 100).toFixed(1).replace(".", ",")} %`);
+
+export function signedPct(x) {
+  if (x == null || !Number.isFinite(x)) return "—";
+  const r = Math.round(Math.abs(x) * 1000) / 10;
+  const sign = x < 0 && r > 0 ? "−" : "+";
+  return `${sign}${r.toFixed(1).replace(".", ",")} %`;
+}
+
+const KINDS = {
+  out: "Poissa", doubtful: "Epävarma", returning: "Palaa", acquired: "Hankittu", traded_away: "Kaupattu pois",
+};
+export const kindLabel = (kind) => KINDS[kind] ?? kind;
+
+const SOURCES = { espn: "ESPN", "päätelty": "Päätelty", nhl: "NHL" };
+export const sourceLabel = (src) => SOURCES[src] ?? src;

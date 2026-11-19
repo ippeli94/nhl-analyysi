@@ -3,9 +3,11 @@ import {
   fmtSignedPct, ageText, freshness, groupByDate,
   fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
   playerName, fmtToi, topOf, gamePlayers, tonightPlayers,
+  formSeq, pct1, signedPct, kindLabel, sourceLabel,
 } from "./format.js";
 
 const DATA_URL = "data/latest.json";
+const PERF_URL = "data/performance.json";
 const RELOAD_AFTER_MS = 5 * 60_000;
 
 const $ = (id) => document.getElementById(id);
@@ -21,10 +23,13 @@ const ICON_STAR =
 const ICON_PERSON =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/>' +
   '<path d="M4.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg>';
+const ICON_CHART =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4M4 20h16"/><path d="M8 15l3.5-4 3 2.5L19 7"/></svg>';
 const TABS = [
   { id: "games", label: "Ottelut", href: "#/", icon: ICON_BALL },
   { id: "players", label: "Pelaajat", href: "#/pelaajat", icon: ICON_PERSON },
   { id: "value", label: "Ylikertoimet", href: "#/ylikertoimet", icon: ICON_STAR },
+  { id: "model", label: "Malli", href: "#/malli", icon: ICON_CHART },
 ];
 
 /* ---------- state ---------- */
@@ -106,7 +111,7 @@ function renderChrome(route) {
       : "";
   }
   $("nav").innerHTML = TABS.map((t) => {
-    const tab = route.name === "value" ? "value" : route.name === "players" ? "players" : (route.name === "list" || route.name === "game") ? "games" : null;
+    const tab = route.name === "value" ? "value" : route.name === "players" ? "players" : route.name === "model" ? "model" : (route.name === "list" || route.name === "game") ? "games" : null;
     const active = t.id === tab;
     return `<a href="${esc(t.href)}" class="${active ? "active" : ""}"${active ? ' aria-current="page"' : ""}>${t.icon}<span>${esc(t.label)}</span></a>`;
   }).join("");
@@ -114,11 +119,14 @@ function renderChrome(route) {
 
 /* ---------- list view ---------- */
 function gameCard(g) {
+  // Max two badges, by priority: live, ylikerroin, first notable insight, small sample.
+  const top = (g.insights || []).find((i) => i.severity >= 2);
   const flags = [
     g.state === "started" ? badge("Käynnissä — ennuste jäädytetty", "live") : "",
-    confidenceBadge(g),
     g.state !== "started" && (g.odds?.picks || []).some((p) => !p.flag) ? badge("Ylikertoimia", "ok") : "",
-  ].join("");
+    top ? `<span class="badge insight" title="${esc(top.text)}">${esc(top.text)}</span>` : "",
+    confidenceBadge(g),
+  ].filter(Boolean).slice(0, 2).join("");
   const awayLead = g.prob.away_win > g.prob.home_win;
   return `<a class="card" href="#/ottelu/${esc(g.id)}">` +
     `<div class="card-time">${esc(fmtTime(g.start_utc))}</div>` +
@@ -415,18 +423,114 @@ function oddsSection(g) {
     `<p class="note foot">Kertoimet haettu ${esc(fmtDateTime(g.odds.fetched_at))} · ${esc(ref)}</p>`;
 }
 
+/* ---------- context sections (insights, lineup, form, season, h2h) ---------- */
+const SEV_LABEL = { 1: "Pieni", 2: "Keskisuuri", 3: "Suuri" };
+
+function insightsSection(g) {
+  if (g.insights == null) return null;
+  if (!g.insights.length) return `<p class="note first">Ei nostoja</p>`;
+  return `<ul class="insights">${g.insights.map((i) =>
+    `<li><span class="sev sev-${esc(i.severity)}" role="img" aria-label="Merkitys: ${esc(SEV_LABEL[i.severity] || i.severity)}"></span>` +
+    `<span class="itext">${i.team ? `<strong>${esc(i.team)}</strong> ` : ""}${esc(i.text)}</span></li>`).join("")}</ul>`;
+}
+
+const KIND_BADGE = { out: "bad", doubtful: "warn", returning: "ok", acquired: "info", traded_away: "muted" };
+
+function lineupRow(c) {
+  const impacts = [
+    c.impact_attack != null ? `Hyökkäys ${signedPct(c.impact_attack)}` : "",
+    c.impact_defense != null ? `Puolustus: vastustajalle ${signedPct(c.impact_defense)}` : "",
+  ].filter(Boolean).join(" · ");
+  return `<li class="lrow"><div class="lrow-h"><span class="abbr">${esc(c.team)}</span>` +
+    `<span class="lname">${esc(c.player)}</span>${badge(kindLabel(c.kind), KIND_BADGE[c.kind] || "muted")}` +
+    `${badge(sourceLabel(c.source), "muted")}</div>` +
+    (c.detail ? `<p class="ldetail">${esc(c.detail)}</p>` : "") +
+    (impacts ? `<p class="limpact">${esc(impacts)}</p>` : "") + `</li>`;
+}
+
+function lineupSection(g) {
+  if (g.lineup_changes == null) return null;
+  if (!g.lineup_changes.length) return `<p class="note first">Ei tiedossa olevia poissaoloja</p>`;
+  return `<ul class="lineup">${g.lineup_changes.map(lineupRow).join("")}</ul>` +
+    `<p class="note">Hyökkäys = muutos joukkueen omaan maaliodotukseen. Puolustus = muutos vastustajan maaliodotukseen.</p>`;
+}
+
+function lineupWithGoalies(g) {
+  const goalies = g.goalies
+    ? `<div class="goalies">${goalieCard(g.away, g.goalies.away)}${goalieCard(g.home, g.goalies.home)}</div>` : "";
+  const lineup = lineupSection(g);
+  if (!goalies && lineup === null) return null;
+  return goalies + (lineup === null ? "" : `<h3 class="sub">Poissaolot ja kokoonpanomuutokset</h3>${lineup}`);
+}
+
+const FORM_TITLE = {
+  V: "Voitto", H: "Tappio varsinaisella peliajalla", J: "Tappio jatkoajalla tai voittolaukauskilpailussa",
+};
+
+function formColumn(abbr, f, cls) {
+  if (!f) return `<div class="fcol"><h3 class="fcol-h ${cls}">${esc(abbr)}</h3><p class="muted">Ei dataa</p></div>`;
+  const chips = formSeq(f.seq).map((c) =>
+    `<span class="chip ${esc(c.cls)}" title="${esc(FORM_TITLE[c.letter] || "")}">${esc(c.letter)}</span>`).join("");
+  return `<div class="fcol"><h3 class="fcol-h ${cls}">${esc(abbr)}</h3>` +
+    `<div class="chips" aria-label="Viimeisimmät ottelut, uusin ensin">${chips}</div>` +
+    `<dl class="kv"><dt>Viim. 10 (V-H-J)</dt><dd>${esc(f.last10)}</dd>` +
+    `<dt>Maalit</dt><dd>${esc(f.gf)}–${esc(f.ga)}</dd>` +
+    `<dt>xG %</dt><dd>${esc(pct1(f.xgf_pct))}</dd>` +
+    `<dt>Putki</dt><dd>${esc(f.streak ?? "—")}</dd></dl></div>`;
+}
+
+function formSection(g) {
+  if (g.form == null) return null;
+  return `<div class="fcols">${formColumn(g.away.abbr, g.form.away, "a")}${formColumn(g.home.abbr, g.form.home, "h")}</div>` +
+    `<p class="note">V voitto · H tappio varsinaisella peliajalla · J tappio jatkoajalla tai voittolaukauskilpailussa. Uusin ottelu vasemmalla.</p>`;
+}
+
+const goals2 = (v) => (v == null ? dash : fmtNum(v, 2));
+const SEASON_ROWS = [
+  ["Pistepros.", "pts_pct", pct1], ["Maalit/ottelu", "gf_pg", goals2],
+  ["Päästetyt/ottelu", "ga_pg", goals2], ["xG %", "xgf_pct", pct1],
+  ["YV %", "pp", pct1], ["AV %", "pk", pct1],
+];
+
+function seasonTable(abbr, sc, cls) {
+  const cell = (s, key, fmt) => `<td>${s ? esc(fmt(s[key])) : dash}</td>`;
+  const rows = SEASON_ROWS.map(([label, key, fmt]) =>
+    `<tr><th scope="row">${esc(label)}</th>${cell(sc?.now, key, fmt)}${cell(sc?.last, key, fmt)}</tr>`).join("");
+  return `<h3 class="sub tname ${cls}">${esc(abbr)}</h3><div class="twrap"><table class="otable stable">` +
+    `<thead><tr><th scope="col"></th><th scope="col">Nyt</th><th scope="col">Viime kausi</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+    `<p class="note">${sc?.now ? `Tällä kaudella ${esc(sc.now.gp)} ottelua` : "Ei pelattuja otteluita tällä kaudella"}` +
+    `${sc?.last ? ` · viime kaudella ${esc(sc.last.gp)}` : ""}</p>`;
+}
+
+function seasonSection(g) {
+  if (g.season_compare == null) return null;
+  return seasonTable(g.away.abbr, g.season_compare.away, "a") + seasonTable(g.home.abbr, g.season_compare.home, "h");
+}
+
+// Pipeline strings are home-away ("4-2", "3.1-2.4"); the UI lists away–home like fmtScore.
+const swapDash = (s) => String(s).split("-").reverse().join("–").replace(/\./g, ",");
+
+function h2hSection(g) {
+  if (g.h2h == null) return null;
+  const rows = (g.h2h.games || []).map((m) =>
+    `<tr><td>${esc(fmtDate(m.date))}</td><td>${esc(m.away)} ${esc(swapDash(m.score))} ${esc(m.home)}</td>` +
+    `<td>${m.xg ? `xG ${esc(swapDash(m.xg))}` : dash}</td></tr>`).join("");
+  return (g.h2h.summary ? `<p class="h2h-sum">${esc(g.h2h.summary)}</p>` : "") +
+    (rows ? `<div class="twrap"><table class="otable"><tbody>${rows}</tbody></table></div>` : `<p class="note first">Ei aiempia kohtaamisia</p>`);
+}
+
 // A section whose render() returns null is not shown (later-phase fields stay invisible).
 const SECTIONS = [
   { id: "header", title: null, render: headerSection },
   { id: "score", title: "xG ja tulos", render: scoreSection },
   { id: "factors", title: "Mistä ennuste koostuu", render: (g) => (g.factors?.length ? factorsSection(g) : null) },
+  { id: "insights", title: "Nostot", render: insightsSection },
   { id: "periods", title: "Erät", render: (g) => (g.periods?.length ? periodsSection(g) : null) },
   { id: "players", title: "Pelaajat", render: playersSection },
-  {
-    id: "goalies", title: "Maalivahdit",
-    render: (g) => (g.goalies
-      ? `<div class="goalies">${goalieCard(g.away, g.goalies.away)}${goalieCard(g.home, g.goalies.home)}</div>` : null),
-  },
+  { id: "lineup", title: "Maalivahdit ja poissaolot", render: lineupWithGoalies },
+  { id: "form", title: "Vire", render: formSection },
+  { id: "season", title: "Kausivertailu", render: seasonSection },
+  { id: "h2h", title: "Keskinäiset", render: h2hSection },
   { id: "odds", title: "Kertoimet", render: oddsSection },
 ];
 
@@ -437,6 +541,113 @@ function gameView(g) {
     return `<section class="sec sec-${esc(s.id)}">${s.title ? `<h2>${esc(s.title)}</h2>` : ""}${html}</section>`;
   }).join("");
   return `<a class="back" href="#/">‹ Ottelut</a>${sections}`;
+}
+
+
+/* ---------- model tab (Malli) ---------- */
+let perf = { status: "idle", data: null };   // idle | loading | ok | error
+let perfWindow = "30d";
+
+async function loadPerf() {
+  if (perf.status !== "idle") return;
+  perf = { status: "loading", data: null };
+  try {
+    const res = await fetch(PERF_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    perf = { status: "ok", data: await res.json() };
+  } catch {
+    perf = { status: "error", data: null };
+  }
+  if (parseRoute().name === "model") render();
+}
+
+const num3 = (x) => (x == null ? dash : fmtNum(x, 3));
+const swapScore = (s) => String(s).split("-").reverse().join("–");
+
+function metricTile(label, main, subs) {
+  return `<div class="stat"><span class="k">${esc(label)}</span><span class="v">${esc(main)}</span>` +
+    subs.map((t) => `<span class="k">${esc(t)}</span>`).join("") + `</div>`;
+}
+
+function calibrationChart(bins) {
+  if (!bins?.length) return `<p class="note">Ei vielä riittävästi ratkenneita otteluita kalibrointikuvaan.</p>`;
+  const S = 240, pad = 30, span = S - pad * 1.4;
+  const x = (v) => (pad + v * span).toFixed(1);
+  const y = (v) => (S - pad - v * span).toFixed(1);
+  const maxN = Math.max(...bins.map((b) => b.n));
+  let svg = `<svg class="calib" viewBox="0 0 ${S} ${S}" role="img" aria-label="Kalibrointi: ennustettu todennäköisyys vaaka-akselilla, toteutunut osuus pystyakselilla">`;
+  for (const t of [0, 0.5, 1]) {
+    svg += `<line class="grid" x1="${x(0)}" y1="${y(t)}" x2="${x(1)}" y2="${y(t)}"/>` +
+      `<line class="grid" x1="${x(t)}" y1="${y(0)}" x2="${x(t)}" y2="${y(1)}"/>` +
+      `<text class="axis" x="${x(t)}" y="${S - pad + 14}" text-anchor="middle">${t * 100}</text>` +
+      `<text class="axis" x="${pad - 6}" y="${(Number(y(t)) + 4).toFixed(1)}" text-anchor="end">${t * 100}</text>`;
+  }
+  svg += `<line class="diag" x1="${x(0)}" y1="${y(0)}" x2="${x(1)}" y2="${y(1)}"/>`;
+  svg += `<polyline class="cline" points="${bins.map((b) => `${x(b.p_mean)},${y(b.y_mean)}`).join(" ")}"/>`;
+  for (const b of bins) {
+    svg += `<circle class="cdot" cx="${x(b.p_mean)}" cy="${y(b.y_mean)}" r="${(3 + 4 * Math.sqrt(b.n / maxN)).toFixed(1)}"><title>${esc(`Ennuste ${fmtPct(b.p_mean)}, toteutunut ${fmtPct(b.y_mean)} (${b.n} ottelua)`)}</title></circle>`;
+  }
+  svg += `<text class="axis" x="${x(0.5)}" y="${S - 2}" text-anchor="middle">Ennuste (%)</text></svg>`;
+  return svg + `<p class="note">Diagonaali = täydellinen kalibrointi. Pisteen koko kertoo otteluiden määrän.</p>`;
+}
+
+function pickRow(label, p) {
+  return `<tr><th scope="row">${esc(label)}</th><td>${p ? esc(p.n) : dash}</td>` +
+    `<td>${p && p.hit_rate != null ? esc(pct1(p.hit_rate)) : dash}</td><td>${p && p.roi != null ? esc(signedPct(p.roi)) : dash}</td></tr>`;
+}
+
+function recentList(recent) {
+  if (!recent?.length) return `<p class="note first">Ei vielä ratkenneita otteluita.</p>`;
+  return `<ul class="recent">${recent.slice(0, 15).map((r) =>
+    `<li><span class="rdate">${esc(fmtDate(r.date))}</span>` +
+    `<span class="rmain"><strong>${esc(r.away)} @ ${esc(r.home)}</strong>` +
+    `<span class="psub">Ennuste: ${esc(r.home)} ${esc(fmtPct(r.p_home))} → ${esc(swapScore(r.score))}</span></span>` +
+    `<span class="hit ${r.hit ? "yes" : "no"}" role="img" aria-label="${r.hit ? "Osui" : "Ei osunut"}">${r.hit ? "✓" : "✗"}</span></li>`).join("")}</ul>`;
+}
+
+function backtestBlock(b) {
+  if (!b) return "";
+  return `<section class="sec backtest"><h2>${esc(b.label)}</h2>` +
+    `<p class="note first">Mallin ajo menneelle kaudelle takautuvasti (${esc(b.n)} ottelua) — ei oikeita ennusteita.</p>` +
+    `<div class="stats">${metricTile("Brier", num3(b.brier), [`Perustaso ${num3(b.brier_base)}`])}` +
+    `${metricTile("Log loss", num3(b.logloss), [`Perustaso ${num3(b.logloss_base)}`])}</div></section>`;
+}
+
+function modelView() {
+  const head = `<h1 class="day-title">Malli</h1>`;
+  if (perf.status === "idle" || perf.status === "loading") return `${head}<p class="loading">Ladataan…</p>`;
+  if (perf.status === "error" || !perf.data) {
+    return `${head}<section class="empty"><p>Suorituskykydataa ei saatu ladattua</p></section>`;
+  }
+  const d = perf.data;
+  const w = d.windows?.[perfWindow];
+  const toggle = `<div class="seg" role="group" aria-label="Aikaväli">` +
+    [["30d", "30 pv"], ["season", "Kausi"]].map(([id, label]) =>
+      `<button type="button" class="seg-btn" data-pwindow="${id}" aria-pressed="${perfWindow === id}">${label}</button>`).join("") + `</div>`;
+  let body;
+  if (!w) {
+    body = `<p class="note first">Ei dataa valitulle aikavälille.</p>`;
+  } else {
+    const tiles = [
+      metricTile("Brier (pienempi on parempi)", num3(w.brier), [`Perustaso ${num3(w.brier_base)}`, `Markkina ${num3(w.brier_market)}`]),
+      metricTile("Log loss", num3(w.logloss), [`Perustaso ${num3(w.logloss_base)}`, `Markkina ${num3(w.logloss_market)}`]),
+      metricTile("Osumatarkkuus", pct1(w.accuracy), [`Markkina ${pct1(w.accuracy_market)}`]),
+      metricTile("CLV, keskiarvo", w.clv_mean == null ? dash : signedPct(w.clv_mean), [`${w.clv_n ?? 0} vetoa`]),
+      metricTile("Pelaajat, Brier", w.players ? num3(w.players.brier) : dash,
+        w.players ? [`Perustaso ${num3(w.players.brier_base)}`, `${w.players.n} ennustetta`] : ["Ei dataa"]),
+      metricTile("Maalimäärän MAE", w.total_mae == null ? dash : fmtNum(w.total_mae, 2), ["Kokonaismaalit"]),
+    ].join("");
+    const pk = w.picks || {};
+    body = (w.small_sample ? `<div class="banner inline" role="status">Otos pieni — luvut eivät vielä kerro paljoa</div>` : "") +
+      `<p class="note first">${esc(w.n)} ratkennutta ottelua${w.n_market ? `, joista ${esc(w.n_market)} vertailtavissa markkinaan` : ""}.</p>` +
+      `<div class="stats">${tiles}</div>` +
+      `<h3 class="sub">Ylikerroinpoiminnat</h3><div class="twrap"><table class="otable"><thead><tr><th scope="col">Poiminnat</th><th scope="col">n</th><th scope="col">Osumat</th><th scope="col">ROI</th></tr></thead><tbody>` +
+      `${pickRow("Kaikki", pk.all)}${pickRow("Ilman varoitusta", pk.no_flag)}${pickRow("Vain Veikkaus", pk.veikkaus)}</tbody></table></div>` +
+      `<h3 class="sub">Kalibrointi</h3>${calibrationChart(w.calibration)}`;
+  }
+  return head + `<p class="note fetched">Mallin versio ${esc(d.model_version)} · päivitetty ${esc(fmtDateTime(d.generated_at))}</p>` + toggle +
+    `<section class="sec sec-perf">${body}</section>` +
+    `<section class="sec"><h2>Viimeisimmät ennusteet</h2>${recentList(d.recent)}</section>` + backtestBlock(d.backtest);
 }
 
 /* ---------- status view ---------- */
@@ -471,6 +682,7 @@ function parseRoute() {
   if (h === "#/tila") return { name: "status" };
   if (h === "#/pelaajat") return { name: "players" };
   if (h === "#/ylikertoimet") return { name: "value" };
+  if (h === "#/malli") return { name: "model" };
   return { name: "list" };
 }
 
@@ -496,6 +708,10 @@ function render() {
   } else if (route.name === "value") {
     html = valueView(state.latest);
     title = "Ylikertoimet · NHL-analyysi";
+  } else if (route.name === "model") {
+    html = modelView();
+    title = "Malli · NHL-analyysi";
+    loadPerf();
   } else if (route.name === "players") {
     html = playersView(state.latest);
     title = "Pelaajat · NHL-analyysi";
@@ -521,9 +737,10 @@ function render() {
 
 window.addEventListener("hashchange", render);
 $("view").addEventListener("click", (ev) => {
-  const btn = ev.target instanceof Element ? ev.target.closest("[data-vmarket], [data-vtoggle], [data-pkind], [data-pscope]") : null;
+  const btn = ev.target instanceof Element ? ev.target.closest("[data-vmarket], [data-vtoggle], [data-pkind], [data-pscope], [data-pwindow]") : null;
   if (!btn) return;
-  if (btn.dataset.pkind) playerFilter = { ...playerFilter, kind: btn.dataset.pkind };
+  if (btn.dataset.pwindow) perfWindow = btn.dataset.pwindow;
+  else if (btn.dataset.pkind) playerFilter = { ...playerFilter, kind: btn.dataset.pkind };
   else if (btn.dataset.pscope) playerFilter = { ...playerFilter, scope: btn.dataset.pscope };
   else if (btn.dataset.vmarket) valueFilter = { ...valueFilter, market: btn.dataset.vmarket };
   else valueFilter = { ...valueFilter, [btn.dataset.vtoggle]: !valueFilter[btn.dataset.vtoggle] };
