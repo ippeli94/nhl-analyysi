@@ -309,15 +309,17 @@
         {"type": "null"},
         {
           "type": "object",
-          "required": ["price", "ev", "value"],
+          "required": ["price", "ev", "value", "stake"],
           "properties": {
             "price": {"type": "number", "exclusiveMinimum": 1},
             "ev": {"type": ["number", "null"]},
-            "value": {"type": "boolean"}
+            "value": {"type": "boolean"},
+            "stake": {"$ref": "#/$defs/odds_stake"}
           }
         }
       ]
     },
+    "odds_stake": {"type": ["number", "null"], "minimum": 0, "maximum": 0.03},
     "odds_prob": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
     "odds": {
       "type": "object",
@@ -385,7 +387,7 @@
           "items": {
             "type": "object",
             "required": ["market", "line", "outcome", "book", "price", "p_model",
-                         "p_market", "edge", "ev", "flag", "veikkaus"],
+                         "p_market", "edge", "ev", "flag", "stake", "veikkaus"],
             "properties": {
               "market": {"enum": ["h2h", "1x2", "totals", "spreads"]},
               "line": {"type": ["number", "null"]},
@@ -397,6 +399,7 @@
               "edge": {"type": "number"},
               "ev": {"type": "number"},
               "flag": {"enum": ["suspicious", null]},
+              "stake": {"$ref": "#/$defs/odds_stake"},
               "veikkaus": {"$ref": "#/$defs/odds_veikkaus"}
             }
           }

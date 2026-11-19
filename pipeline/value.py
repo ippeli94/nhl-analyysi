@@ -28,6 +28,22 @@ def effective_price(book: str, price: float) -> float:
     return 1.0 + (price - 1.0) * (1.0 - config.ODDS_COMMISSION.get(book, 0.0))
 
 
+def kelly_stake(
+    book: str, price: float, p_model: float | None, p_market: float | None, flag: str | None
+) -> float | None:
+    """Fractional-Kelly stake as a share of bankroll (spec 17, decision 35), or None."""
+    if p_model is None or p_market is None or flag == "suspicious":
+        return None
+    p = config.KELLY_BLEND * p_model + (1.0 - config.KELLY_BLEND) * p_market
+    b = effective_price(book, price) - 1.0
+    if b <= 0:
+        return None
+    f_full = (b * p - (1.0 - p)) / b
+    if f_full <= 0:
+        return None
+    return round(min(config.KELLY_FRACTION * f_full, config.KELLY_CAP), _P)
+
+
 def clv(price: float, p_close: float) -> float:
     return price * p_close - 1.0
 
@@ -118,7 +134,7 @@ def _reference(entries: dict[str, list[float]]) -> tuple[dict, str | None, list[
     return info, None, None
 
 
-def _veikkaus(entries, info, idx, p_win, p_push, p_model, p_market):
+def _veikkaus(entries, info, idx, p_win, p_push, p_model, p_market, flag):
     prices = entries.get(config.VEIKKAUS_BOOK)
     if prices is None:
         return None
@@ -131,7 +147,8 @@ def _veikkaus(entries, info, idx, p_win, p_push, p_model, p_market):
         info[config.VEIKKAUS_BOOK]["valid"]
         and ev is not None and ev >= config.ODDS_EV_MIN and edge >= config.ODDS_EDGE_MIN
     )
-    return {"price": price, "ev": _r(ev), "value": value}
+    stake = kelly_stake(config.VEIKKAUS_BOOK, price, _r(p_model), _r(p_market), flag)
+    return {"price": price, "ev": _r(ev), "value": value, "stake": stake}
 
 
 def _market(game: dict, key: str, line: float | None, entries: dict) -> dict:
@@ -168,7 +185,7 @@ def _market(game: dict, key: str, line: float | None, entries: dict) -> dict:
             "p_model": _r(p_model),
             "p_market": _r(p_market),
             "best": best,
-            "veikkaus": _veikkaus(entries, info, idx, p_win, p_push, p_model, p_market),
+            "veikkaus": _veikkaus(entries, info, idx, p_win, p_push, p_model, p_market, flag),
             "edge": _r(edge),
             "ev": _r(ev),
             "value": value,
@@ -203,6 +220,10 @@ def game_odds(game: dict, books: dict, fetched_at: str) -> dict | None:
                     "book": o["best"]["book"], "price": o["best"]["price"],
                     "p_model": o["p_model"], "p_market": o["p_market"],
                     "edge": o["edge"], "ev": o["ev"], "flag": o["flag"],
+                    "stake": kelly_stake(
+                        o["best"]["book"], o["best"]["price"],
+                        o["p_model"], o["p_market"], o["flag"],
+                    ),
                     "veikkaus": o["veikkaus"],
                 })
     picks.sort(key=lambda p: (p["flag"] is not None, -p["ev"]))

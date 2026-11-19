@@ -5,7 +5,7 @@ import {
   freshness, groupByDate, fmtDateTime, SUPPORTED_SCHEMA,
   fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
   playerName, fmtToi, pKey, topOf, gamePlayers, tonightPlayers,
-  formSeq, pct1, signedPct, kindLabel, sourceLabel,
+  formSeq, pct1, signedPct, kindLabel, sourceLabel, stakeText, parseBankroll,
 } from "../format.js";
 
 const NOW = new Date("2026-11-16T12:00:00Z");
@@ -211,4 +211,26 @@ test("sourceLabel", () => {
   assert.equal(sourceLabel("espn"), "ESPN");
   assert.equal(sourceLabel("päätelty"), "Päätelty");
   assert.equal(sourceLabel("nhl"), "NHL");
+});
+
+test("stakeText: percent with decimal comma, optional euro amount, dash when no stake", () => {
+  assert.equal(stakeText(0.012, null), "1,2 % kassasta");
+  assert.equal(stakeText(0.012, 1000), "1,2 % kassasta (12 €)");
+  assert.equal(stakeText(0.03, 500), "3,0 % kassasta (15 €)");
+  assert.equal(stakeText(0.0244, 1000), "2,4 % kassasta (24 €)");
+  assert.equal(stakeText(null, 1000), "—");
+  assert.equal(stakeText(undefined, null), "—");
+  assert.equal(stakeText(0.012, 0), "1,2 % kassasta");
+  assert.equal(stakeText(0.012, NaN), "1,2 % kassasta");
+});
+
+test("parseBankroll accepts comma and spaces, rejects junk", () => {
+  assert.equal(parseBankroll("1000"), 1000);
+  assert.equal(parseBankroll("1 000,5"), 1000.5);
+  assert.equal(parseBankroll("500 €"), 500);
+  assert.equal(parseBankroll(""), null);
+  assert.equal(parseBankroll("abc"), null);
+  assert.equal(parseBankroll("-5"), null);
+  assert.equal(parseBankroll("0"), null);
+  assert.equal(parseBankroll(null), null);
 });

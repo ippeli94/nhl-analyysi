@@ -397,3 +397,6 @@ a, button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .stable th, .stable td { padding: var(--s2) 6px; }
 .stable tbody th { min-width: 0; }
 .stable td { text-align: right; }
+
+.bankroll { display: inline-flex; align-items: center; gap: var(--s2); margin-bottom: var(--s4); font-size: var(--fs-sm); color: var(--muted); }
+.bankroll input { width: 7em; }

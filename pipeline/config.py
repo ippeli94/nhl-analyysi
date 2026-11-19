@@ -200,6 +200,9 @@ ODDS_EDGE_MIN = 0.02
 ODDS_SUSPICIOUS_GAP = 0.10
 ODDS_COMMISSION = {"betfair_ex_eu": 0.05}
 VEIKKAUS_BOOK = "veikkaus_fi"
+KELLY_BLEND = 0.5
+KELLY_FRACTION = 0.25
+KELLY_CAP = 0.03
 ODDS_FIXTURE = "odds__icehockey_nhl.json"
 
 # Players (plan decisions 19-28)

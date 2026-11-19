@@ -214,3 +214,20 @@ export const kindLabel = (kind) => KINDS[kind] ?? kind;
 
 const SOURCES = { espn: "ESPN", "päätelty": "Päätelty", nhl: "NHL" };
 export const sourceLabel = (src) => SOURCES[src] ?? src;
+
+/* ---------- stake suggestion (Kelly) ---------- */
+// Bankroll input: "1 000", "1000,5" -> number; empty/invalid/<=0 -> null.
+export function parseBankroll(text) {
+  const s = String(text ?? "").replace(/[\s€]/g, "").replace(",", ".");
+  if (!/^\d+(\.\d+)?$/.test(s)) return null;
+  const n = Number(s);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+// stake is a share of bankroll (0-0.03) or null; bankroll in euros or null.
+export function stakeText(stake, bankroll) {
+  if (stake == null || !Number.isFinite(stake)) return "—";
+  const base = `${pct1(stake)} kassasta`;
+  if (bankroll == null || !Number.isFinite(bankroll) || bankroll <= 0) return base;
+  return `${base} (${Math.round(stake * bankroll)} €)`;
+}
