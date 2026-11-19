@@ -207,3 +207,29 @@ test("import skips invalid entries inside a valid file", () => {
   assert.equal(r.skipped, 2);
   assert.equal(r.bets[0].id, "n");
 });
+
+test("prototype-named book gets no commission and no NaN", () => {
+  for (const book of ["constructor", "__proto__", "toString"]) {
+    const r = settle(bet({ book }), res());
+    assert.deepEqual(r, { status: "won", profit: 10 }, book);
+  }
+  const e = evaluate([bet({ book: "constructor" })], { games: [res()] }, NOW);
+  assert.equal(e.totals.profit, 10);
+});
+
+test("validation: book must be string, caps on stake and price", () => {
+  assert.throws(() => addBet([], bet({ book: 5 })));
+  assert.throws(() => addBet([], bet({ stake: 1e7 + 1 })));
+  assert.throws(() => addBet([], bet({ price: 1001 })));
+  assert.equal(addBet([], bet({ stake: 1e7, price: 1000 })).length, 1);
+  assert.throws(() => addBet([], bet({ p_model: "x" })));
+  assert.throws(() => addBet([], bet({ label: 3 })));
+});
+
+test("load/import keep whitelisted fields only; loadBets dedupes ids", () => {
+  const dirty = { ...bet(), evil: "<script>", __x: 1 };
+  const st = mem({ "nhl.bets.v1": JSON.stringify({ v: 1, bets: [dirty, bet({ label: "dup" })] }) });
+  assert.deepEqual(loadBets(st), [bet()]);
+  const r = importJson(JSON.stringify({ v: 1, bets: [dirty] }), []);
+  assert.deepEqual(r.bets, [bet()]);
+});

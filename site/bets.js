@@ -8,14 +8,32 @@ const OUTCOMES = ["home", "away", "draw", "over", "under"];
 
 const isNum = (x) => typeof x === "number" && Number.isFinite(x);
 
-export function validBet(b) {
-  return !!b && typeof b === "object" && typeof b.id === "string" && b.id !== ""
-    && Number.isInteger(b.game_id)
-    && MARKETS.includes(b.market) && OUTCOMES.includes(b.outcome)
-    && isNum(b.price) && b.price > 1
-    && isNum(b.stake) && b.stake > 0
-    && (b.line === null || isNum(b.line));
+const TEXT = ["placed_at", "start_utc", "home", "away", "book", "label"];
+
+// Rebuild a bet from whitelisted fields only; null when it fails validation.
+export function normalizeBet(b) {
+  if (!b || typeof b !== "object") return null;
+  if (typeof b.id !== "string" || b.id === "") return null;
+  if (!Number.isInteger(b.game_id)) return null;
+  if (!MARKETS.includes(b.market) || !OUTCOMES.includes(b.outcome)) return null;
+  if (!isNum(b.price) || !(b.price > 1) || b.price > 1000) return null;
+  if (!isNum(b.stake) || !(b.stake > 0) || b.stake > 1e7) return null;
+  if (b.line !== null && !isNum(b.line)) return null;
+  const p = b.p_model === undefined ? null : b.p_model;
+  if (p !== null && !isNum(p)) return null;
+  const out = {
+    id: b.id, placed_at: "", game_id: b.game_id, start_utc: "", home: "", away: "",
+    market: b.market, line: b.line, outcome: b.outcome, book: "", price: b.price,
+    stake: b.stake, p_model: p, label: "",
+  };
+  for (const k of TEXT) {
+    if (typeof b[k] !== "string") return null;
+    out[k] = b[k];
+  }
+  return out;
 }
+
+export const validBet = (b) => normalizeBet(b) !== null;
 
 function newId() {
   try {
@@ -33,7 +51,15 @@ export function loadBets(storage) {
     if (!raw) return [];
     const data = JSON.parse(raw);
     if (!data || data.v !== 1 || !Array.isArray(data.bets)) return [];
-    return data.bets.filter(validBet);
+    const seen = new Set();
+    const out = [];
+    for (const raw of data.bets) {
+      const b = normalizeBet(raw);
+      if (!b || seen.has(b.id)) continue;
+      seen.add(b.id);
+      out.push(b);
+    }
+    return out;
   } catch {
     return [];
   }
@@ -50,8 +76,8 @@ export function saveBets(storage, bets) {
 }
 
 export function addBet(bets, bet) {
-  const b = { ...bet, id: newId() };
-  if (!validBet(b)) throw new Error("Virheellinen veto");
+  const b = normalizeBet({ ...bet, id: newId() });
+  if (!b) throw new Error("Virheellinen veto");
   return [...bets, b];
 }
 
@@ -60,7 +86,7 @@ export function removeBet(bets, id) {
 }
 
 function effectivePrice(book, price) {
-  return 1 + (price - 1) * (1 - (COMMISSION[book] || 0));
+  return 1 + (price - 1) * (1 - (Object.hasOwn(COMMISSION, book) ? COMMISSION[book] : 0));
 }
 
 const VOID = { status: "void", profit: 0 };
@@ -155,9 +181,10 @@ export function importJson(text, bets) {
   const out = [...bets];
   let added = 0, skipped = 0;
   for (const b of data.bets) {
-    if (!validBet(b) || have.has(b.id)) { skipped += 1; continue; }
-    have.add(b.id);
-    out.push(b);
+    const nb = normalizeBet(b);
+    if (!nb || have.has(nb.id)) { skipped += 1; continue; }
+    have.add(nb.id);
+    out.push(nb);
     added += 1;
   }
   return { bets: out, added, skipped };
