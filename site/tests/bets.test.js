@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   loadBets, saveBets, addBet, removeBet, settle, evaluate, exportJson, importJson,
+  normalizeBet, snapshotResults,
 } from "../bets.js";
 
 const mem = (init) => {
@@ -240,4 +241,34 @@ test("invalid start_utc / placed_at are rejected", () => {
   const r = importJson(JSON.stringify({ v: 1, bets: [bet({ start_utc: "x" })] }), []);
   assert.equal(r.added, 0);
   assert.equal(r.skipped, 1);
+});
+
+const SNAP = { home_goals: 4, away_goals: 3, reg_home_goals: 3, reg_away_goals: 3, decided: "OT" };
+
+test("snapshotResults copies result into bets whose game is in results", () => {
+  const r = { games: [res()] };
+  const { bets, changed } = snapshotResults([bet(), bet({ id: "b2", game_id: 99 })], r);
+  assert.equal(changed, true);
+  assert.deepEqual(bets[0].result, SNAP);
+  assert.equal(bets[1].result, undefined);
+  assert.equal(snapshotResults(bets, r).changed, false);
+});
+
+test("bet with snapshot is settled although game left results.json", () => {
+  const b = bet({ result: SNAP });
+  const ev = evaluate([b], { games: [] }, NOW);
+  assert.equal(ev.rows[0].status, "won");
+  assert.equal(ev.totals.n_settled, 1);
+});
+
+test("invalid snapshot is dropped, bet kept", () => {
+  const n = normalizeBet(bet({ result: { ...SNAP, decided: "XX" } }));
+  assert.ok(n);
+  assert.equal(n.result, undefined);
+  assert.equal(normalizeBet(bet({ result: { ...SNAP, home_goals: -1 } })).result, undefined);
+});
+
+test("import keeps snapshot", () => {
+  const r = importJson(exportJson([bet({ result: SNAP })]), []);
+  assert.deepEqual(r.bets[0].result, SNAP);
 });

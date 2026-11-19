@@ -5,7 +5,7 @@ import {
   playerName, fmtToi, topOf, gamePlayers, tonightPlayers,
   formSeq, pct1, signedPct, kindLabel, sourceLabel, stakeText, parseBankroll, fmtEur, fmtEurSigned,
 } from "./format.js";
-import { loadBets, saveBets, addBet, removeBet, evaluate, exportJson, importJson } from "./bets.js";
+import { loadBets, saveBets, addBet, removeBet, evaluate, exportJson, importJson, snapshotResults } from "./bets.js";
 
 const DATA_URL = "data/latest.json";
 const PERF_URL = "data/performance.json";
@@ -510,12 +510,14 @@ function oneXTwoBlock(g) {
 }
 
 function marketTable(m, g) {
+  const picks = (g.odds && g.odds.picks) || [];
   const rows = m.outcomes.map((o) => {
     const label = pickLabel({ market: m.key, outcome: o.key, line: m.line }, g);
     const t = { game: g, market: m.key, line: m.line ?? null, outcome: o.key, p_model: o.p_model ?? null };
+    const pk = picks.find((p) => p.market === m.key && (p.line ?? null) === (m.line ?? null) && p.outcome === o.key);
     const opts = [
-      ...(o.best ? [{ src: "best", book: o.best.book, price: o.best.price, stake: o.stake ?? null, text: "Lyö veto" }] : []),
-      ...(o.veikkaus ? [{ src: "veik", book: "veikkaus_fi", price: o.veikkaus.price, stake: o.veikkaus.stake ?? null, text: `Veikkaus ${fmtOdds(o.veikkaus.price)}` }] : []),
+      ...(o.best ? [{ src: "best", book: o.best.book, price: o.best.price, stake: pk?.stake ?? null, text: "Lyö veto" }] : []),
+      ...(o.veikkaus ? [{ src: "veik", book: "veikkaus_fi", price: o.veikkaus.price, stake: pk?.veikkaus?.stake ?? null, text: `Veikkaus ${fmtOdds(o.veikkaus.price)}` }] : []),
     ];
     const ui = opts.length ? betControls(t, opts) : "";
     return `<tr class="${o.value ? "is-value" : ""}"><th scope="row">${esc(label)}` +
@@ -788,6 +790,8 @@ async function loadResults() {
     const res = await fetch(RESULTS_URL, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     results = { status: "ok", data: await res.json() };
+    const snap = snapshotResults(bets, results.data);
+    if (snap.changed && saveBets(storage(), snap.bets)) bets = snap.bets;
   } catch {
     results = { status: "error", data: results.data };
   }

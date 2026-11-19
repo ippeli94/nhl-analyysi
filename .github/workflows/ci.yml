@@ -19,5 +19,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: node --test site/tests/format.test.js
+      - run: node --test site/tests/format.test.js site/tests/bets.test.js
       - run: node --check site/app.js

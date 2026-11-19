@@ -127,7 +127,7 @@ def test_ci_runs_ruff_pytest_and_node_tests():
     assert "push:" in text and "pull_request:" in text
     assert "ruff check ." in text
     assert "python -m pytest" in text
-    assert "node --test site/tests/format.test.js" in text
+    assert "node --test site/tests/format.test.js site/tests/bets.test.js" in text
     assert "node --check site/app.js" in text
 
 

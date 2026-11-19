@@ -31,8 +31,27 @@ export function normalizeBet(b) {
     out[k] = b[k];
   }
   if (!Number.isFinite(Date.parse(out.start_utc)) || !Number.isFinite(Date.parse(out.placed_at))) return null;
+  const snap = normalizeResult(b.result);
+  if (snap) out.result = snap;
   return out;
 }
+
+const GOAL_KEYS = ["home_goals", "away_goals", "reg_home_goals", "reg_away_goals"];
+
+// Whitelisted result snapshot or null.
+function normalizeResult(r) {
+  if (!r || typeof r !== "object") return null;
+  const out = {};
+  for (const k of GOAL_KEYS) {
+    if (!Number.isInteger(r[k]) || r[k] < 0 || r[k] > 100) return null;
+    out[k] = r[k];
+  }
+  if (!["REG", "OT", "SO"].includes(r.decided)) return null;
+  out.decided = r.decided;
+  return out;
+}
+
+const sameResult = (a, b) => !!a && !!b && GOAL_KEYS.every((k) => a[k] === b[k]) && a.decided === b.decided;
 
 export const validBet = (b) => normalizeBet(b) !== null;
 
@@ -146,7 +165,7 @@ export function evaluate(bets, results, now) {
   for (const g of games) if (g && g.id !== undefined) byId.set(g.id, g);
   const nowMs = now instanceof Date ? now.getTime() : Number(now);
   const rows = bets.map((bet) => {
-    const g = byId.get(bet.game_id);
+    const g = byId.get(bet.game_id) || bet.result;
     if (g) {
       const s = settle(bet, g);
       return { bet, status: s.status, profit: s.profit };
@@ -161,6 +180,21 @@ export function evaluate(bets, results, now) {
     if (sub.length) byMarket[m] = summarize(sub);
   }
   return { rows, totals: summarize(rows), byMarket };
+}
+
+// Store the final result on bets whose game is in results (so they stay settled later).
+export function snapshotResults(bets, results) {
+  const games = results && Array.isArray(results.games) ? results.games : [];
+  const byId = new Map();
+  for (const g of games) if (g && g.id !== undefined) byId.set(g.id, g);
+  let changed = false;
+  const out = bets.map((b) => {
+    const snap = normalizeResult(byId.get(b.game_id));
+    if (!snap || sameResult(b.result, snap)) return b;
+    changed = true;
+    return { ...b, result: snap };
+  });
+  return { bets: out, changed };
 }
 
 export function exportJson(bets) {
