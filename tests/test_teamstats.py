@@ -113,10 +113,10 @@ def test_schedule_load_road_run():
                rec(2, "2026-11-11", "Y", "A", [], (1, 0)),
                rec(3, "2026-11-07", "A", "Z", [], (1, 0))]
     tg = tg_from(records)
-    b2b, last4, run = teamstats.schedule_load(tg, "A", date(2026, 11, 12), False)
+    b2b, last4, run = teamstats.schedule_load(tg, "A", date(2026, 11, 12), False, SEASON)
     assert (b2b, last4, run) == (True, 3, 3)
-    assert teamstats.schedule_load(tg, "A", date(2026, 11, 12), True) == (True, 3, 0)
-    assert teamstats.schedule_load(tg, "A", date(2026, 11, 20), False)[:2] == (False, 1)
+    assert teamstats.schedule_load(tg, "A", date(2026, 11, 12), True, SEASON) == (True, 3, 0)
+    assert teamstats.schedule_load(tg, "A", date(2026, 11, 20), False, SEASON)[:2] == (False, 1)
 
 
 def _season_records():
@@ -129,11 +129,15 @@ def _season_records():
 
 
 def test_season_leak_excluded():
-    old = rec(900, "2025-12-01", "A", "B", [], (0, 3))
-    old["season"] = "20252026"
-    records = [old, rec(1, "2026-10-10", "A", "B", [], (2, 1))]
+    olds = []
+    for i in range(3):
+        o = rec(900 + i, f"2026-04-{10 + i}", "A", "B", [shot("A", 1, 10, "sog")], (3, 0))
+        o["season"] = "20252026"
+        olds.append(o)
+    records = [*olds, rec(1, "2026-10-10", "A", "B", [], (2, 1))]
     st = teamstats.league_stats(tg_from(records), records, {}, SEASON, ASOF)
     assert st["A"].streak == "V1"
+    assert st["A"].xgf_pct_last10 == pytest.approx(0.5)
     assert st["A"].gp == 1
 
 
@@ -175,4 +179,16 @@ def test_road_run_stops_at_season_boundary():
     old = rec(1, "2025-04-01", "X", "A", [], (1, 0))
     old["season"] = "20242025"
     records = [old, rec(2, "2026-11-10", "X", "A", [], (1, 0))]
-    assert teamstats.schedule_load(tg_from(records), "A", date(2026, 11, 12), False)[2] == 2
+    tg = tg_from(records)
+    assert teamstats.schedule_load(tg, "A", date(2026, 11, 12), False, SEASON)[2] == 2
+    # tonight is the first game of a new season: the old away run does not count
+    assert teamstats.schedule_load(tg, "A", date(2026, 11, 12), False, "20272028")[2] == 1
+
+
+def test_pim_rank_ignores_misconducts():
+    records = []
+    for i in range(10):
+        pens = [{"p": 1, "t": 5, "team": "A", "min": 10}, {"p": 1, "t": 6, "team": "B", "min": 2}]
+        records.append(rec(i, f"2026-10-{10 + i}", "A", "B", [], (0, 0), penalties=pens))
+    st = teamstats.league_stats(tg_from(records), records, {}, SEASON, ASOF)
+    assert st["B"].pim_rank == 1 and st["A"].pim_rank == 2

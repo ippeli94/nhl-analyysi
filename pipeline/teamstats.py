@@ -173,7 +173,7 @@ def league_stats(
 
 
 def schedule_load(
-    tg: pd.DataFrame, team: str, day: date, is_home: bool
+    tg: pd.DataFrame, team: str, day: date, is_home: bool, season: str
 ) -> tuple[bool, int, int]:
     """(b2b, games in the last 4 days incl. tonight, consecutive away games incl. tonight)."""
     if tg is None or len(tg) == 0:
@@ -186,8 +186,7 @@ def schedule_load(
     run = 0
     if not is_home:
         run = 1
-        if len(rows):
-            rows = rows[rows["season"] == rows.iloc[-1]["season"]]
+        rows = rows[rows["season"] == season]
         for home in reversed(rows["is_home"].astype(bool).tolist()):
             if home:
                 break
