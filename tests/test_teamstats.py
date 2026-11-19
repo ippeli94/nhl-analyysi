@@ -117,3 +117,62 @@ def test_schedule_load_road_run():
     assert (b2b, last4, run) == (True, 3, 3)
     assert teamstats.schedule_load(tg, "A", date(2026, 11, 12), True) == (True, 3, 0)
     assert teamstats.schedule_load(tg, "A", date(2026, 11, 20), False)[:2] == (False, 1)
+
+
+def _season_records():
+    records = []
+    for i in range(10):
+        records.append(rec(i, f"2026-10-{10 + i}", "A", "B", [], (2, 1)))
+    for i in range(10):
+        records.append(rec(100 + i, f"2026-11-{10 + i}", "C", "D", [], (1, 2)))
+    return records
+
+
+def test_season_leak_excluded():
+    old = rec(900, "2025-12-01", "A", "B", [], (0, 3))
+    old["season"] = "20252026"
+    records = [old, rec(1, "2026-10-10", "A", "B", [], (2, 1))]
+    st = teamstats.league_stats(tg_from(records), records, {}, SEASON, ASOF)
+    assert st["A"].streak == "V1"
+    assert st["A"].gp == 1
+
+
+def test_n_ranked_and_pk_direction():
+    records = []
+    for i in range(10):
+        pens = [{"p": 1, "t": 5, "team": "A", "min": 2}]
+        shots = [shot("B", 1, 10, strength="pp")] if i < 5 else []
+        records.append(rec(i, f"2026-10-{10 + i}", "A", "B", shots, (0, len(shots)),
+                           penalties=pens))
+    st = teamstats.league_stats(tg_from(records), records, {}, SEASON, ASOF)
+    assert st["A"].n_ranked == st["B"].n_ranked == 2
+    assert st["A"].pk == pytest.approx(0.5)
+    assert st["A"].pim_rank == 1
+
+
+def test_pk_rank_highest_is_best():
+    records = []
+    for i in range(10):
+        for tm, opp, gid in (("A", "B", i), ("C", "D", 100 + i)):
+            pens = [{"p": 1, "t": 5, "team": tm, "min": 2}]
+            shots = [shot(opp, 1, 10, strength="pp")] if tm == "C" and i < 5 else []
+            records.append(rec(gid, f"2026-10-{10 + i}", tm, opp, shots, (0, len(shots)),
+                               penalties=pens))
+    st = teamstats.league_stats(tg_from(records), records, {}, SEASON, ASOF)
+    assert st["A"].pk == 1.0 and st["C"].pk == pytest.approx(0.5)
+    assert st["A"].pk_rank == 1 and st["C"].pk_rank == 2
+
+
+def test_luck_last10():
+    shots = [shot("A", 1, 10), shot("A", 1, 20)]
+    records = [rec(1, "2026-10-10", "A", "B", shots, (2, 0))]
+    st = teamstats.league_stats(tg_from(records), records, {}, SEASON, ASOF)
+    assert st["A"].luck_last10 == pytest.approx(1.0)
+    assert st["B"].luck_last10 == pytest.approx(-1.0)
+
+
+def test_road_run_stops_at_season_boundary():
+    old = rec(1, "2025-04-01", "X", "A", [], (1, 0))
+    old["season"] = "20242025"
+    records = [old, rec(2, "2026-11-10", "X", "A", [], (1, 0))]
+    assert teamstats.schedule_load(tg_from(records), "A", date(2026, 11, 12), False)[2] == 2

@@ -15,6 +15,8 @@ PERIODS = (1, 2, 3)
 
 @dataclass
 class TeamStats:
+    """played_yesterday, games_last_4d and road_run are filled by the caller from schedule_load."""
+
     gp: int = 0
     period_xg_share: list[float | None] | None = None
     led_after2: int = 0
@@ -33,6 +35,7 @@ class TeamStats:
     pts_pct: float | None = None
     pts_pct_last: float | None = None
     gp_last: int = 0
+    n_ranked: int = 0  # teams with gp >= INSIGHT_MIN_GAMES used in the ranks
     xgf_pct_season: float | None = None
     xgf_pct_last10: float | None = None
     luck_last10: float | None = None
@@ -117,7 +120,8 @@ def league_stats(
                 mine[team][i] += m
                 total[team][i] += m + o
         for pen in rec.get("penalties") or []:
-            pens[pen["team"]] += 1
+            if pen.get("min") in context.PP_MINUTES:
+                pens[pen["team"]] += 1
         for team, st in _score_states(rec).items():
             if (gid, team) not in won_by:
                 continue
@@ -147,7 +151,7 @@ def league_stats(
             s.pts_pct_last, s.gp_last = last["pts_pct"], last["gp"]
         line = context.season_line(tg, records, team, season, asof)
         s.xgf_pct_season = line["xgf_pct"] if line else None
-        f = context.form(tg, team, asof)
+        f = context.form(cur, team, asof)
         if f:
             s.xgf_pct_last10, s.streak = f["xgf_pct"], f["streak"]
         tail = rows.tail(config.FORM_GAMES)
@@ -164,6 +168,7 @@ def league_stats(
     pim_rank = _rank({t: pens[t] / s.gp for t, s in out.items() if s.gp}, eligible)
     for t, s in out.items():
         s.pp_rank, s.pk_rank, s.pim_rank = pp_rank.get(t), pk_rank.get(t), pim_rank.get(t)
+        s.n_ranked = len(eligible)
     return out
 
 
@@ -181,6 +186,8 @@ def schedule_load(
     run = 0
     if not is_home:
         run = 1
+        if len(rows):
+            rows = rows[rows["season"] == rows.iloc[-1]["season"]]
         for home in reversed(rows["is_home"].astype(bool).tolist()):
             if home:
                 break
