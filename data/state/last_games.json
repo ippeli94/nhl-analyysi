@@ -843,12 +843,12 @@
         "team": "LAK",
         "player": "Artemi Panarin",
         "player_id": 8478550,
-        "kind": "doubtful",
+        "kind": "out",
         "source": "espn",
-        "detail": "Päivittäin arvioitava",
-        "since": "2026-11-18",
-        "impact_attack": -0.033,
-        "impact_defense": 0.007
+        "detail": "Poissa",
+        "since": "2026-11-19",
+        "impact_attack": -0.079,
+        "impact_defense": 0.015
       },
       {
         "team": "LAK",
@@ -895,7 +895,7 @@
         "id": "key_absence",
         "team": "LAK",
         "severity": 3,
-        "text": "Los Angelesin Artemi Panarin epävarma: maaliodotus −3 %."
+        "text": "Los Angelesin Artemi Panarin poissa: maaliodotus −8 %."
       },
       {
         "id": "return_or_trade",
@@ -9298,12 +9298,12 @@
         "team": "TBL",
         "player": "Brandon Hagel",
         "player_id": 8479542,
-        "kind": "doubtful",
+        "kind": "out",
         "source": "espn",
-        "detail": "Päivittäin arvioitava",
-        "since": "2026-11-18",
-        "impact_attack": -0.048,
-        "impact_defense": 0.008
+        "detail": "Loukkaantumislista",
+        "since": "2026-11-19",
+        "impact_attack": -0.103,
+        "impact_defense": 0.016
       },
       {
         "team": "TBL",
@@ -9421,7 +9421,7 @@
         "id": "key_absence",
         "team": "TBL",
         "severity": 3,
-        "text": "Tampa Bayn Brandon Hagel epävarma: maaliodotus −5 %."
+        "text": "Tampa Bayn Brandon Hagel poissa: maaliodotus −10 %."
       },
       {
         "id": "streak",
@@ -16549,17 +16549,6 @@
         "since": "2026-10-24",
         "impact_attack": -0.003,
         "impact_defense": 0.003
-      },
-      {
-        "team": "DAL",
-        "player": "Matt Duchene",
-        "player_id": null,
-        "kind": "out",
-        "source": "espn",
-        "detail": "Loukkaantumislista",
-        "since": "2026-10-12",
-        "impact_attack": 0.0,
-        "impact_defense": 0.0
       }
     ],
     "insights": [
