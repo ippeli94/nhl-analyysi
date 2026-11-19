@@ -5,7 +5,7 @@ import {
   freshness, groupByDate, fmtDateTime, SUPPORTED_SCHEMA,
   fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
   playerName, fmtToi, pKey, topOf, gamePlayers, tonightPlayers,
-  formSeq, pct1, signedPct, kindLabel, sourceLabel, stakeText, parseBankroll,
+  formSeq, pct1, signedPct, kindLabel, sourceLabel, stakeText, parseBankroll, fmtEur, fmtEurSigned,
 } from "../format.js";
 
 const NOW = new Date("2026-11-16T12:00:00Z");
@@ -233,4 +233,16 @@ test("parseBankroll accepts comma and spaces, rejects junk", () => {
   assert.equal(parseBankroll("-5"), null);
   assert.equal(parseBankroll("0"), null);
   assert.equal(parseBankroll(null), null);
+});
+
+test("fmtEur / fmtEurSigned use comma and U+2212", () => {
+  assert.equal(fmtEur(12.345), "12,35 €");
+  assert.equal(fmtEur(10), "10,00 €");
+  assert.equal(fmtEur(-5), "−5,00 €");
+  assert.equal(fmtEur(-0.001), "0,00 €");
+  assert.equal(fmtEur(null), "—");
+  assert.equal(fmtEurSigned(9.5), "+9,50 €");
+  assert.equal(fmtEurSigned(-10), "−10,00 €");
+  assert.equal(fmtEurSigned(0), "0,00 €");
+  assert.equal(fmtEurSigned(NaN), "—");
 });

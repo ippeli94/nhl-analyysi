@@ -3,11 +3,13 @@ import {
   fmtSignedPct, ageText, freshness, groupByDate,
   fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
   playerName, fmtToi, topOf, gamePlayers, tonightPlayers,
-  formSeq, pct1, signedPct, kindLabel, sourceLabel, stakeText, parseBankroll,
+  formSeq, pct1, signedPct, kindLabel, sourceLabel, stakeText, parseBankroll, fmtEur, fmtEurSigned,
 } from "./format.js";
+import { loadBets, saveBets, addBet, removeBet, evaluate, exportJson, importJson } from "./bets.js";
 
 const DATA_URL = "data/latest.json";
 const PERF_URL = "data/performance.json";
+const RESULTS_URL = "data/results.json";
 const RELOAD_AFTER_MS = 5 * 60_000;
 
 const $ = (id) => document.getElementById(id);
@@ -25,11 +27,15 @@ const ICON_PERSON =
   '<path d="M4.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg>';
 const ICON_CHART =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4M4 20h16"/><path d="M8 15l3.5-4 3 2.5L19 7"/></svg>';
+const ICON_BET =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/>' +
+  '<path d="M8.5 9h7M8.5 13h7M8.5 16.5h4"/></svg>';
 const TABS = [
   { id: "games", label: "Ottelut", href: "#/", icon: ICON_BALL },
   { id: "players", label: "Pelaajat", href: "#/pelaajat", icon: ICON_PERSON },
   { id: "value", label: "Ylikertoimet", href: "#/ylikertoimet", icon: ICON_STAR },
   { id: "model", label: "Malli", href: "#/malli", icon: ICON_CHART },
+  { id: "bets", label: "Vedot", href: "#/vedot", icon: ICON_BET },
 ];
 
 /* ---------- state ---------- */
@@ -111,7 +117,7 @@ function renderChrome(route) {
       : "";
   }
   $("nav").innerHTML = TABS.map((t) => {
-    const tab = route.name === "value" ? "value" : route.name === "players" ? "players" : route.name === "model" ? "model" : (route.name === "list" || route.name === "game") ? "games" : null;
+    const tab = { value: "value", players: "players", model: "model", bets: "bets", list: "games", game: "games" }[route.name] ?? null;
     const active = t.id === tab;
     return `<a href="${esc(t.href)}" class="${active ? "active" : ""}"${active ? ' aria-current="page"' : ""}>${t.icon}<span>${esc(t.label)}</span></a>`;
   }).join("");
@@ -170,10 +176,101 @@ function saveBankroll(text) {
 }
 let bankroll = loadBankroll();
 
+/* ---------- own (imaginary) bets: placement UI ---------- */
+function storage() { try { return localStorage; } catch { return null; } }
+let bets = loadBets(storage());
+let betTargets = [];                 // registry rebuilt on every render; buttons refer by index
+let betForm = null;                  // { key, book, price, stake, error, ... }
+let betFlash = null;                 // { key, until }
+
+const targetKey = (t) => `${t.game.id}|${t.market}|${t.line ?? ""}|${t.outcome}`;
+const betKey = (b) => `${b.game_id}|${b.market}|${b.line ?? ""}|${b.outcome}`;
+const isPlaced = (t) => bets.some((b) => betKey(b) === targetKey(t));
+
+function betLabel(t, book) {
+  return `${t.game.away.abbr} @ ${t.game.home.abbr} · ${pickLabel(t, t.game)} · ${bookName(book)}`;
+}
+
+// options: [{src, book, price, stake (share of bankroll | null), text}]
+function betControls(t, options) {
+  if (t.game.state !== "upcoming") return "";
+  const key = targetKey(t);
+  const placed = isPlaced(t);
+  const flash = betFlash && betFlash.key === key && betFlash.until > Date.now()
+    ? `<span class="bet-ok" role="status">Veto tallennettu</span>` : "";
+  const btns = options.map((o, i) => {
+    const idx = betTargets.push({ ...t, ...o, key }) - 1;
+    const done = i === 0 && placed;
+    return `<button type="button" class="bet-btn${done ? " done" : ""}" data-bet-open="${idx}">${esc(done ? "Vedetty ✓" : o.text)}</button>`;
+  }).join("");
+  const form = betForm && betForm.key === key ? betFormHtml(t) : "";
+  return `<div class="bet-area"><div class="bet-actions">${btns}${flash}</div>${form}</div>`;
+}
+
+function betFormHtml(t) {
+  return `<form class="bet-form" data-bet-form novalidate>` +
+    `<p class="bet-label">${esc(betLabel(t, betForm.book))}</p>` +
+    `<div class="bet-fields"><label>Panos (€)<input type="text" inputmode="decimal" id="bet-stake" value="${esc(betForm.stake)}" autocomplete="off"></label>` +
+    `<label>Kerroin<input type="text" inputmode="decimal" id="bet-price" value="${esc(betForm.price)}" autocomplete="off"></label></div>` +
+    `<p class="note">Välittäjä: ${esc(bookName(betForm.book))}</p>` +
+    (betForm.error ? `<p class="bet-err" role="alert">${esc(betForm.error)}</p>` : "") +
+    `<div class="bet-actions"><button type="submit" class="bet-btn primary">Tallenna veto</button>` +
+    `<button type="button" class="bet-btn" data-bet-cancel>Peruuta</button></div></form>`;
+}
+
+function openBetForm(idx) {
+  const o = betTargets[idx];
+  if (!o) return;
+  const stake = bankroll != null && o.stake != null ? Math.round(o.stake * bankroll) : 0;
+  betForm = {
+    key: o.key, book: o.book, stake: stake > 0 ? String(stake) : "", price: String(o.price).replace(".", ","), error: null,
+    p_model: o.p_model, market: o.market, line: o.line, outcome: o.outcome, gameId: o.game.id,
+  };
+  render();
+  const el = $("bet-stake");
+  if (el) el.focus({ preventScroll: true });
+}
+
+function saveBetForm() {
+  const f = betForm;
+  if (!f) return;
+  f.stake = $("bet-stake")?.value ?? f.stake;
+  f.price = $("bet-price")?.value ?? f.price;
+  const g = state.latest?.games.find((x) => x.id === f.gameId);
+  const stake = parseBankroll(f.stake);
+  const price = parseBankroll(f.price);
+  if (!g || g.state !== "upcoming") { f.error = "Ottelu on jo alkanut."; return render(); }
+  if (stake == null) { f.error = "Anna panos euroina (esim. 10 tai 12,5)."; return render(); }
+  if (price == null || price <= 1) { f.error = "Kertoimen pitää olla yli 1 (esim. 1,95)."; return render(); }
+  const t = { game: g, market: f.market, line: f.line, outcome: f.outcome };
+  let next;
+  try {
+    next = addBet(bets, {
+      placed_at: new Date().toISOString(), game_id: g.id, start_utc: g.start_utc,
+      home: g.home.abbr, away: g.away.abbr, market: f.market, line: f.line, outcome: f.outcome,
+      book: f.book, price, stake, p_model: f.p_model, label: betLabel(t, f.book),
+    });
+  } catch {
+    f.error = "Vedon tiedot eivät kelpaa.";
+    return render();
+  }
+  if (!saveBets(storage(), next)) { f.error = "Tallennus selaimeen ei onnistunut."; return render(); }
+  bets = next;
+  betFlash = { key: f.key, until: Date.now() + 4000 };
+  betForm = null;
+  render();
+  setTimeout(() => { if (betFlash && betFlash.until <= Date.now()) { betFlash = null; render(); } }, 4100);
+}
+
 function pickCard({ game, pick }) {  // uses module-level bankroll
   const v = pick.veikkaus;
   const flagged = !!pick.flag;
-  return `<a class="card pick${flagged ? " flagged" : ""}" href="#/ottelu/${esc(game.id)}">` +
+  const target = { game, market: pick.market, line: pick.line ?? null, outcome: pick.outcome, p_model: pick.p_model ?? null };
+  const betUi = betControls(target, [
+    { src: "best", book: pick.book, price: pick.price, stake: pick.stake, text: "Lyö veto" },
+    ...(v ? [{ src: "veik", book: "veikkaus_fi", price: v.price, stake: v.stake, text: `Veikkaus ${fmtOdds(v.price)}` }] : []),
+  ]);
+  return `<div class="pick-wrap"><a class="card pick${flagged ? " flagged" : ""}" href="#/ottelu/${esc(game.id)}">` +
     `<div class="pick-row"><span class="pick-label">${esc(pickLabel(pick, game))} · ${esc(bookName(pick.book))} ${esc(fmtOdds(pick.price))}</span>` +
       `<span class="pick-ev">EV ${esc(fmtEv(pick.ev))}</span></div>` +
     `<div class="pick-sub">Malli ${esc(fmtPct1(pick.p_model))} · Markkina ${esc(fmtPct1(pick.p_market))} · edge ${esc(fmtPp(pick.edge))}</div>` +
@@ -184,7 +281,7 @@ function pickCard({ game, pick }) {  // uses module-level bankroll
       ? `<div class="pick-flag">${badge("Todennäköisemmin mallin virhe", "warn")}` +
         `<p class="note">Suuri ero markkinaan — todennäköisemmin mallin virhe tai puuttuva tieto kuin löytö.</p></div>`
       : "") +
-    `</a>`;
+    `</a>${betUi}</div>`;
 }
 
 function valueControls() {
@@ -410,13 +507,20 @@ function oneXTwoBlock(g) {
 function marketTable(m, g) {
   const rows = m.outcomes.map((o) => {
     const label = pickLabel({ market: m.key, outcome: o.key, line: m.line }, g);
+    const t = { game: g, market: m.key, line: m.line ?? null, outcome: o.key, p_model: o.p_model ?? null };
+    const opts = [
+      ...(o.best ? [{ src: "best", book: o.best.book, price: o.best.price, stake: o.stake ?? null, text: "Lyö veto" }] : []),
+      ...(o.veikkaus ? [{ src: "veik", book: "veikkaus_fi", price: o.veikkaus.price, stake: o.veikkaus.stake ?? null, text: `Veikkaus ${fmtOdds(o.veikkaus.price)}` }] : []),
+    ];
+    const ui = opts.length ? betControls(t, opts) : "";
     return `<tr class="${o.value ? "is-value" : ""}"><th scope="row">${esc(label)}` +
       (o.flag ? `<br>${badge("Todennäköisemmin mallin virhe", "warn")}` : "") + `</th>` +
       `<td>${o.p_model != null ? esc(fmtPct1(o.p_model)) : dash}</td>` +
       `<td>${o.p_market != null ? esc(fmtPct1(o.p_market)) : dash}</td>` +
       `<td>${o.best ? `${esc(fmtOdds(o.best.price))} ${esc(bookName(o.best.book))}` : dash}</td>` +
       `<td>${o.veikkaus ? esc(fmtOdds(o.veikkaus.price)) : dash}</td>` +
-      `<td>${o.ev != null ? esc(fmtEv(o.ev)) : dash}</td></tr>`;
+      `<td>${o.ev != null ? esc(fmtEv(o.ev)) : dash}</td></tr>` +
+      (ui ? `<tr class="bet-row"><td colspan="6">${ui}</td></tr>` : "");
   }).join("");
   const books = (m.books || []).map((b) =>
     `<li>${esc(bookName(b.book))}: ${esc((b.prices || []).map(fmtOdds).join(" / "))}` +
@@ -668,6 +772,102 @@ function modelView() {
     `<section class="sec"><h2>Viimeisimmät ennusteet</h2>${recentList(d.recent)}</section>` + backtestBlock(d.backtest);
 }
 
+/* ---------- bets tab (Vedot) ---------- */
+let results = { status: "idle", data: null };   // idle | loading | ok | error
+let betsMsg = null;                              // { text, kind } after import/export
+
+async function loadResults() {
+  if (results.status !== "idle") return;
+  results = { status: "loading", data: null };
+  try {
+    const res = await fetch(RESULTS_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    results = { status: "ok", data: await res.json() };
+  } catch {
+    results = { status: "error", data: null };
+  }
+  if (parseRoute().name === "bets") render();
+}
+
+const BET_MARKET_NAMES = { h2h: "Voittaja", "1x2": "1X2", totals: "Yli/alle", spreads: "Tasoitus" };
+const BET_STATUS = {
+  open: ["Avoin", "info"], waiting: ["Odottaa tulosta", "muted"], won: ["✓ Voitto", "ok"],
+  lost: ["✗ Tappio", "bad"], push: ["Palautus", "muted"], void: ["Mitätön", "muted"],
+};
+
+function betRow(r, deletable) {
+  const b = r.bet;
+  const [txt, kind] = BET_STATUS[r.status] || [r.status, "muted"];
+  const settled = !["open", "waiting"].includes(r.status);
+  const profit = settled ? `<span class="bet-profit ${r.profit > 0 ? "pos" : r.profit < 0 ? "neg" : ""}">${esc(fmtEurSigned(r.profit))}</span>` : "";
+  return `<li class="bet-item"><div class="bet-item-h"><span class="bet-item-label">${esc(b.label)}</span>${badge(txt, kind)}</div>` +
+    `<div class="bet-item-sub"><span>${esc(fmtDateTime(b.start_utc))} · Panos ${esc(fmtEur(b.stake))} @ ${esc(fmtOdds(b.price))}</span>${profit}</div>` +
+    (deletable ? `<button type="button" class="bet-btn danger" data-bet-del="${esc(b.id)}">Poista veto</button>` : "") + `</li>`;
+}
+
+function betsView() {
+  const head = `<h1 class="day-title">Vedot</h1>`;
+  const ev = evaluate(bets, results.status === "ok" ? results.data : null, new Date());
+  const t = ev.totals;
+  const pending = ev.rows.filter((r) => r.status === "open" || r.status === "waiting");
+  const nOpen = pending.filter((r) => r.status === "open").length;
+  const settled = ev.rows.filter((r) => !["open", "waiting"].includes(r.status))
+    .sort((a, b) => Date.parse(b.bet.start_utc) - Date.parse(a.bet.start_utc));
+  pending.sort((a, b) => Date.parse(a.bet.start_utc) - Date.parse(b.bet.start_utc));
+  const tile = (k, v, sub) => `<div class="stat"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span>${sub ? `<span class="k">${esc(sub)}</span>` : ""}</div>`;
+  const tiles = `<div class="stats">` +
+    tile("Panostettu", fmtEur(t.staked), `${t.n_settled} ratkennutta`) +
+    tile("Tulos", fmtEurSigned(t.profit), "") +
+    tile("ROI", t.roi == null ? "—" : signedPct(t.roi), "") +
+    tile("Osumat", t.hit_rate == null ? "—" : pct1(t.hit_rate), `${t.hits} voittoa`) +
+    tile("Kesken", String(pending.length), `avoimia ${nOpen} · odottaa tulosta ${pending.length - nOpen}`) +
+    `</div>`;
+  const resultsNote = results.status === "error"
+    ? `<p class="note">Tuloksia ei saatu ladattua — vedot näkyvät tilassa "Odottaa tulosta". <button type="button" class="seg-btn" id="results-retry">Yritä uudelleen</button></p>`
+    : results.status !== "ok" ? `<p class="note">Ladataan tuloksia…</p>` : "";
+  const list = (rows, del) => rows.length ? `<ul class="bet-list">${rows.map((r) => betRow(r, del && r.status === "open")).join("")}</ul>` : "";
+  const market = Object.entries(ev.byMarket).map(([m, s]) =>
+    `<tr><th scope="row">${esc(BET_MARKET_NAMES[m] || m)}</th><td>${esc(s.n)}</td><td>${esc(fmtEurSigned(s.profit))}</td><td>${s.roi == null ? "—" : esc(signedPct(s.roi))}</td></tr>`).join("");
+  const msg = betsMsg ? `<p class="bet-msg ${betsMsg.kind}" role="status">${esc(betsMsg.text)}</p>` : "";
+  return head + resultsNote + tiles +
+    `<section class="sec"><h2>Avoimet ja odottavat</h2>${pending.length ? list(pending, true) : `<p class="note first">Ei avoimia vetoja. Lyö veto Ylikertoimet-välilehdellä tai ottelun kertoimista.</p>`}</section>` +
+    `<section class="sec"><h2>Ratkenneet</h2>${settled.length ? list(settled, false) : `<p class="note first">Ei vielä ratkenneita vetoja.</p>`}</section>` +
+    (market ? `<section class="sec"><h2>Markkinoittain</h2><div class="twrap"><table class="otable"><thead><tr><th scope="col">Markkina</th><th scope="col">Vetoja</th><th scope="col">Tulos</th><th scope="col">ROI</th></tr></thead><tbody>${market}</tbody></table></div></section>` : "") +
+    `<section class="sec"><h2>Varmuuskopio</h2><div class="bet-actions">` +
+    `<button type="button" class="bet-btn" id="bets-export">Vie varmuuskopio</button>` +
+    `<label class="bet-btn file">Tuo varmuuskopio<input type="file" id="bets-import" accept="application/json"></label></div>${msg}` +
+    `<p class="note">Vedot tallentuvat vain tähän selaimeen — ota varmuuskopio.</p></section>`;
+}
+
+function downloadBackup() {
+  const d = new Date();
+  const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const url = URL.createObjectURL(new Blob([exportJson(bets)], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `nhl-vedot-${ymd}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  betsMsg = { text: `Varmuuskopio ladattu (${bets.length} vetoa).`, kind: "ok" };
+  render();
+}
+
+async function importBackup(file) {
+  if (!file) return;
+  let text;
+  try { text = await file.text(); } catch { betsMsg = { text: "Tiedoston lukeminen epäonnistui.", kind: "bad" }; return render(); }
+  const r = importJson(text, bets);
+  if (r.error) betsMsg = { text: r.error, kind: "bad" };
+  else if (r.added > 0 && !saveBets(storage(), r.bets)) betsMsg = { text: "Tallennus selaimeen ei onnistunut.", kind: "bad" };
+  else {
+    if (r.added > 0) bets = r.bets;
+    betsMsg = { text: `Tuotu ${r.added} vetoa, ohitettu ${r.skipped}.`, kind: "ok" };
+  }
+  render();
+}
+
 /* ---------- status view ---------- */
 const SOURCE_NAMES = { nhl: "NHL", injuries: "Loukkaantumiset (ESPN)", odds: "Kertoimet (The Odds API)" };
 const SOURCE_STATUS = {
@@ -701,6 +901,7 @@ function parseRoute() {
   if (h === "#/pelaajat") return { name: "players" };
   if (h === "#/ylikertoimet") return { name: "value" };
   if (h === "#/malli") return { name: "model" };
+  if (h === "#/vedot") return { name: "bets" };
   return { name: "list" };
 }
 
@@ -712,6 +913,7 @@ let lastKey = null;
 function render() {
   const route = parseRoute();
   const key = location.hash;
+  betTargets = [];
   let html;
   let title = "NHL-analyysi";
   if (state.schemaError !== null) {
@@ -730,6 +932,10 @@ function render() {
     html = modelView();
     title = "Malli · NHL-analyysi";
     loadPerf();
+  } else if (route.name === "bets") {
+    html = betsView();
+    title = "Vedot · NHL-analyysi";
+    loadResults();
   } else if (route.name === "players") {
     html = playersView(state.latest);
     title = "Pelaajat · NHL-analyysi";
@@ -744,6 +950,15 @@ function render() {
   if (key !== lastKey) window.scrollTo(0, 0);
   lastKey = key;
   if (route.name !== "model" && perf.status === "error") perf = { status: "idle", data: null };
+  if (route.name !== "bets") betsMsg = null;
+  if (route.name !== "bets" && results.status === "error") results = { status: "idle", data: null };
+  const resRetry = $("results-retry");
+  if (resRetry) {
+    resRetry.addEventListener("click", () => {
+      results = { status: "idle", data: null };
+      render();
+    });
+  }
   const perfRetry = $("perf-retry");
   if (perfRetry) {
     perfRetry.addEventListener("click", () => {
@@ -763,6 +978,20 @@ function render() {
 
 window.addEventListener("hashchange", render);
 $("view").addEventListener("click", (ev) => {
+  const tgt = ev.target instanceof Element ? ev.target : null;
+  const open = tgt?.closest("[data-bet-open]");
+  if (open) { ev.preventDefault(); openBetForm(Number(open.dataset.betOpen)); return; }
+  if (tgt?.closest("[data-bet-cancel]")) { betForm = null; render(); return; }
+  const del = tgt?.closest("[data-bet-del]");
+  if (del) {
+    if (confirm("Poistetaanko veto?")) {
+      const next = removeBet(bets, del.dataset.betDel);
+      if (saveBets(storage(), next)) bets = next;
+      render();
+    }
+    return;
+  }
+  if (tgt?.closest("#bets-export")) { downloadBackup(); return; }
   const btn = ev.target instanceof Element ? ev.target.closest("[data-vmarket], [data-vtoggle], [data-pkind], [data-pscope], [data-pwindow]") : null;
   if (!btn) return;
   if (btn.dataset.pwindow) perfWindow = btn.dataset.pwindow;
@@ -772,8 +1001,18 @@ $("view").addEventListener("click", (ev) => {
   else valueFilter = { ...valueFilter, [btn.dataset.vtoggle]: !valueFilter[btn.dataset.vtoggle] };
   render();
 });
+$("view").addEventListener("submit", (ev) => {
+  if (ev.target instanceof Element && ev.target.matches("[data-bet-form]")) { ev.preventDefault(); saveBetForm(); }
+});
+$("view").addEventListener("input", (ev) => {
+  const t = ev.target;
+  if (!betForm || !(t instanceof HTMLInputElement)) return;
+  if (t.id === "bet-stake") betForm.stake = t.value;
+  else if (t.id === "bet-price") betForm.price = t.value;
+});
 $("view").addEventListener("change", (ev) => {
   const t = ev.target;
+  if (t instanceof HTMLInputElement && t.id === "bets-import") { const f = t.files?.[0]; t.value = ""; importBackup(f); return; }
   if (!(t instanceof Element) || t.id !== "bankroll") return;
   saveBankroll(t.value);
   bankroll = parseBankroll(t.value);
@@ -783,6 +1022,7 @@ document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible" && Date.now() - state.loadedAt > RELOAD_AFTER_MS) {
     await load();
     if (perf.status === "ok") perf = { status: "idle", data: null };   // refetch on next Malli render
+    if (results.status === "ok") results = { status: "idle", data: null };
     render();
   }
 });
