@@ -25,7 +25,7 @@ from pipeline.teams import display_name
 
 logger = logging.getLogger(__name__)
 
-NULL_KEYS = ("lineup_changes", "form", "season_compare", "h2h", "insights", "odds")
+NULL_KEYS = ("lineup_changes", "insights", "odds")
 
 
 def _clamp(x: float) -> float:

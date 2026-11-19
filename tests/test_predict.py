@@ -48,7 +48,8 @@ def test_predict_game_matches_contract_keys():
     assert [f["label"] for f in g["factors"]] == [
         "Joukkuevahvuus", "Kotietu", "Lepo / back-to-back", "Maalivahti"]
     assert all(g[k] is None for k in
-               ("lineup_changes", "players", "form", "season_compare", "h2h", "insights", "odds"))
+               ("lineup_changes", "players", "insights", "odds"))
+    assert "form" not in g and "season_compare" not in g and "h2h" not in g
     assert g["xg"]["home"] == round(BASE * np.exp(0.05), 2)
     assert g["home"] == {"id": 12, "abbr": "CAR", "name": "Carolina Hurricanes",
                          "logo": "CAR.svg", "logo_dark": None}

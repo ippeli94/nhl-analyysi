@@ -214,6 +214,69 @@
         "away": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/team_players"}]}
       }
     },
+    "form_team": {
+      "type": "object",
+      "properties": {
+        "seq": {"type": "array", "items": {"enum": ["V", "H", "J"]}},
+        "last10": {"type": "string"},
+        "streak": {"type": "string"},
+        "gf": {"type": "integer"},
+        "ga": {"type": "integer"},
+        "xgf_pct": {"type": ["number", "null"]}
+      }
+    },
+    "form": {
+      "type": "object",
+      "properties": {
+        "home": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/form_team"}]},
+        "away": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/form_team"}]}
+      }
+    },
+    "season_line": {
+      "type": "object",
+      "properties": {
+        "gp": {"type": "integer"},
+        "pts_pct": {"type": "number"},
+        "gf_pg": {"type": "number"},
+        "ga_pg": {"type": "number"},
+        "xgf_pct": {"type": ["number", "null"]},
+        "pp": {"type": ["number", "null"]},
+        "pk": {"type": ["number", "null"]}
+      }
+    },
+    "season_compare_team": {
+      "type": "object",
+      "properties": {
+        "now": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/season_line"}]},
+        "last": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/season_line"}]}
+      }
+    },
+    "season_compare": {
+      "type": "object",
+      "properties": {
+        "home": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/season_compare_team"}]},
+        "away": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/season_compare_team"}]}
+      }
+    },
+    "h2h": {
+      "type": "object",
+      "properties": {
+        "summary": {"type": "string"},
+        "games": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": {"type": "string"},
+              "home": {"type": "string"},
+              "away": {"type": "string"},
+              "score": {"type": "string"},
+              "xg": {"type": ["string", "null"]}
+            }
+          }
+        }
+      }
+    },
     "later_phase": {"type": ["object", "array", "null"]},
     "odds_veikkaus": {
       "anyOf": [
@@ -343,9 +406,9 @@
         },
         "lineup_changes": {"$ref": "#/$defs/later_phase"},
         "players": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/players"}]},
-        "form": {"$ref": "#/$defs/later_phase"},
-        "season_compare": {"$ref": "#/$defs/later_phase"},
-        "h2h": {"$ref": "#/$defs/later_phase"},
+        "form": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/form"}]},
+        "season_compare": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/season_compare"}]},
+        "h2h": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/h2h"}]},
         "insights": {"$ref": "#/$defs/later_phase"},
         "odds": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/odds"}]}
       },

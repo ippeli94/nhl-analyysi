@@ -20,6 +20,7 @@ from pipeline import (
     adjust,
     cache,
     config,
+    context,
     export,
     features,
     players,
@@ -307,8 +308,32 @@ def _predict_all(
             for t in (game["home"]["abbr"], game["away"]["abbr"])
         }
         pin = _player_inputs(ctx, game, season) if ctx is not None else None
-        out.append(predict.predict_game(game, r, ps, sp, p, played, gr, starters, pin))
+        obj = predict.predict_game(game, r, ps, sp, p, played, gr, starters, pin)
+        obj.update(context.game_context(
+            tg, records, game["home"]["abbr"], game["away"]["abbr"], season, day))
+        out.append(obj)
     return out
+
+
+_DROPPABLE = ("players", "form", "season_compare", "h2h", "insights", "lineup_changes")
+_ERROR_RE = re.compile(r"\$\.games\[(\d+)\]\.(" + "|".join(_DROPPABLE) + r")")
+
+
+def _drop_invalid(games: list[dict], errors: list[str]) -> bool:
+    """Null only the invalid optional field of the game it belongs to; True when all errors
+    were such fields (so a rebuild can be validated again)."""
+    hits = [_ERROR_RE.match(e) for e in errors]
+    if not errors or not all(hits):
+        return False
+    ordered = sorted(games, key=lambda g: (g["start_utc"], g["id"]))  # as build_latest
+    for m in hits:
+        g = ordered[int(m.group(1))]
+        field = m.group(2)
+        logger.warning("%s dropped for game %s", field, g.get("id"))
+        g[field] = None
+        if field == "players" and g.get("_internal"):
+            g["_internal"]["players_log"] = None
+    return True
 
 
 def _fresh_snapshot(now: datetime) -> dict | None:
@@ -471,15 +496,7 @@ def run(
             calibration = {"draw": None}
         latest = export.build_latest(games, state, next_game_date, now, calibration)
         errors = export.validate(latest)
-        if errors and all(re.match(r"\$\.games\[\d+\]\.players", e) for e in errors):
-            bad = {int(re.match(r"\$\.games\[(\d+)\]", e).group(1)) for e in errors}
-            bad_ids = {latest["games"][i]["id"] for i in bad}
-            logger.warning("players dropped for games %s: %s", sorted(bad_ids), "; ".join(errors))
-            for g in games:
-                if g["id"] in bad_ids:
-                    g["players"] = None
-                    if g.get("_internal"):
-                        g["_internal"]["players_log"] = None
+        if _drop_invalid(games, errors):
             latest = export.build_latest(games, state, next_game_date, now, calibration)
             errors = export.validate(latest)
         if errors:

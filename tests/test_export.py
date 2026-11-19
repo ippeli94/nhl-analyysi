@@ -28,7 +28,9 @@ def make_game(gid, start_utc, nhl_date="2025-11-15", home="CAR", away="SEA"):
             "start_utc": start_utc, "state": "FUT",
             "home": team(home, 12), "away": team(away, 55)}
     r = Ratings(intercept=1.0, n_games={home: 20, away: 20})
-    return predict_game(game, r, PS, SP, ModelParams(), {}, GoalieRatings(), {})
+    out = predict_game(game, r, PS, SP, ModelParams(), {}, GoalieRatings(), {})
+    out.update(form=None, season_compare=None, h2h=None)
+    return out
 
 
 @pytest.fixture
