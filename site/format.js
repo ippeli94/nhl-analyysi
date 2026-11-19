@@ -245,3 +245,27 @@ export function fmtEurSigned(x) {
   const t = eur2(x);
   return `${t === "0,00" ? "" : x < 0 ? "−" : "+"}${t} €`;
 }
+
+/* ---------- tonight's best bets ---------- */
+// Best unflagged pick of one game by EV (null if none).
+export function bestPick(game) {
+  let best = null;
+  for (const p of game?.odds?.picks || []) {
+    if (p.flag || p.ev == null) continue;
+    if (best === null || p.ev > best.ev) best = p;
+  }
+  return best;
+}
+
+// Top n unflagged picks over bettable games (upcoming, start in the future), EV descending.
+export function topPicks(games, now = new Date(), n = 5) {
+  const out = [];
+  for (const game of games || []) {
+    if (game.state !== "upcoming" || !(Date.parse(game.start_utc) > +now)) continue;
+    for (const pick of game.odds?.picks || []) {
+      if (pick.flag || pick.ev == null) continue;
+      out.push({ game, pick });
+    }
+  }
+  return out.sort((a, b) => b.pick.ev - a.pick.ev).slice(0, n);
+}

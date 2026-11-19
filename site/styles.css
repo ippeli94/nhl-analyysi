@@ -448,3 +448,16 @@ a, button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .bet-item-sub { display: flex; justify-content: space-between; gap: var(--s3); font-size: var(--fs-sm); color: var(--muted); }
 .bet-profit.pos { color: var(--ok); }
 .bet-profit.neg { color: var(--bad); }
+
+/* ---------- Illan vedot + compact cards ---------- */
+.card-best { grid-column: 1 / -1; font-size: var(--fs-sm); color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.card-best .ev { color: var(--ok); font-weight: 700; white-space: nowrap; }
+.ilta { margin-bottom: var(--s5, 24px); }
+.ilta-list { display: grid; gap: var(--s3); margin-top: var(--s3); }
+.ilta-item { display: grid; gap: var(--s1); padding: var(--s3) var(--s4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); min-width: 0; }
+.ilta-item .pick-label { min-width: 0; overflow-wrap: anywhere; }
+.ilta-item .bet-area { padding: 0; background: none; border: 0; margin-top: var(--s2); }
+.ilta-match { display: flex; align-items: center; min-height: var(--tap); font-size: var(--fs-sm); font-weight: 600; color: var(--muted); text-decoration: none; margin: calc(var(--s2) * -1) 0 calc(var(--s1) * -1); }
+.ilta-match:hover { color: var(--text); }
+.ilta-match:focus-visible, .ilta-more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ilta-more { display: flex; align-items: center; min-height: var(--tap); color: var(--home); font-weight: 600; text-decoration: none; }

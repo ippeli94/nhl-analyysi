@@ -246,3 +246,23 @@ test("fmtEur / fmtEurSigned use comma and U+2212", () => {
   assert.equal(fmtEurSigned(0), "0,00 €");
   assert.equal(fmtEurSigned(NaN), "—");
 });
+
+import { bestPick, topPicks } from "../format.js";
+const mk = (id, state, start, picks) => ({ id, state, start_utc: start, odds: picks && { picks } });
+const NOW_TP = new Date("2026-11-16T12:00:00Z");
+test("topPicks filters, sorts and limits", () => {
+  const games = [
+    mk(1, "upcoming", "2026-11-17T00:00:00Z", [{ ev: 0.1 }, { ev: 0.5, flag: "x" }, { ev: null }]),
+    mk(2, "upcoming", "2026-11-17T00:00:00Z", [{ ev: 0.2 }, { ev: 0.05 }]),
+    mk(3, "started", "2026-11-16T00:00:00Z", [{ ev: 0.9 }]),
+    mk(4, "upcoming", "2026-11-15T00:00:00Z", [{ ev: 0.8 }]),
+    mk(5, "upcoming", "2026-11-17T00:00:00Z", null),
+  ];
+  assert.deepEqual(topPicks(games, NOW_TP, 2).map((x) => x.pick.ev), [0.2, 0.1]);
+  assert.equal(topPicks(games, NOW_TP, 10).length, 3);
+  assert.deepEqual(topPicks([], NOW_TP), []);
+});
+test("bestPick ignores flagged", () => {
+  assert.equal(bestPick(mk(1, "upcoming", "x", [{ ev: 0.9, flag: "f" }, { ev: 0.1 }, { ev: 0.3 }])).ev, 0.3);
+  assert.equal(bestPick(mk(1, "upcoming", "x", null)), null);
+});

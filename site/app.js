@@ -1,7 +1,7 @@
 import {
   SUPPORTED_SCHEMA, fmtTime, fmtDate, fmtDateTime, fmtPct, fmtNum, fmtScore,
   fmtSignedPct, ageText, freshness, groupByDate,
-  fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
+  fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt, bestPick, topPicks,
   playerName, fmtToi, topOf, gamePlayers, tonightPlayers,
   formSeq, pct1, signedPct, kindLabel, sourceLabel, stakeText, parseBankroll, fmtEur, fmtEurSigned,
 } from "./format.js";
@@ -125,14 +125,12 @@ function renderChrome(route) {
 
 /* ---------- list view ---------- */
 function gameCard(g) {
-  // Max two badges, by priority: live, ylikerroin, first notable insight, small sample.
+  // One badge at most: live/started, then top insight (severity >= 2), then low confidence.
   const top = (g.insights || []).find((i) => i.severity >= 2);
-  const flags = [
-    g.state === "started" ? badge("Käynnissä — ennuste jäädytetty", "live") : "",
-    g.state !== "started" && (g.odds?.picks || []).some((p) => !p.flag) ? badge("Ylikertoimia", "ok") : "",
-    top ? `<span class="badge insight" title="${esc(top.text)}">${esc(top.text)}</span>` : "",
-    confidenceBadge(g),
-  ].filter(Boolean).slice(0, 2).join("");
+  const flag = g.state === "started" ? badge("Käynnissä — ennuste jäädytetty", "live")
+    : top ? `<span class="badge insight" title="${esc(top.text)}">${esc(top.text)}</span>`
+    : confidenceBadge(g);
+  const bp = g.state !== "started" ? bestPick(g) : null;
   const awayLead = g.prob.away_win > g.prob.home_win;
   return `<a class="card" href="#/ottelu/${esc(g.id)}">` +
     `<div class="card-time">${esc(fmtTime(g.start_utc))}</div>` +
@@ -141,10 +139,38 @@ function gameCard(g) {
       probBar(g.prob.away_win, g.prob.home_win) +
       `<div class="side side-h"><span class="abbr">${esc(g.home.abbr)}</span><span class="pct${awayLead ? "" : " lead"}">${esc(fmtPct(g.prob.home_win))}</span></div>` +
     `</div>` +
-    `<div class="card-meta"><span>xG ${esc(fmtNum(g.xg.away))} – ${esc(fmtNum(g.xg.home))}</span>` +
-    `<span>todennäk. ${esc(fmtScore(g.score.most_likely))}</span></div>` +
-    (flags ? `<div class="card-flags">${flags}</div>` : "") +
+    (bp ? `<div class="card-best">Paras veto: ${esc(pickLabel(bp, g))} · ${esc(fmtOdds(bp.price))} · <span class="ev">EV ${esc(fmtEv(bp.ev))}</span></div>` : "") +
+    (flag ? `<div class="card-flags">${flag}</div>` : "") +
     `</a>`;
+}
+
+const ILTA_MAX = 5;
+function iltaItem({ game, pick }) {
+  const v = pick.veikkaus;
+  const target = { game, market: pick.market, line: pick.line ?? null, outcome: pick.outcome, p_model: pick.p_model ?? null };
+  const betUi = betControls(target, [
+    { src: "best", book: pick.book, price: pick.price, stake: pick.stake, text: "Lyö veto" },
+    ...(v ? [{ src: "veik", book: "veikkaus_fi", price: v.price, stake: v.stake, text: `Veikkaus ${fmtOdds(v.price)}` }] : []),
+  ]);
+  return `<div class="ilta-item">` +
+    `<a class="ilta-match" href="#/ottelu/${esc(game.id)}">${esc(game.away.abbr)} @ ${esc(game.home.abbr)} · ${esc(fmtTime(game.start_utc))}</a>` +
+    `<div class="pick-row"><span class="pick-label">${esc(pickLabel(pick, game))} · ${esc(bookName(pick.book))} ${esc(fmtOdds(pick.price))}</span>` +
+      `<span class="pick-ev">EV ${esc(fmtEv(pick.ev))}</span></div>` +
+    `<div class="pick-sub">Panos: ${esc(stakeText(pick.stake, bankroll))}</div>` +
+    (v ? `<div class="pick-sub">Veikkaus ${esc(fmtOdds(v.price))} (EV ${esc(fmtEv(v.ev))})</div>` : "") +
+    betUi + `</div>`;
+}
+
+function iltaSection(latest) {
+  if (!latest.games.some((g) => g.odds)) return "";
+  const picks = topPicks(latest.games, new Date(), ILTA_MAX);
+  const at = oddsFetchedAt(latest, oddsSource(latest)?.fetched_at);
+  const body = picks.length
+    ? `<div class="ilta-list">${picks.map(iltaItem).join("")}</div>`
+    : `<p class="note">Ei ylikertoimia juuri nyt${at ? ` · kertoimet haettu ${esc(fmtDateTime(at))}` : ""}</p>`;
+  return `<section class="ilta"><h1 class="day-title">Illan vedot</h1>` +
+    `<p class="note">Malli + markkina; luvut arvioita, eivät takuita.</p>${body}` +
+    `<a class="ilta-more" href="#/ylikertoimet">Kaikki ylikertoimet ›</a></section>`;
 }
 
 function listView(latest) {
@@ -153,7 +179,7 @@ function listView(latest) {
       (latest.next_game_date ? `<p>Seuraava pelipäivä: ${esc(fmtDate(latest.next_game_date))}</p>` : "") +
       `</section>`;
   }
-  return groupByDate(latest.games).map((grp, i) =>
+  return iltaSection(latest) + groupByDate(latest.games).map((grp, i) =>
     `<section class="day"><h1 class="day-title">${i === 0 ? "Ensi yön ottelut · " : ""}${esc(fmtDate(grp.nhl_date))}</h1>` +
     `<div class="cards">${grp.games.map(gameCard).join("")}</div></section>`).join("");
 }
