@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -56,7 +56,7 @@ def online_with_gate(root, monkeypatch):
     with monkeypatch.context() as m:
         m.setattr(config, "OFFLINE_DIR", FIXTURES)
         week, _ = nhl.fetch_schedule_week("2026-11-17")
-    monkeypatch.setattr(run, "_fetch_week", lambda today: week)
+    monkeypatch.setattr(run, "_fetch_week", lambda today: (week, None))
     monkeypatch.setattr(cache, "cache_finished", lambda games: ([], []))
 
 
@@ -600,3 +600,191 @@ def test_offline_run_writes_valid_performance(seeded):
     assert go() == 0
     perf = json.loads((seeded / "site/data/performance.json").read_text(encoding="utf-8"))
     assert export.validate_performance(perf) == []
+
+
+# --- phase 6: playoffs, preseason and season change (synthetic schedules) ---
+
+def _sched_team(abbr, team_id):
+    return {"id": team_id, "abbrev": abbr, "logo": f"https://x/{abbr}_light.svg",
+            "darkLogo": f"https://x/{abbr}_dark.svg",
+            "placeName": {"default": abbr}, "commonName": {"default": "Team"}}
+
+
+TEAM_IDS = {"TOR": 10, "COL": 21, "PIT": 5, "SJS": 28}
+
+
+def sched_game(game_id, day, home, away, game_type=2, state="FUT"):
+    return day, {
+        "id": game_id, "season": int(tracking.season_of(game_id)),
+        "gameType": game_type, "startTimeUTC": f"{day}T23:00:00Z", "gameState": state,
+        "homeTeam": _sched_team(home, TEAM_IDS[home]),
+        "awayTeam": _sched_team(away, TEAM_IDS[away]),
+    }
+
+
+def write_week(folder, start, games=(), regular_start="2027-10-07"):
+    """A synthetic /schedule/{start} payload; `games` are (day, game) from sched_game."""
+    first = datetime.fromisoformat(start).date()
+    days = [(first + timedelta(days=i)).isoformat() for i in range(7)]
+    payload = {
+        "nextStartDate": None, "previousStartDate": None,
+        "preSeasonStartDate": "2027-09-20", "regularSeasonStartDate": regular_start,
+        "regularSeasonEndDate": "2028-04-15", "playoffEndDate": "2028-06-15",
+        "gameWeek": [{"date": d, "games": [g for gd, g in games if gd == d]} for d in days],
+    }
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / f"schedule__{start}.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+def go_synth(folder, now):
+    return run.main(["--offline", str(folder), "--now", now])
+
+
+def pipeline_warnings(caplog):
+    return [r.getMessage() for r in caplog.records
+            if r.levelname in ("WARNING", "ERROR") and r.name.startswith("pipeline")
+            and "optional source injuries" not in r.getMessage()]
+
+
+def review_problems(root, monkeypatch, now):
+    from tools import review
+
+    class Frozen(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return dt(now)
+
+    monkeypatch.setattr(review, "datetime", Frozen)
+    code = review.main(["--data-only", "--skip-tests"])
+    text = (root / "reports/review.md").read_text(encoding="utf-8")
+    return code, [line for line in text.splitlines() if line.startswith("[VIRHE]")]
+
+
+def test_offseason_run_publishes_empty_latest_with_season_start(seeded, tmp_path, monkeypatch,
+                                                                 caplog):
+    folder = tmp_path / "offline"
+    write_week(folder, "2027-07-05")
+    write_week(folder, "2027-07-12")
+    now = "2027-07-15T15:17:00Z"
+    assert go_synth(folder, now) == 0
+    latest = latest_of(seeded)
+    assert export.validate(latest) == []
+    assert latest["games"] == [] and latest["next_game_date"] == "2027-10-07"
+    assert latest["generated_at"] == now
+    assert pipeline_warnings(caplog) == []
+    code, errors = review_problems(seeded, monkeypatch, "2027-07-15T16:00:00Z")
+    assert errors == [] and code != 2
+    # FRESH still guards generated_at when there are no games
+    code, errors = review_problems(seeded, monkeypatch, "2027-07-17T16:00:00Z")
+    assert code == 2 and len(errors) == 1 and "FRESH" in errors[0]
+
+
+def test_offseason_past_season_start_is_not_a_next_game_date(seeded, tmp_path):
+    folder = tmp_path / "offline"
+    write_week(folder, "2027-07-12", regular_start="2026-10-07")
+    assert go_synth(folder, "2027-07-15T15:17:00Z") == 0
+    assert latest_of(seeded)["next_game_date"] is None
+
+
+def test_preseason_only_week_publishes_no_games(seeded, tmp_path, monkeypatch, caplog):
+    folder = tmp_path / "offline"
+    pre = [sched_game(2027010040 + i, f"2027-09-{24 + i}", "TOR", "COL", game_type=1,
+                      state="OFF" if i < 2 else "FUT") for i in range(6)]
+    write_week(folder, "2027-09-20", pre[:3])
+    write_week(folder, "2027-09-27", pre[3:])
+    now = "2027-09-28T15:17:00Z"
+    assert go_synth(folder, now) == 0
+    latest = latest_of(seeded)
+    assert export.validate(latest) == []
+    assert latest["games"] == [] and latest["next_game_date"] == "2027-10-07"
+    assert pipeline_warnings(caplog) == []
+    assert not (seeded / "data/cache/games/20272028").exists()  # preseason is never cached
+    code, errors = review_problems(seeded, monkeypatch, "2027-09-28T16:00:00Z")
+    assert errors == [] and code != 2
+
+
+def test_opener_in_fetched_week_wins_over_season_start(seeded, tmp_path):
+    folder = tmp_path / "offline"
+    write_week(folder, "2027-09-27", [
+        sched_game(2027010050, "2027-09-28", "TOR", "COL", game_type=1),
+        sched_game(2027020001, "2027-10-02", "PIT", "SJS"),
+    ], regular_start="2027-10-02")
+    assert go_synth(folder, "2027-09-28T15:17:00Z") == 0
+    assert latest_of(seeded)["next_game_date"] == "2027-10-02"
+
+
+def test_playoff_game_is_predicted_without_shootout(seeded, tmp_path, monkeypatch, caplog):
+    folder = tmp_path / "offline"
+    write_week(folder, "2026-11-17", [sched_game(2026030111, "2026-11-19", "TOR", "COL",
+                                                 game_type=3)])
+    assert go_synth(folder, "2026-11-19T15:17:00Z") == 0
+    latest = latest_of(seeded)
+    assert export.validate(latest) == []
+    (g,) = latest["games"]
+    assert g["id"] == 2026030111 and g["state"] == "upcoming"
+    assert g["prob"]["home_win"] + g["prob"]["away_win"] == pytest.approx(1, abs=1e-3)
+    assert g["players"] is not None
+    assert pipeline_warnings(caplog) == []
+    rows = tracking.read_log("predictions", SEASON)
+    assert [r["game_id"] for r in rows] == [2026030111]
+    code, errors = review_problems(seeded, monkeypatch, "2026-11-19T16:00:00Z")
+    assert errors == [] and code != 2
+
+
+CURRENT_SAMPLE_RULES = {"streak", "pp_vs_pk", "third_period_collapse", "period_swing",
+                        "period_strength", "period_weakness", "period_matchup", "comeback",
+                        "first_goal", "penalty_prone", "form_vs_season", "luck",
+                        "vs_last_season", "home_road_split"}
+
+
+def seed_previous_season(n_games=48):
+    """Synthetic 2026-27 regular-season games (Jan-Apr 2027) between the four TEAM_IDS teams."""
+    from tests.synth import make_records
+
+    teams = list(TEAM_IDS)
+    skaters = {t: [(100 * (k + 1) + j, "D" if j >= 12 else "C") for j in range(18)]
+               for k, t in enumerate(teams)}
+    day0 = datetime(2027, 1, 10).date()
+    games = [((day0 + timedelta(days=2 * (i // 2))).isoformat(),
+              teams[(i + i // 4) % 4], teams[(i + 1 + i // 4) % 4]) for i in range(n_games)]
+    for i, rec in enumerate(make_records(games, skaters, seed=3)):
+        rec.update(id=2026020500 + i, season=SEASON)
+        for side in ("home", "away"):
+            rec[side]["id"] = TEAM_IDS[rec[side]["abbr"]]
+        cache.write(rec)
+
+
+def test_first_day_of_new_season(seeded, tmp_path, monkeypatch, caplog):
+    seed_previous_season()
+    folder = tmp_path / "offline"
+    write_week(folder, "2027-10-04", [
+        sched_game(2027020001, "2027-10-07", "TOR", "COL"),
+        sched_game(2027020002, "2027-10-07", "SJS", "PIT"),
+    ])
+    assert go_synth(folder, "2027-10-07T15:17:00Z") == 0
+    latest = latest_of(seeded)
+    assert export.validate(latest) == []
+    games = {g["id"]: g for g in latest["games"]}
+    assert set(games) == {2027020001, 2027020002}
+    for g in games.values():
+        assert g["prob"]["confidence"] == "low"
+        for side in ("home", "away"):
+            sc = g["season_compare"][side]
+            assert sc["now"] is None and sc["last"]["gp"] >= 20
+        assert g["form"]["home"] is not None and g["players"] is not None
+        # rules that need a current-season sample stay silent on opening day
+        assert not {i["id"] for i in g["insights"]} & CURRENT_SAMPLE_RULES
+        assert isinstance(g["lineup_changes"], list)
+    assert pipeline_warnings(caplog) == []
+    assert tracking.read_log("predictions", "20272028")
+    assert (seeded / "site/data/performance.json").exists()
+    code, errors = review_problems(seeded, monkeypatch, "2027-10-07T16:00:00Z")
+    assert errors == [] and code != 2
+
+
+def test_select_games_uses_future_season_start_only_without_later_games():
+    assert run.select_games([], "2027-07-15", "2027-10-07") == ([], "2027-10-07")
+    assert run.select_games([], "2027-07-15", "2026-10-07") == ([], None)
+    assert run.select_games([], "2027-07-15", "not-a-date") == ([], None)
+    later = [game(1, "FUT", "2027-09-30", "2027-09-30T23:00:00Z")]
+    assert run.select_games(later, "2027-09-25", "2027-10-07") == ([], "2027-09-30")

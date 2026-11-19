@@ -143,6 +143,7 @@ def predict_game(
         sp,
         p,
         seed=game["id"],
+        game_type=game.get("game_type", 2),
     )
     low = min(r.n_games.get(home, 0), r.n_games.get(away, 0)) < config.LOW_CONFIDENCE_MIN_GAMES
     prob = dict(sim["prob"], confidence="low" if low else "normal")

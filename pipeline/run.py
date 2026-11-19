@@ -76,10 +76,22 @@ def is_started(game: ScheduledGame, now: datetime) -> bool:
     return game["state"] in STARTED_STATES or _parse_utc(game["start_utc"]) <= now
 
 
+def _future_date(text: str | None, today: str) -> str | None:
+    """`text` when it is a YYYY-MM-DD date after `today`, else None."""
+    try:
+        parsed = date.fromisoformat(text) if isinstance(text, str) and len(text) == 10 else None
+    except ValueError:
+        return None
+    return text if parsed is not None and text > today else None
+
+
 def select_games(
-    week: list[ScheduledGame], today: str
+    week: list[ScheduledGame], today: str, season_start: str | None = None
 ) -> tuple[list[ScheduledGame], str | None]:
-    """Unfinished games dated today or tomorrow; when none, the next date with a game."""
+    """Unfinished games dated today or tomorrow; when none, the next date with a game.
+
+    With no game later in the fetched weeks (offseason, preseason), the next date is the
+    schedule's regular-season start when that is still ahead (decision 37)."""
     day = date.fromisoformat(today)
     window = {today, (day + timedelta(days=1)).isoformat()}
     open_games = [g for g in week if not cache.is_finished(g)]
@@ -87,7 +99,7 @@ def select_games(
     if chosen:
         return chosen, None
     later = sorted(g["nhl_date"] for g in open_games if g["nhl_date"] > today)
-    return [], later[0] if later else None
+    return [], later[0] if later else _future_date(season_start, today)
 
 
 def needs_extra_run(games: list[ScheduledGame], now: datetime) -> bool:
@@ -155,16 +167,21 @@ def _week_requests(today: date) -> list[str]:
     return out
 
 
-def _fetch_week(today: date) -> list[ScheduledGame]:
+def _fetch_week(today: date) -> tuple[list[ScheduledGame], str | None]:
+    """Games of the requested weeks and the schedule's regular-season start date (latest)."""
     starts = _week_requests(today)
     if not starts:
         raise SourceError("no schedule available for the requested dates")
     games: dict[int, ScheduledGame] = {}
+    season_starts: list[str] = []
     for start in starts:
-        week, _ = nhl.fetch_schedule_week(start)
+        meta: dict = {}
+        week, _ = nhl.fetch_schedule_week(start, meta)
         for g in week:
             games.setdefault(g["id"], g)
-    return list(games.values())
+        if meta.get("regular_season_start"):
+            season_starts.append(meta["regular_season_start"])
+    return list(games.values()), max(season_starts, default=None)
 
 
 def _result_record(rec: dict) -> dict:
@@ -520,11 +537,11 @@ def run(
     sources = _read_json(SOURCES_FILE, {})
 
     try:
-        week = _fetch_week(today)
+        week, season_start = _fetch_week(today)
     except SourceError as exc:
         logger.error("core source NHL failed: %s", exc)
         return 1
-    selected, next_game_date = select_games(week, today_str)
+    selected, next_game_date = select_games(week, today_str, season_start)
 
     if extra_if_early and not needs_extra_run(selected, now):
         logger.info("no game starts before the scheduled run; extra run skipped")

@@ -15,6 +15,7 @@ from pipeline.config import (
 MAX_SCORE = 7  # final scores are clipped to 0..7 in the matrix
 GOAL_DIST_MAX = 10  # regulation goal distribution: 0..9 and 10+
 TOP_N = 5
+PLAYOFF_GAME_TYPE = 3
 
 
 def _lognormal_mean_one(rng: np.random.Generator, sigma: float, n: int) -> np.ndarray:
@@ -50,7 +51,11 @@ def simulate(
     p: ModelParams,
     seed: int,
     n: int = N_SIMS,
+    game_type: int = 2,
 ) -> dict:
+    """`game_type` 3 (playoffs): no shootout, the tie after regulation is decided by
+    sudden-death overtime with the same home share as the regular-season OT/SO model, so the
+    winner's goal is always credited to a player (decision 36)."""
     rng = np.random.default_rng(seed)
     lam_h = np.asarray(lam_home_p, dtype=float)
     lam_a = np.asarray(lam_away_p, dtype=float)
@@ -86,7 +91,8 @@ def simulate(
     fin_h = reg_h + (tied & home_ot)
     fin_a = reg_a + (tied & ~home_ot)
 
-    s = float(sp.get("ot_goal_share", OT_GOAL_SHARE_FALLBACK))
+    s = 1.0 if game_type == PLAYOFF_GAME_TYPE else float(
+        sp.get("ot_goal_share", OT_GOAL_SHARE_FALLBACK))
 
     # 6. results
     prob = {
