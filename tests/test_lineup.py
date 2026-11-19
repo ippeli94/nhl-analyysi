@@ -133,7 +133,8 @@ def test_parse_espn_status_and_names():
          "athlete": {"displayName": "Kirby Dach", "shortName": "K. Dach"}}]}]
     out = lineup.parse_espn(raw)
     assert out["MTL"][0] == {"name": "Cole Caufield", "short": "C. Caufield",
-                             "status": "doubtful", "detail": "Päivittäin arvioitava", "since": "2026-11-18"}
+                             "status": "doubtful", "detail": "Päivittäin arvioitava",
+                             "since": "2026-11-18"}
     assert out["MTL"][1]["status"] == "out" and out["MTL"][1]["since"] is None
 
 
