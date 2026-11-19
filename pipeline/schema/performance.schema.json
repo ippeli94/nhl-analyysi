@@ -61,11 +61,25 @@
         "roi": {"$ref": "#/$defs/num"}
       }
     },
+    "rate": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "totals": {
+      "type": "object",
+      "required": ["n", "line_mean", "model_hits", "model_hit_rate", "market_hits",
+                   "market_hit_rate"],
+      "properties": {
+        "n": {"type": "integer", "minimum": 0},
+        "line_mean": {"$ref": "#/$defs/num"},
+        "model_hits": {"type": "integer", "minimum": 0},
+        "model_hit_rate": {"$ref": "#/$defs/rate"},
+        "market_hits": {"type": "integer", "minimum": 0},
+        "market_hit_rate": {"$ref": "#/$defs/rate"}
+      }
+    },
     "window": {
       "type": "object",
       "required": ["n", "small_sample", "brier", "logloss", "brier_base", "logloss_base",
                    "n_market", "brier_market", "logloss_market", "accuracy",
-                   "accuracy_market", "calibration", "total_mae", "picks", "clv_mean",
+                   "accuracy_market", "calibration", "total_mae", "totals", "picks", "clv_mean",
                    "clv_n", "players"],
       "properties": {
         "n": {"type": "integer", "minimum": 0},
@@ -94,6 +108,7 @@
           }
         },
         "total_mae": {"$ref": "#/$defs/num"},
+        "totals": {"$ref": "#/$defs/totals"},
         "picks": {
           "type": "object",
           "required": ["all", "no_flag", "veikkaus"],

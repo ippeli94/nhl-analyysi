@@ -127,3 +127,50 @@ def test_empty_logs_validate():
         assert w["picks"]["all"] == {"n": 0, "hits": 0, "hit_rate": None, "roi": None}
     assert perf["recent"] == [] and perf["backtest"] is None
     assert export.validate_performance(perf) == []
+
+
+def odds_row(totals, ts="2026-11-18T20:00:00Z", gid=1):
+    return {"ts": ts, "game_id": gid, "start_utc": "2026-11-18T23:00:00Z",
+            "ref": {"h2h": [0.5, 0.5], "totals": totals}}
+
+
+def test_clv_uses_net_price_for_betfair():
+    odds = [odds_row({})]
+    odds[0]["ref"]["h2h"] = [0.5, 0.5]
+    rows = [pred(picks=[pick(book="betfair_ex_eu", price=2.2)])]
+    perf = performance.build_performance(rows, [result()], odds, None, NOW, None)
+    eff = 1.0 + 1.2 * 0.95
+    assert perf["windows"]["season"]["clv_mean"] == pytest.approx(eff * 0.5 - 1)
+
+
+def test_totals_main_line_and_calls():
+    # main line = 6.0 (p closest to 0.5); market over-prob 0.52 -> market over; model 6.0 vs 6.0
+    # -> model under (not strictly greater). Final 7 goals -> over wins.
+    odds = [odds_row({"5.5": 0.70, "6.0": 0.52, "6.5": 0.40})]
+    perf = performance.build_performance([pred()], [result(4, 3)], odds, None, NOW, None)
+    t = perf["windows"]["season"]["totals"]
+    assert t == {"n": 1, "line_mean": 6.0, "model_hits": 0, "model_hit_rate": 0.0,
+                 "market_hits": 1, "market_hit_rate": 1.0}
+    assert export.validate_performance(perf) == []
+
+
+def test_totals_tie_picks_lower_line_and_model_over():
+    odds = [odds_row({"5.5": 0.55, "6.5": 0.45})]
+    row = pred()
+    row["total_mean"] = 6.4
+    perf = performance.build_performance([row], [result(4, 2)], odds, None, NOW, None)
+    t = perf["windows"]["season"]["totals"]
+    assert t["line_mean"] == 5.5          # tie -> lower line
+    assert t["model_hits"] == 1           # 6.4 > 5.5 -> over, final 6 -> over
+    assert t["market_hits"] == 1          # 0.55 > 0.5 -> over
+
+
+def test_totals_push_excluded_and_no_odds():
+    odds = [odds_row({"6.0": 0.5})]
+    perf = performance.build_performance([pred()], [result(3, 3)], odds, None, NOW, None)
+    t = perf["windows"]["season"]["totals"]
+    assert t["n"] == 0 and t["model_hit_rate"] is None and t["line_mean"] is None
+    perf = performance.build_performance([pred()], [result(4, 2)], [], None, NOW, None)
+    t = perf["windows"]["season"]["totals"]
+    assert t == {"n": 0, "line_mean": None, "model_hits": 0, "model_hit_rate": None,
+                 "market_hits": 0, "market_hit_rate": None}

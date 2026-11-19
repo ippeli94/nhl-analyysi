@@ -82,6 +82,48 @@ def _p_close(ref: dict | None, pick: dict) -> float | None:
     return None if p is None else (p if outcome == "home" else 1.0 - p)
 
 
+def _main_total(ref: dict | None) -> tuple[float, float] | None:
+    """(line, P(over)) of the closing main line: P(over) nearest 0.5, ties -> lower line."""
+    totals = (ref or {}).get("totals")
+    if not totals:
+        return None
+    line, p = min(((float(k), float(v)) for k, v in totals.items()),
+                  key=lambda lp: (round(abs(lp[1] - 0.5), 9), lp[0]))
+    return line, p
+
+
+def _totals_block(pairs: list[tuple[dict, dict]], closing: dict[int, dict]) -> dict:
+    """Over/under hits of the model vs the market main line (decision 34).
+
+    Model call: over if `total_mean` > line. Market call: over if no-vig P(over) > 0.5.
+    Pushes (total == line) are excluded.
+    """
+    lines: list[float] = []
+    model_hits = market_hits = 0
+    for row, res in pairs:
+        close = closing.get(row["game_id"])
+        main = _main_total(close.get("ref") if close else None)
+        if main is None:
+            continue
+        line, p_over = main
+        total = res["home_goals"] + res["away_goals"]
+        if total == line:
+            continue
+        over = total > line
+        lines.append(line)
+        model_hits += (row["total_mean"] > line) == over
+        market_hits += (p_over > 0.5) == over
+    n = len(lines)
+    return {
+        "n": n,
+        "line_mean": _round(sum(lines) / n) if n else None,
+        "model_hits": int(model_hits),
+        "model_hit_rate": _round(model_hits / n) if n else None,
+        "market_hits": int(market_hits),
+        "market_hit_rate": _round(market_hits / n) if n else None,
+    }
+
+
 def _pick_stats(profits: list[float]) -> dict:
     n = len(profits)
     hits = sum(p > 0 for p in profits)
@@ -137,7 +179,7 @@ def _window(pairs: list[tuple[dict, dict]], base_rate: float, closing: dict[int,
             close = closing.get(row["game_id"])
             p_close = _p_close(close.get("ref") if close else None, pick)
             if p_close is not None:
-                clv.append(value.clv(pick["price"], p_close))
+                clv.append(value.clv(value.effective_price(pick["book"], pick["price"]), p_close))
 
     player_block = None
     if players is not None and len(players):
@@ -161,6 +203,7 @@ def _window(pairs: list[tuple[dict, dict]], base_rate: float, closing: dict[int,
         "calibration": [{**b, "p_mean": round(b["p_mean"], 5), "y_mean": round(b["y_mean"], 5)}
                         for b in sc["calibration"]],
         "total_mae": _round(total_mae),
+        "totals": _totals_block(pairs, closing),
         "picks": {k: _pick_stats(v) for k, v in groups.items()},
         "clv_mean": _round(sum(clv) / len(clv)) if clv else None,
         "clv_n": len(clv),
