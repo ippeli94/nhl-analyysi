@@ -165,3 +165,22 @@ def test_existing_outputs_byte_identical_without_credited_key():
     rest = {k: v for k, v in out.items() if k != "credited_dist"}
     assert set(out) == {"prob", "score", "periods", "total_dist", "goal_dist", "credited_dist"}
     assert hashlib.sha256(json.dumps(rest, sort_keys=True).encode()).hexdigest() == GOLDEN
+
+
+def test_playoff_game_credits_ot_goal_with_certainty():
+    # game_type 3: no shootout, so the post-regulation winner always scores a credited goal
+    sp = dict(SP, ot_goal_share=0.3)
+    reg = simulate(LH, LA, sp, P, seed=5, n=5000)
+    po = simulate(LH, LA, sp, P, seed=5, n=5000, game_type=3)
+    as_if_all_ot = simulate(LH, LA, dict(SP, ot_goal_share=1.0), P, seed=5, n=5000)
+    assert po["credited_dist"] == as_if_all_ot["credited_dist"]
+    assert po["credited_dist"] != reg["credited_dist"]
+    for key in ("prob", "score", "periods", "total_dist", "goal_dist"):
+        assert po[key] == reg[key]  # same OT model, same draws: reg 1X2 and 2-way unchanged
+    assert po["prob"]["home_win"] + po["prob"]["away_win"] == pytest.approx(1, abs=1e-3)
+
+
+def test_regular_season_game_type_is_default():
+    a = simulate(LH, LA, dict(SP, ot_goal_share=0.6), P, seed=3, n=3000)
+    b = simulate(LH, LA, dict(SP, ot_goal_share=0.6), P, seed=3, n=3000, game_type=2)
+    assert a == b

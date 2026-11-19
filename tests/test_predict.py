@@ -247,3 +247,16 @@ def test_factors_multiply_to_applied():
     prod = float(np.prod([f["away"] for f in both["factors"]]))
     assert prod == pytest.approx(both["_internal"]["lam_away"], rel=1e-9)
     assert both["_internal"]["lam_away"] == pytest.approx(BASE * 0.95 * 0.97)
+
+
+def test_playoff_game_passes_game_type_to_simulation():
+    po_game = dict(GAME, id=2025030121, game_type=3)
+    reg = predict_game(dict(GAME, id=2025030121), ratings(), PS, SP, P, {}, GoalieRatings(), {})
+    po = predict_game(po_game, ratings(), PS, SP, P, {}, GoalieRatings(), {})
+    assert po["prob"] == reg["prob"] and po["score"] == reg["score"]
+    assert po["prob"]["home_win"] + po["prob"]["away_win"] == pytest.approx(1, abs=1e-3)
+    sp_all_ot = dict(SP, ot_goal_share=1.0)
+    as_if_all_ot = predict_game(dict(GAME, id=2025030121), ratings(), PS, sp_all_ot, P, {},
+                                GoalieRatings(), {})
+    assert po["_internal"]["credited_dist"] == as_if_all_ot["_internal"]["credited_dist"]
+    assert po["_internal"]["credited_dist"] != reg["_internal"]["credited_dist"]

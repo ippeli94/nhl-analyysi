@@ -165,10 +165,18 @@ def _team(team: dict) -> Team:
     }
 
 
-def fetch_schedule_week(date: str) -> tuple[list[ScheduledGame], str | None]:
-    """Games of the schedule week starting at `date`, and the next week's start date."""
+def fetch_schedule_week(
+    date: str, meta: dict | None = None
+) -> tuple[list[ScheduledGame], str | None]:
+    """Games of the schedule week starting at `date`, and the next week's start date.
+
+    When `meta` is given it receives the payload's `regularSeasonStartDate` (or None) under
+    "regular_season_start"; the run uses it as the next game date in the offseason."""
     payload = get_json(f"/schedule/{date}")
     require(payload, ["gameWeek"])
+    if meta is not None:
+        start = payload.get("regularSeasonStartDate")
+        meta["regular_season_start"] = start if isinstance(start, str) else None
     games: list[ScheduledGame] = []
     for day in payload["gameWeek"]:
         require(day, ["date", "games"])

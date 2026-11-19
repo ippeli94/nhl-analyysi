@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "results.json",
+  "type": "object",
+  "required": ["generated_at", "games"],
+  "properties": {
+    "generated_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "games": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "date", "home", "away", "home_goals", "away_goals",
+                     "reg_home_goals", "reg_away_goals", "decided"],
+        "properties": {
+          "id": {"type": "integer"},
+          "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+          "home": {"type": "string"},
+          "away": {"type": "string"},
+          "home_goals": {"type": "integer", "minimum": 0},
+          "away_goals": {"type": "integer", "minimum": 0},
+          "reg_home_goals": {"type": "integer", "minimum": 0},
+          "reg_away_goals": {"type": "integer", "minimum": 0},
+          "decided": {"enum": ["REG", "OT", "SO"]}
+        }
+      }
+    }
+  }
+}

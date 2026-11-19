@@ -567,3 +567,43 @@ def test_valid_performance_file_is_clean(seeded):
     write_perf(seeded, performance.build_performance([], [], [], None, datetime.now(UTC), None))
     review.main(ARGS)
     assert "PERF" not in report(seeded)
+
+
+# --- results.json -------------------------------------------------------------------------
+
+
+def seed_results_history(root):
+    f = root / "data/history/results/20252026.jsonl"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text("", encoding="utf-8")
+
+
+def write_results(root, obj):
+    f = root / "site/data/results.json"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(json.dumps(obj), encoding="utf-8")
+
+
+def test_no_results_warning_without_history(seeded):
+    review.main(ARGS)
+    assert "RESULTS" not in report(seeded)
+
+
+def test_missing_results_file_is_warning(seeded):
+    seed_results_history(seeded)
+    assert review.main(ARGS) == 1
+    assert "[VAROITUS] RESULTS" in report(seeded)
+
+
+def test_invalid_results_file_is_warning(seeded):
+    seed_results_history(seeded)
+    write_results(seeded, {"games": [{"id": 1}]})
+    assert review.main(ARGS) == 1
+    assert "[VAROITUS] RESULTS" in report(seeded) and "skeemavirhe" in report(seeded)
+
+
+def test_valid_results_file_is_clean(seeded):
+    seed_results_history(seeded)
+    write_results(seeded, export.build_results([], datetime.now(UTC).date(), datetime.now(UTC)))
+    review.main(ARGS)
+    assert "RESULTS" not in report(seeded)

@@ -265,9 +265,9 @@ a, button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
   border-top: 1px solid var(--border);
 }
 .nav a {
-  flex: 1 1 0; max-width: 200px; min-height: 56px;
+  flex: 1 1 0; max-width: 200px; min-height: 56px; min-width: 0; padding: 0 2px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  font-size: var(--fs-xs); font-weight: 600; color: var(--muted); transition: color .18s;
+  font-size: .6875rem; font-weight: 600; color: var(--muted); transition: color .18s; white-space: nowrap;
 }
 .nav a.active { color: var(--home); }
 .nav svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
@@ -405,3 +405,46 @@ a, button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
   border-radius: 10px; font: inherit; font-size: var(--fs-md);
 }
 .bankroll input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- own bets ---------- */
+.pick-wrap { display: grid; gap: 0; }
+.pick-wrap > .card { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
+.bet-area { padding: var(--s3) var(--s4) var(--s4); background: var(--surface); border: 1px solid var(--border); border-top: 0; border-radius: 0 0 var(--r-md) var(--r-md); }
+.bet-row > td { text-align: left !important; padding: var(--s1) var(--s2) var(--s3); white-space: normal; }
+.bet-row .bet-area { padding: 0; background: none; border: 0; position: sticky; left: 0; width: min(calc(100vw - 92px), calc(var(--maxw) - 92px)); }
+.bet-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+.bet-btn {
+  min-height: var(--tap); padding: 0 var(--s4); border-radius: var(--r-pill);
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  font: 600 var(--fs-sm) var(--font); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  transition: background-color .18s, border-color .18s;
+}
+.bet-btn:hover { border-color: color-mix(in srgb, var(--home) 55%, var(--border)); }
+.bet-btn.primary { background: color-mix(in srgb, var(--home) 25%, var(--surface)); border-color: color-mix(in srgb, var(--home) 60%, transparent); }
+.bet-btn.done { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
+.bet-btn.danger { color: var(--bad); margin-top: var(--s2); }
+.bet-btn.file { position: relative; overflow: hidden; }
+.bet-btn.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.bet-btn:focus-visible, .bet-btn.file:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.bet-ok { color: var(--ok); font-size: var(--fs-sm); font-weight: 600; }
+.bet-form { display: grid; gap: var(--s2); margin-top: var(--s3); }
+.bet-label { font-weight: 700; font-size: var(--fs-sm); }
+.bet-fields { display: flex; gap: var(--s3); flex-wrap: wrap; }
+.bet-fields label { display: grid; gap: var(--s1); font-size: var(--fs-xs); color: var(--muted); flex: 1 1 120px; }
+.bet-fields input {
+  min-height: var(--tap); padding: 0 var(--s3); width: 100%;
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 10px; font: inherit; font-size: var(--fs-md);
+}
+.bet-fields input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.bet-err { color: var(--bad); font-size: var(--fs-sm); }
+.bet-msg { margin-top: var(--s3); font-size: var(--fs-sm); }
+.bet-msg.ok { color: var(--ok); }
+.bet-msg.bad { color: var(--bad); }
+.bet-list { display: grid; gap: var(--s3); list-style: none; padding: 0; margin: 0; }
+.bet-item { padding: var(--s3); background: var(--surface-2); border-radius: var(--r-md); display: grid; gap: var(--s1); }
+.bet-item-h { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s3); }
+.bet-item-label { font-weight: 700; font-size: var(--fs-sm); min-width: 0; overflow-wrap: anywhere; }
+.bet-item-sub { display: flex; justify-content: space-between; gap: var(--s3); font-size: var(--fs-sm); color: var(--muted); }
+.bet-profit.pos { color: var(--ok); }
+.bet-profit.neg { color: var(--bad); }

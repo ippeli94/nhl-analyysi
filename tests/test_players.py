@@ -437,3 +437,23 @@ def test_project_lineup_normalises_unknown_pos(stub_score):
     slots = players.project_lineup(pg, "AAA", ASOF, "20252026")
     assert {s["pos"] for s in slots} <= {"C", "L", "R", "D"}
     assert next(s for s in slots if s["id"] == target)["pos"] == "C"
+
+
+def test_playoff_players_get_the_overtime_goal_with_certainty():
+    from pipeline.config import ModelParams
+    from pipeline.simulate import simulate
+
+    lam = np.array([0.3, 0.35, 0.35]) * 3.0
+    sp = {"league_period_share": [0.3, 0.35, 0.35], "en_prob": {1: 0.3, 2: 0.15},
+          "ot_goal_share": 0.6}
+    pin = make_pin({"AAA", "BBB"})
+    out = {}
+    for gt in (2, 3):
+        sim = simulate(lam, lam, sp, ModelParams(), seed=9, n=5000, game_type=gt)
+        _, log = players.game_players("AAA", "BBB", pin, sim["credited_dist"])
+        out[gt] = (sim, log["teams"]["AAA"]["goals_mean"])
+    sim3, mean3 = out[3]
+    mean_reg = sum(i * x for i, x in enumerate(sim3["goal_dist"]["home"]))
+    p_ot_home = sim3["prob"]["home_win"] - sim3["prob"]["reg_home"]
+    assert mean3 == pytest.approx(mean_reg + p_ot_home, abs=2e-3)  # share 1, not 0.6
+    assert mean3 > out[2][1]

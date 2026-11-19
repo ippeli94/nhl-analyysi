@@ -60,6 +60,14 @@ Maalivahtien tila on aina "Arvio". Poissaolot näytetään vaikutuksineen, ja ES
 
 Malli-välilehti näyttää tiedoston `site/data/performance.json` suorituskyvyn. Sivulla on kauden ratkenneiden otteluiden kotivoitto-% perustasona ja tasapanosten ROI, jossa push kuuluu otokseen. Betfairin voitoista vähennetään 5 %:n provisio.
 
+## Omat vedot
+
+Sivulla voi lyödä kuvitteellisen vedon (ei oikeaa rahaa). Vedon voi lyödä Ylikertoimet-välilehden vedosta tai ottelun kerroinkohtaisesta taulukosta. Ennen ottelun alkua vetoa voi lyödä, ja panos esitäytetään Kelly-eurolla, jos kassa on asetettu.
+
+Vedot ratkeavat selaimessa tiedoston `site/data/results.json` tuloksilla (viimeiset 120 päivää). Välilehti **Vedot** näyttää ROI:n prosentteina ja euroina. Tulokset lasketaan samoilla säännöillä kuin Malli-välilehden ROI, ja Betfairin 5 %:n provisio on mukana.
+
+Vedot tallentuvat vain tähän selaimeen, eikä mitään lähetetä palvelimelle. Jos vaihdat selainta tai tyhjennät selaintiedot, vedot katoavat. Varmuuskopio tehdään Vedot-välilehdeltä painikkeella **Vie varmuuskopio**, ja se palautetaan tuomalla JSON-tiedosto takaisin.
+
 ## Kokoonpanoportin uudelleenajo
 
 Kokoonpano- ja H2H-kertoimien julkaisuehdon tulos on tiedostossa `model/lineup_params.json`. Ehto ajetaan uudelleen komennolla:

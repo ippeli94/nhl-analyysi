@@ -90,7 +90,9 @@ def sim_params(tg: pd.DataFrame) -> dict:
         enough = n >= config.EN_PROB_MIN_GAMES
         en_prob[m] = float((leader_en[mask] >= 1).mean()) if enough else fallback
     ot_share = config.OT_GOAL_SHARE_FALLBACK
-    dh = tg[tg["is_home"] & tg["decided"].isin(["OT", "SO"])]
+    # regular season only: playoff ties never go to a shootout (decision 36)
+    dh = tg[tg["is_home"] & tg["decided"].isin(["OT", "SO"])
+            & tg["game_type"].isin(config.TRAIN_GAME_TYPES)]
     if len(dh) >= config.EN_PROB_MIN_GAMES:
         ot_share = float((dh["decided"] == "OT").mean())
     return {"league_period_share": share, "en_prob": en_prob, "ot_goal_share": ot_share}

@@ -156,3 +156,12 @@ def test_ot_goal_share_estimated_and_fallback():
     assert sp["ot_goal_share"] == 0.6  # fallback (10 games)
     sp = features.sim_params(features.team_games(ot_games(10, 60), {}, 0.6))
     assert sp["ot_goal_share"] == pytest.approx(10 / 70)
+
+
+def test_ot_goal_share_ignores_playoff_games():
+    # playoff ties are always decided in OT (no shootout); pooling them would inflate the
+    # regular-season share used for credited goals (decision 36)
+    recs = ot_games(10, 60)
+    playoff = [dict(r, id=r["id"] + 3000, game_type=3, decided="OT") for r in ot_games(80, 0)]
+    sp = features.sim_params(features.team_games(recs + playoff, {}, 0.6))
+    assert sp["ot_goal_share"] == pytest.approx(10 / 70)

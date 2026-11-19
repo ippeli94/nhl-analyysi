@@ -231,3 +231,17 @@ export function stakeText(stake, bankroll) {
   if (bankroll == null || !Number.isFinite(bankroll) || bankroll <= 0) return base;
   return `${base} (${Math.round(stake * bankroll)} €)`;
 }
+
+/* ---------- money (own bets) ---------- */
+const eur2 = (x) => Math.abs(x).toFixed(2).replace(".", ",");
+// "12,34 €"; losses with U+2212 minus.
+export function fmtEur(x) {
+  if (x == null || !Number.isFinite(x)) return "—";
+  return `${x < 0 && eur2(x) !== "0,00" ? "−" : ""}${eur2(x)} €`;
+}
+// Profit: always signed, "+12,34 €" / "−5,00 €" / "0,00 €".
+export function fmtEurSigned(x) {
+  if (x == null || !Number.isFinite(x)) return "—";
+  const t = eur2(x);
+  return `${t === "0,00" ? "" : x < 0 ? "−" : "+"}${t} €`;
+}
