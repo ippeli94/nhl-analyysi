@@ -617,7 +617,8 @@ function modelView() {
   const head = `<h1 class="day-title">Malli</h1>`;
   if (perf.status === "idle" || perf.status === "loading") return `${head}<p class="loading">Ladataan…</p>`;
   if (perf.status === "error" || !perf.data) {
-    return `${head}<section class="empty"><p>Suorituskykydataa ei saatu ladattua</p></section>`;
+    return `${head}<section class="empty"><p>Suorituskykydataa ei saatu ladattua</p>` +
+      `<button type="button" class="seg-btn" id="perf-retry">Yritä uudelleen</button></section>`;
   }
   const d = perf.data;
   const w = d.windows?.[perfWindow];
@@ -725,6 +726,14 @@ function render() {
   document.title = title;
   if (key !== lastKey) window.scrollTo(0, 0);
   lastKey = key;
+  if (route.name !== "model" && perf.status === "error") perf = { status: "idle", data: null };
+  const perfRetry = $("perf-retry");
+  if (perfRetry) {
+    perfRetry.addEventListener("click", () => {
+      perf = { status: "idle", data: null };
+      render();
+    });
+  }
   const retry = $("retry");
   if (retry) {
     retry.addEventListener("click", async () => {
@@ -749,6 +758,7 @@ $("view").addEventListener("click", (ev) => {
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible" && Date.now() - state.loadedAt > RELOAD_AFTER_MS) {
     await load();
+    if (perf.status === "ok") perf = { status: "idle", data: null };   // refetch on next Malli render
     render();
   }
 });

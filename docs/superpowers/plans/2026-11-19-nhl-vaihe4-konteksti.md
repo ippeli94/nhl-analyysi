@@ -18,7 +18,7 @@
 - Optional sources/fields never fail the run; nothing durable is written before `export.validate` passes (existing invariant in `run.run`).
 - Schema errors confined to one new field of one game → that field becomes `null` for that game and the object is rebuilt and revalidated (same pattern as the existing players drop in `run.py`).
 - All thresholds live in `pipeline/config.py` with the spec's values as defaults.
-- Tests: `pytest -q` and `node --test site/tests` must pass; `ruff check .` clean; `python tools/review.py` exit 0 before merge.
+- Tests: `pytest -q` and `node --test site/tests/format.test.js` must pass; `ruff check .` clean; `python tools/review.py` exit 0 before merge.
 - CRLF note for subagents: after every edit verify with `git diff --stat`; after every commit `git show --stat HEAD`.
 
 ## Review Focus
@@ -319,9 +319,9 @@ Card: first insight with severity ≥ 2 shown as one badge line (truncate with e
 Malli tab: fetch `data/performance.json` lazily on first open; failure → "Suorituskykydataa ei saatu ladattua". Window toggle 30 pv / Kausi. Tiles: Brier (malli vs perustaso vs markkina), log loss, osumatarkkuus vs markkina, ylikerroinpoiminnat ROI (Kaikki / Ilman varoitusta / Vain Veikkaus) with n, CLV ka., pelaajat Brier. Calibration chart inline SVG (bins vs diagonal). Recent list (ennuste → tulos, ✓/✗). Backtest block labelled "Backtest 2025–26", visually separate. `small_sample` → banner "Otos pieni — luvut eivät vielä kerro paljoa".
 
 - [ ] **Step 1: Write failing tests** for the five format helpers in `site/tests/format.test.js`.
-- [ ] **Step 2: Run** `node --test site/tests` → FAIL.
+- [ ] **Step 2: Run** `node --test site/tests/format.test.js` → FAIL.
 - [ ] **Step 3: Implement** helpers and views.
-- [ ] **Step 4: Run** `node --test site/tests` → PASS; generate offline data (`python -m pipeline.run --offline tests/fixtures/... ` as in earlier phases) and check the page in the browser pane at mobile width (375 px): every new section renders, no horizontal scroll, Malli tab with empty performance renders the small-sample banner.
+- [ ] **Step 4: Run** `node --test site/tests/format.test.js` → PASS; generate offline data (`python -m pipeline.run --offline tests/fixtures/... ` as in earlier phases) and check the page in the browser pane at mobile width (375 px): every new section renders, no horizontal scroll, Malli tab with empty performance renders the small-sample banner.
 - [ ] **Step 5: Commit** `feat(site): insights, form, h2h, lineup and Malli tab`.
 
 ---
@@ -333,5 +333,5 @@ Malli tab: fetch `data/performance.json` lazily on first open; failure → "Suor
 
 - [ ] **Step 1:** Add decisions: 29 PP opportunities approximation; 30 h2h uses the two cached seasons; 31 `goalie_unconfirmed` omitted; 32 performance base rate = season home-win rate; 33 lineup/h2h gate outcome and `rho` (from `model/lineup_params.json`), MODEL_VERSION if bumped.
 - [ ] **Step 2:** README: new sections and the Malli tab, how to re-run `pipeline.lineup_backtest`.
-- [ ] **Step 3:** Run `ruff check .`, `pytest -q`, `node --test site/tests`, `python tools/review.py` → all clean (review exit 0).
+- [ ] **Step 3:** Run `ruff check .`, `pytest -q`, `node --test site/tests/format.test.js`, `python tools/review.py` → all clean (review exit 0).
 - [ ] **Step 4: Commit** `docs: phase 4 decisions and README`.

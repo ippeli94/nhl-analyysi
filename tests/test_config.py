@@ -52,3 +52,23 @@ def test_load_lineup_params_missing_file(root):
         '{"rho": 0.3, "use_lineup": true, "use_h2h": false, "gate": {"season": "x"}}',
         encoding="utf-8")
     assert load_lineup_params() == LineupParams(rho=0.3, use_lineup=True, use_h2h=False)
+
+
+def test_load_lineup_params_bad_types_fall_back_to_defaults(root, caplog):
+    from pipeline.config import LineupParams, load_lineup_params
+
+    (root / "model").mkdir()
+    f = root / "model" / "lineup_params.json"
+    for body in ('{"use_lineup": "false"}', '{"use_h2h": 1}', '{"rho": 0}', '{"rho": "0.3"}',
+                 '{"rho": 1.5}', '{"foo": 1}', "[1]"):
+        f.write_text(body, encoding="utf-8")
+        assert load_lineup_params() == LineupParams(), body
+    assert "ignored" in caplog.text
+
+
+def test_load_lineup_params_malformed_json_gives_defaults(root):
+    from pipeline.config import LineupParams, load_lineup_params
+
+    (root / "model").mkdir()
+    (root / "model" / "lineup_params.json").write_text("{not json", encoding="utf-8")
+    assert load_lineup_params() == LineupParams()

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass, fields, replace
 from pathlib import Path
 
@@ -92,15 +93,31 @@ class LineupParams:
 
 
 def load_lineup_params() -> LineupParams:
-    """Defaults (both factors off) overlaid with model/lineup_params.json; `gate` is skipped."""
+    """Defaults (both factors off) overlaid with model/lineup_params.json; `gate` is skipped.
+
+    Bad JSON, unknown structure or wrong types log a warning and give the defaults."""
     f = path("model", "lineup_params.json")
-    raw = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
-    overrides = {k: v for k, v in raw.items() if k != "gate"}
-    known = {x.name for x in fields(LineupParams)}
-    unknown = set(overrides) - known
-    if unknown:
-        raise ValueError(f"unknown keys in model/lineup_params.json: {sorted(unknown)}")
-    return replace(LineupParams(), **overrides)
+    if not f.exists():
+        return LineupParams()
+    try:
+        raw = json.loads(f.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            raise ValueError("not an object")
+        overrides = {k: v for k, v in raw.items() if k != "gate"}
+        unknown = set(overrides) - {x.name for x in fields(LineupParams)}
+        if unknown:
+            raise ValueError(f"unknown keys {sorted(unknown)}")
+        rho = overrides.get("rho", LineupParams.rho)
+        if isinstance(rho, bool) or not isinstance(rho, int | float) or not 0 < rho <= 1:
+            raise ValueError("rho must be a number in (0, 1]")
+        for k in ("use_lineup", "use_h2h"):
+            if k in overrides and not isinstance(overrides[k], bool):
+                raise ValueError(f"{k} must be a bool")
+        return replace(LineupParams(), **overrides)
+    except (ValueError, OSError) as exc:  # JSONDecodeError is a ValueError
+        logging.getLogger(__name__).warning(
+            "model/lineup_params.json ignored, using defaults: %s", exc)
+        return LineupParams()
 
 
 # NHL API (spec 5.1)

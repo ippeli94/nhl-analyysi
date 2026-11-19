@@ -565,3 +565,38 @@ def test_game_mults_follow_lineup_params(monkeypatch):
                            "CAR", "SEA", d)
     assert (both.h2h_h, both.h2h_a, both.att_h) == (1.02, 0.99, 1.05)
     assert calls == [("CAR", "SEA", d), ("SEA", "CAR", d)]
+
+
+def _boom(*a, **k):
+    raise RuntimeError("boom")
+
+
+def test_form_failure_nulls_form_blocks_only(seeded, monkeypatch):
+    monkeypatch.setattr("pipeline.context.form", _boom)
+    assert go() == 0
+    lat = latest_of(seeded)
+    assert export.validate(lat) == []
+    upcoming = [g for g in lat["games"] if g["state"] == "upcoming"]
+    assert upcoming and all(g["form"] is None for g in upcoming)
+
+
+def test_league_stats_failure_does_not_fail_run(seeded, monkeypatch):
+    monkeypatch.setattr(run.teamstats, "league_stats", _boom)
+    assert go() == 0
+    lat = latest_of(seeded)
+    assert export.validate(lat) == []
+    for g in lat["games"]:
+        assert g["insights"] is None or isinstance(g["insights"], list)
+
+
+def test_performance_failure_does_not_fail_run(seeded, monkeypatch):
+    monkeypatch.setattr(run.performance, "build_performance", _boom)
+    assert go() == 0
+    assert export.validate(latest_of(seeded)) == []
+    assert not (seeded / "site/data/performance.json").exists()
+
+
+def test_offline_run_writes_valid_performance(seeded):
+    assert go() == 0
+    perf = json.loads((seeded / "site/data/performance.json").read_text(encoding="utf-8"))
+    assert export.validate_performance(perf) == []
