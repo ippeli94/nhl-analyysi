@@ -133,7 +133,7 @@ def test_parse_espn_status_and_names():
          "athlete": {"displayName": "Kirby Dach", "shortName": "K. Dach"}}]}]
     out = lineup.parse_espn(raw)
     assert out["MTL"][0] == {"name": "Cole Caufield", "short": "C. Caufield",
-                             "status": "doubtful", "detail": "knee", "since": "2026-11-18"}
+                             "status": "doubtful", "detail": "Päivittäin arvioitava", "since": "2026-11-18"}
     assert out["MTL"][1]["status"] == "out" and out["MTL"][1]["since"] is None
 
 
@@ -177,3 +177,41 @@ def test_changes_validate_against_schema_and_degrade():
     assert run._lineup_block(None, tg, game, ASOF, P, SEASON, {}) == (None, None)
     empty, mults = run._lineup_block(pg.iloc[:0], tg, game, ASOF, P, SEASON, {})
     assert empty == [] and mults["home"]["m_att"] == 1.0
+
+
+def test_defense_impact_uses_share_of_skater_time():
+    spec = depth({1: ("M. Blue", set(range(11)))})
+    pg, tg = build(spec)
+    pg.loc[pg.player == 1, ["toi", "pos", "grp"]] = [1500, "D", "D"]
+    res = run_team(pg, tg, lineup_of(spec, 11),
+                   [{"name": "Mac Blue", "short": "M. Blue", "status": "out",
+                     "detail": "Poissa", "since": None}])
+    ch = next(x for x in res["changes"] if x["player_id"] == 1)
+    c = lineup.contributions(pg, tg, "AAA", ASOF, P, SEASON)[1]
+    assert ch["impact_defense"] == pytest.approx(0.5 * (1500 / 18000) * c.presence, abs=2e-3)
+    assert 0.03 < ch["impact_defense"] < 0.045 and res["m_def"] < 1.15
+
+
+def test_doubtful_expectation_half():
+    spec = depth({1: ("S. Star", set(range(12)))})
+    pg, tg = build(spec)
+    c = lineup.contributions(pg, tg, "AAA", ASOF, P, SEASON)
+    expect, entries = lineup.expectations(
+        c, lineup_of(spec, 11),
+        [{"name": "Sam Star", "short": "S. Star", "status": "doubtful", "detail": "x",
+          "since": None}], pg, "AAA", ASOF, SEASON)
+    assert expect[1] == 0.5 and entries[0]["kind"] == "doubtful"
+
+
+def test_returning_only_within_last_three_games():
+    spec = depth({1: ("R. Back", {0, 1, 2, 3, 4, 7, 8, 9, 10, 11})})  # back 5 games ago
+    pg, tg = build(spec)
+    res = run_team(pg, tg, lineup_of(spec, 11))
+    assert not [x for x in res["changes"] if x["player_id"] == 1]
+
+
+def test_espn_detail_finnish():
+    raw = [{"displayName": "Boston Bruins", "injuries": [
+        {"status": "Suspension", "shortComment": "x",
+         "athlete": {"displayName": "A B", "shortName": "A. B"}}]}]
+    assert lineup.parse_espn(raw)["BOS"][0]["detail"] == "Pelikielto"

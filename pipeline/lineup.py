@@ -24,6 +24,15 @@ def _norm(name) -> str:
     return " ".join(ascii_.casefold().replace(".", "").split())
 
 
+_ESPN_DETAIL = {
+    "day-to-day": "Päivittäin arvioitava",
+    "injured reserve": "Loukkaantumislista",
+    "long term injured reserve": "Loukkaantumislista",
+    "suspension": "Pelikielto",
+    "out": "Poissa",
+}
+
+
 def parse_espn(raw: list[dict]) -> dict[str, list[dict]]:
     """ESPN injury payload -> abbr -> entries; teams that do not map to a club are skipped."""
     out: dict[str, list[dict]] = {}
@@ -36,12 +45,13 @@ def parse_espn(raw: list[dict]) -> dict[str, list[dict]]:
             full = athlete.get("displayName")
             if not full:
                 continue
-            day_to_day = str(inj.get("status", "")).strip().lower() == "day-to-day"
+            status = str(inj.get("status", "")).strip().lower()
+            day_to_day = status == "day-to-day"
             stamp = inj.get("date")
             out.setdefault(abbr, []).append({
                 "name": full, "short": athlete.get("shortName") or full,
                 "status": "doubtful" if day_to_day else "out",
-                "detail": inj.get("shortComment") or None,
+                "detail": _ESPN_DETAIL.get(status, "Poissa"),
                 "since": stamp[:10] if isinstance(stamp, str) and len(stamp) >= 10 else None,
             })
     return out
@@ -54,7 +64,7 @@ class Contrib:
     grp: str
     share: float
     presence: float
-    toi_share: float
+    toi_share: float  # mean toi / (5 x 3600): share of the team's skater time
 
 
 def _league_ppg(pg: pd.DataFrame, asof: date) -> float:
@@ -103,7 +113,7 @@ def contributions(
             xg_part = float((w * r["ixg"]).sum()) / xg_den if xg_den > 0 else 0.0
             pts_part = float((w * r["pts"]).sum()) / pts_den if pts_den > 0 else 0.0
             share = 0.5 * xg_part + 0.5 * pts_part
-            toi = float(r["toi"].mean()) / 3600.0
+            toi = float(r["toi"].mean()) / (5 * 3600.0)
             names = r["name"].dropna()
             name = str(names.iloc[-1]) if len(names) else None
             grp = str(r["grp"].iloc[-1])
@@ -132,7 +142,7 @@ def _iso(ts) -> str:
 
 def expectations(
     contrib: dict[int, Contrib], lineup: list[Slot], injuries: list[dict], pg: pd.DataFrame,
-    team: str, asof: date,
+    team: str, asof: date, season: str | None = None,
 ) -> tuple[dict[int, float], list[dict]]:
     """Expected presence per player (0, 0.5 or 1) and the change entries (no impacts yet)."""
     in_lineup = {int(s["id"]) for s in lineup}
@@ -161,7 +171,8 @@ def expectations(
         return expect, entries
     last = order[-1]
     window = order[-config.LINEUP_WINDOW:]
-    season = pg[pg["game_id"] == last]["season"].iloc[0]
+    if season is None:
+        season = pg[pg["game_id"] == last]["season"].iloc[0]
     cur = pg[(pg["season"] == season) & (pg["date"] < pd.Timestamp(asof))]
     for pid in sorted(expect):
         if pid in espn_ids:
@@ -187,7 +198,13 @@ def expectations(
                 continue
             before = order[-1 - config.LINEUP_WINDOW:-1]
             seen = sum(1 for g in before if pid in dressed.get(g, ()))
-            if len(before) > config.LINEUP_WINDOW // 2 and seen <= 5 and len(here) >= 2:
+            streak = 0
+            for g in reversed(order):
+                if pid not in dressed.get(g, ()):
+                    break
+                streak += 1
+            if (len(before) > config.LINEUP_WINDOW // 2 and seen <= 5 and len(here) >= 2
+                    and streak <= 3 and streak < len(order)):
                 entries.append(_entry(team, name, pid, "returning", "nhl",
                                       "Palaa kokoonpanoon", _iso(dates[last])))
         elif len(order) >= config.LINEUP_WINDOW:
@@ -195,7 +212,7 @@ def expectations(
             missed_two = all(pid not in dressed.get(g, ()) for g in order[-2:])
             if seen >= 8 and missed_two:
                 entries.append(_entry(team, name, pid, "out", "päätelty",
-                                      "Ei pelannut kahdessa viimeisessä ottelussa",
+                                      "Puuttui kahdesta viime ottelusta",
                                       _iso(dates[order[-2]])))
     return expect, entries
 
@@ -224,7 +241,7 @@ def team_lineup(
 ) -> dict:
     """{"m_att", "m_def", "changes", "espn_out_ids"} for one team in one game."""
     contrib = contributions(pg, tg, team, asof, p, season, [s["id"] for s in lineup])
-    expect, entries = expectations(contrib, lineup, injuries, pg, team, asof)
+    expect, entries = expectations(contrib, lineup, injuries, pg, team, asof, season)
     m_att, m_def, per = multipliers(contrib, expect, rho)
     changes = []
     for e in entries:
@@ -233,7 +250,7 @@ def team_lineup(
         e["impact_attack"], e["impact_defense"] = round(att, 3) + 0.0, round(dfn, 3) + 0.0
         if e["source"] == "espn" or max(abs(att), abs(dfn)) >= config.LINEUP_MIN_IMPACT:
             changes.append(e)
-    changes.sort(key=lambda e: -abs(e["impact_attack"]))
+    changes.sort(key=lambda e: -max(abs(e["impact_attack"]), abs(e["impact_defense"])))
     espn_out = sorted(
         e["player_id"] for e in entries
         if e["source"] == "espn" and e["kind"] == "out" and e["player_id"] is not None)
