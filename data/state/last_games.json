@@ -234,7 +234,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -1782,7 +1782,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -3212,7 +3212,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -4581,7 +4581,7 @@
         "key": "base",
         "label": "Joukkuevahvuus",
         "home": 3.3656208958522873,
-        "away": 3.031887382018896,
+        "away": 3.0318873820188954,
         "unit": "goals"
       },
       {
@@ -4625,7 +4625,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -6006,7 +6006,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -7472,7 +7472,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -8776,7 +8776,7 @@
         "key": "base",
         "label": "Joukkuevahvuus",
         "home": 2.9537665604712915,
-        "away": 2.511986262220012,
+        "away": 2.5119862622200126,
         "unit": "goals"
       },
       {
@@ -8820,7 +8820,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -10171,7 +10171,7 @@
         "key": "base",
         "label": "Joukkuevahvuus",
         "home": 2.384584790112591,
-        "away": 2.863630030461448,
+        "away": 2.8636300304614473,
         "unit": "goals"
       },
       {
@@ -10215,7 +10215,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -11637,7 +11637,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -13001,7 +13001,7 @@
       {
         "key": "base",
         "label": "Joukkuevahvuus",
-        "home": 3.8694296703352586,
+        "home": 3.8694296703352578,
         "away": 3.017733508804544,
         "unit": "goals"
       },
@@ -13046,7 +13046,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -14397,7 +14397,7 @@
         "key": "base",
         "label": "Joukkuevahvuus",
         "home": 3.1001685649981265,
-        "away": 2.7436381990846312,
+        "away": 2.7436381990846317,
         "unit": "goals"
       },
       {
@@ -14441,7 +14441,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -15892,7 +15892,7 @@
       }
     },
     "odds": {
-      "fetched_at": "2026-11-19T09:15:49Z",
+      "fetched_at": "2026-11-19T09:17:30Z",
       "markets": [
         {
           "key": "h2h",
@@ -16430,6 +16430,17 @@
         "since": "2026-10-24",
         "impact_attack": -0.003,
         "impact_defense": 0.003
+      },
+      {
+        "team": "DAL",
+        "player": "Matt Duchene",
+        "player_id": null,
+        "kind": "out",
+        "source": "espn",
+        "detail": "Loukkaantumislista",
+        "since": "2026-10-12",
+        "impact_attack": 0.0,
+        "impact_defense": 0.0
       }
     ],
     "insights": [
