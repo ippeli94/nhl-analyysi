@@ -637,6 +637,9 @@ function modelView() {
       metricTile("Pelaajat, Brier", w.players ? num3(w.players.brier) : dash,
         w.players ? [`Perustaso ${num3(w.players.brier_base)}`, `${w.players.n} ennustetta`] : ["Ei dataa"]),
       metricTile("Maalimäärän MAE", w.total_mae == null ? dash : fmtNum(w.total_mae, 2), ["Kokonaismaalit"]),
+      metricTile("Maalimäärä", w.totals ? `${pct1(w.totals.model_hit_rate)}` : dash,
+        w.totals ? [`Yli/alle osumat: malli ${pct1(w.totals.model_hit_rate)} · markkina ${pct1(w.totals.market_hit_rate)}`,
+          `${w.totals.n} ottelua, keskiraja ${w.totals.line_mean == null ? dash : fmtNum(w.totals.line_mean, 2)}`] : ["Ei dataa"]),
     ].join("");
     const pk = w.picks || {};
     body = (w.small_sample ? `<div class="banner inline" role="status">Otos pieni — luvut eivät vielä kerro paljoa</div>` : "") +
