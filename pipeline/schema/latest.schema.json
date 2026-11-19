@@ -278,6 +278,22 @@
       }
     },
     "later_phase": {"type": ["object", "array", "null"]},
+    "lineup_change": {
+      "type": "object",
+      "required": ["team", "player", "player_id", "kind", "source", "detail", "since",
+                   "impact_attack", "impact_defense"],
+      "properties": {
+        "team": {"type": "string"},
+        "player": {"type": ["string", "null"]},
+        "player_id": {"type": ["integer", "null"]},
+        "kind": {"enum": ["out", "doubtful", "returning", "acquired", "traded_away"]},
+        "source": {"enum": ["espn", "päätelty", "nhl"]},
+        "detail": {"type": ["string", "null"]},
+        "since": {"type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "impact_attack": {"type": "number"},
+        "impact_defense": {"type": "number"}
+      }
+    },
     "insight": {
       "type": "object",
       "required": ["id", "team", "severity", "text"],
@@ -414,7 +430,9 @@
             "away": {"$ref": "#/$defs/goalie_or_null"}
           }
         },
-        "lineup_changes": {"$ref": "#/$defs/later_phase"},
+        "lineup_changes": {
+          "anyOf": [{"type": "null"}, {"type": "array", "items": {"$ref": "#/$defs/lineup_change"}}]
+        },
         "players": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/players"}]},
         "form": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/form"}]},
         "season_compare": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/season_compare"}]},

@@ -65,3 +65,8 @@ _ODDS_MAP: dict[str, str] = {_normalise(n): a for a, n in TEAM_NAMES.items()} | 
 def abbr_from_odds_name(name: str) -> str | None:
     """Map a bookmaker/Odds API team name to an NHL abbreviation, or None if unknown."""
     return _ODDS_MAP.get(_normalise(name))
+
+
+def abbr_from_name(name: str) -> str | None:
+    """Map a full team display name (ESPN, odds feeds; accents ignored) to an abbreviation."""
+    return abbr_from_odds_name(name)

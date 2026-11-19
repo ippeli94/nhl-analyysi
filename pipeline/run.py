@@ -12,6 +12,7 @@ import os
 import re
 import sys
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -26,6 +27,7 @@ from pipeline import (
     export,
     features,
     insights,
+    lineup,
     players,
     predict,
     ratings,
@@ -281,9 +283,44 @@ def _player_inputs(ctx, game: ScheduledGame, season: str) -> players.PlayerInput
         return None
 
 
+def _lineup_games(records: list[dict], coefs: dict):
+    """player_games for lineup changes when players are disabled; None when unbuildable."""
+    try:
+        return players.player_games(records, coefs)
+    except Exception as exc:  # noqa: BLE001 - lineup changes must never fail the run
+        logger.warning("lineup changes disabled for this run: %s", type(exc).__name__)
+        return None
+
+
+def _lineup_block(pg, tg, game: ScheduledGame, day: date, p, season: str, by_team: dict):
+    """(lineup_changes | None, {home|away: team_lineup result} | None) for one game."""
+    if pg is None:
+        return None, None
+    try:
+        res = {}
+        for side in ("home", "away"):
+            abbr = game[side]["abbr"]
+            lu = players.project_lineup(pg, abbr, day, season)
+            res[side] = lineup.team_lineup(
+                pg, tg, abbr, day, p, season, lu, by_team.get(abbr, []), config.LINEUP_RHO)
+        return res["home"]["changes"] + res["away"]["changes"], res
+    except Exception as exc:  # noqa: BLE001 - one game's lineup changes never fail the run
+        logger.warning("lineup changes for game %s failed: %s", game["id"], type(exc).__name__)
+        return None, None
+
+
+def _without_absentees(pin: players.PlayerInputs, mults: dict) -> players.PlayerInputs:
+    """Drop ESPN-confirmed absentees from the lineups the players block uses."""
+    gone = {pid for side in ("home", "away") for pid in mults[side]["espn_out_ids"]}
+    if not gone:
+        return pin
+    return replace(pin, lineups={
+        t: [s for s in lu if s["id"] not in gone] for t, lu in pin.lineups.items()})
+
+
 def _predict_all(
     selected: list[ScheduledGame], records: list[dict], season: str, today: date, now: datetime,
-    with_players: bool = False,
+    with_players: bool = False, injuries_by_team: dict | None = None,
 ) -> tuple[list[dict], pd.DataFrame]:
     p = config.load_params()
     coefs = _load_coefs()
@@ -295,6 +332,7 @@ def _predict_all(
     gg = adjust.goalie_games(records, coefs)
     gr = adjust.goalie_ratings(gg, today, p, season=season)
     ctx = _player_context(records, coefs, p, today, season) if with_players else None
+    pg = ctx[0] if ctx is not None else _lineup_games(records, coefs)
 
     frozen = {g["id"]: g for g in _read_json(LAST_GAMES, [])}
     out: list[dict] = []
@@ -312,7 +350,16 @@ def _predict_all(
             for t in (game["home"]["abbr"], game["away"]["abbr"])
         }
         pin = _player_inputs(ctx, game, season) if ctx is not None else None
+        changes, mults = _lineup_block(pg, tg, game, day, p, season, injuries_by_team or {})
+        if pin is not None and changes is not None:
+            pin = _without_absentees(pin, mults)
         obj = predict.predict_game(game, r, ps, sp, p, played, gr, starters, pin)
+        obj["lineup_changes"] = changes
+        obj["_internal"]["lineup"] = {
+            side: {"m_att": mults[side]["m_att"], "m_def": mults[side]["m_def"]}
+            if mults else {"m_att": 1.0, "m_def": 1.0}
+            for side in ("home", "away")
+        }
         obj.update(context.game_context(
             tg, records, game["home"]["abbr"], game["away"]["abbr"], season, day))
         out.append(obj)
@@ -465,10 +512,6 @@ def run(
         logger.info("cache: %d written, %d skipped", len(written), len(skipped))
         season = _current_season(selected, week)
         records = cache.load_seasons([_season_before(season), season])
-        games, tg = _predict_all(
-            selected, records, season, today, now, players_enabled(offline)
-        )
-
         state: dict = {
             "nhl": {
                 "status": "ok", "fetched_at": _iso(now), "last_ok_at": _iso(now), "note": None,
@@ -481,9 +524,17 @@ def run(
         def offline_injuries() -> list[dict]:
             raise SourceError("offline mode")
 
-        optional_source(
+        raw_injuries = optional_source(
             "injuries", offline_injuries if offline is not None else injuries.fetch, state, now,
             failed_status="unavailable", note_on_fail=INJURIES_NOTE,
+        )
+        try:
+            injuries_by_team = lineup.parse_espn(raw_injuries) if raw_injuries else {}
+        except Exception as exc:  # noqa: BLE001 - a odd payload must never fail the run
+            logger.warning("injuries not parsed: %s", type(exc).__name__)
+            injuries_by_team = {}
+        games, tg = _predict_all(
+            selected, records, season, today, now, players_enabled(offline), injuries_by_team
         )
         snapshot, fetched_now = odds_stage(selected, state, now, with_odds)
         if snapshot:

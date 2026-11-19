@@ -25,7 +25,7 @@ from pipeline.teams import display_name
 
 logger = logging.getLogger(__name__)
 
-NULL_KEYS = ("lineup_changes", "odds")
+NULL_KEYS = ("odds",)
 
 
 def _clamp(x: float) -> float:
@@ -149,6 +149,7 @@ def predict_game(
             "away": goalie_block(st_away, away, gr, p),
         },
         **{k: None for k in NULL_KEYS},
+        "lineup_changes": None,  # filled by run from box scores and ESPN injuries
         "insights": None,  # filled by run once odds and lineup changes are attached
         "players": block,
         # private: stripped by export (keys starting with "_"); read by tracking.log_row
