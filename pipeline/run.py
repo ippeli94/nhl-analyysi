@@ -28,6 +28,7 @@ from pipeline import (
     features,
     insights,
     lineup,
+    performance,
     players,
     predict,
     ratings,
@@ -623,6 +624,7 @@ def run(
             [g["id"] for g in selected if g["id"] in exported or not is_started(g, now)],
         )
         export.write_latest(latest)
+        _write_performance(records, season, now)
     except (SourceError, FileNotFoundError) as exc:
         logger.error("run failed: %s", exc)
         return 1
@@ -632,6 +634,23 @@ def run(
     _github_output(True)
     logger.info("wrote latest.json with %d games", len(latest["games"]))
     return 0
+
+
+def _write_performance(records: list[dict], season: str, now: datetime) -> None:
+    """performance.json from the history logs; a failure is logged and never fails the run."""
+    try:
+        results = tracking.read_log("results", season)
+        player_rows = tracking.player_outcomes(tracking.read_log("players", season), records)
+        backtest_file = config.path("model", "backtest_20252026.json")
+        backtest = (json.loads(backtest_file.read_text(encoding="utf-8"))
+                    if backtest_file.exists() else None)
+        perf = performance.build_performance(
+            tracking.read_log("predictions", season), results,
+            tracking.read_log("odds", season), player_rows, now, backtest,
+        )
+        export.write_performance(perf)
+    except Exception as exc:  # noqa: BLE001 - performance must never fail the run
+        logger.warning("performance failed: %s", type(exc).__name__)
 
 
 def main(argv: list[str] | None = None) -> int:
