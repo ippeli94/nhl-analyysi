@@ -84,6 +84,25 @@ def load_player_gate() -> dict | None:
     return _read_player_params_file().get("gate")
 
 
+@dataclass(frozen=True)
+class LineupParams:
+    rho: float = 0.45
+    use_lineup: bool = False
+    use_h2h: bool = False
+
+
+def load_lineup_params() -> LineupParams:
+    """Defaults (both factors off) overlaid with model/lineup_params.json; `gate` is skipped."""
+    f = path("model", "lineup_params.json")
+    raw = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
+    overrides = {k: v for k, v in raw.items() if k != "gate"}
+    known = {x.name for x in fields(LineupParams)}
+    unknown = set(overrides) - known
+    if unknown:
+        raise ValueError(f"unknown keys in model/lineup_params.json: {sorted(unknown)}")
+    return replace(LineupParams(), **overrides)
+
+
 # NHL API (spec 5.1)
 NHL_BASE = "https://api-web.nhle.com/v1"
 REQUESTS_PER_S = 3
@@ -229,3 +248,5 @@ LINEUP_PPG_FALLBACK = 2.7
 LINEUP_MAX_CHANGES = 8
 LINEUP_MIN_IMPACT = 0.005
 LINEUP_WINDOW = 10
+H2H_CLAMP = (0.97, 1.03)
+H2H_PRIOR_GAMES = 20

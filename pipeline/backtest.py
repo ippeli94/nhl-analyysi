@@ -6,6 +6,7 @@ import argparse
 import json
 import logging
 import sys
+from collections.abc import Callable
 from dataclasses import asdict, replace
 from datetime import date
 from pathlib import Path
@@ -15,7 +16,7 @@ import pandas as pd
 
 from pipeline import adjust, cache, config, features, metrics, ratings, xg
 from pipeline.config import ModelParams
-from pipeline.predict import game_lambdas
+from pipeline.predict import Mults, game_lambdas
 from pipeline.ratings import split_lambda
 from pipeline.simulate import simulate
 
@@ -66,8 +67,12 @@ def run_backtest(
     gg: pd.DataFrame | None = None,
     goalie_mode: str = "none",
     keep_goal_dist: bool = False,
+    mults_fn: Callable[[pd.Timestamp, int, str, str], Mults] | None = None,
 ) -> dict:
-    """Predict every regular-season game of `season` using only earlier rows."""
+    """Predict every regular-season game of `season` using only earlier rows.
+
+    `mults_fn(date, game_id, home, away)` supplies lineup / head-to-head multipliers; the
+    hook is responsible for using only information from before `date`."""
     if goalie_mode not in GOALIE_MODES:
         raise ValueError(f"unknown goalie_mode {goalie_mode!r}")
     if goalie_mode != "none" and gg is None:
@@ -107,7 +112,9 @@ def run_backtest(
             else:
                 st_h = adjust.project_starters(gg_hist, home, asof, season=season)
                 st_a = adjust.project_starters(gg_hist, away, asof, season=season)
-            lm = game_lambdas(r, home, away, bool(g.b2b), bool(g.opp_b2b), st_h, st_a, gr, p)
+            mu = mults_fn(ts, int(g.game_id), home, away) if mults_fn is not None else None
+            lm = game_lambdas(r, home, away, bool(g.b2b), bool(g.opp_b2b), st_h, st_a, gr, p,
+                              mu)
             sim = simulate(
                 split_lambda(lm["lam_h"], home, away, ps, p.use_periods),
                 split_lambda(lm["lam_a"], away, home, ps, p.use_periods),

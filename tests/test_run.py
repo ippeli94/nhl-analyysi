@@ -537,3 +537,31 @@ def test_players_log_failure_does_not_block(seeded, monkeypatch):
     monkeypatch.setattr(run.tracking, "append_players", boom)
     assert go() == 0
     assert by_id(latest_of(seeded))[2026020338]["players"] is not None
+
+
+def test_game_mults_follow_lineup_params(monkeypatch):
+    from datetime import date as _date
+
+    from pipeline import context as _context
+    from pipeline.config import LineupParams
+    from pipeline.predict import Mults
+
+    lu = {"home": {"m_att": 1.05, "m_def": 0.98}, "away": {"m_att": 0.9, "m_def": 1.02}}
+    calls = []
+
+    def fake_h2h(tg, r, team, opp, asof):
+        calls.append((team, opp, asof))
+        return 1.02 if team == "CAR" else 0.99
+
+    monkeypatch.setattr(_context, "h2h_mult", fake_h2h)
+    d = _date(2026, 11, 20)
+    assert run._game_mults(LineupParams(), lu, None, None, "CAR", "SEA", d) == Mults()
+    assert calls == []
+    assert run._game_mults(LineupParams(use_lineup=True), lu, None, None, "CAR", "SEA", d) == \
+        Mults(att_h=1.05, def_h=0.98, att_a=0.9, def_a=1.02)
+    assert run._game_mults(LineupParams(use_lineup=True), None, None, None, "CAR", "SEA", d) \
+        == Mults()
+    both = run._game_mults(LineupParams(use_lineup=True, use_h2h=True), lu, None, None,
+                           "CAR", "SEA", d)
+    assert (both.h2h_h, both.h2h_a, both.att_h) == (1.02, 0.99, 1.05)
+    assert calls == [("CAR", "SEA", d), ("SEA", "CAR", d)]

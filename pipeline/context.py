@@ -8,6 +8,7 @@ from datetime import date
 import pandas as pd
 
 from pipeline import config
+from pipeline.ratings import Ratings, base_lambda
 
 logger = logging.getLogger(__name__)
 
@@ -127,15 +128,27 @@ def season_compare(tg, records, team: str, season: str, asof: date) -> dict | No
     return {"now": now, "last": last}
 
 
+H2H_GAME_TYPES = (2, 3)
+
+
+def _meetings(items, key, pair: set[str], asof: date) -> list:
+    """Newest-first meetings of `pair` before `asof` (regular season and playoffs), at most
+    H2H_MAX_GAMES. key(item) -> (teams, game_type, iso date, game id)."""
+    keyed = []
+    for item in items:
+        teams, game_type, day, gid = key(item)
+        if set(teams) == pair and game_type in H2H_GAME_TYPES and day < asof.isoformat():
+            keyed.append(((day, gid), item))
+    keyed.sort(key=lambda x: x[0], reverse=True)
+    return [item for _, item in keyed[: config.H2H_MAX_GAMES]]
+
+
+def _record_key(r: dict):
+    return (r["home"]["abbr"], r["away"]["abbr"]), r.get("game_type"), r["date"], r["id"]
+
+
 def h2h(tg, records, home: str, away: str, asof: date) -> dict | None:
-    pair = {home, away}
-    meetings = [
-        r for r in records
-        if {r["home"]["abbr"], r["away"]["abbr"]} == pair and r.get("game_type") in (2, 3)
-        and r["date"] < asof.isoformat()
-    ]
-    meetings.sort(key=lambda r: (r["date"], r["id"]), reverse=True)
-    meetings = meetings[: config.H2H_MAX_GAMES]
+    meetings = _meetings(records, _record_key, {home, away}, asof)
     if not meetings:
         return None
     xg = {}
@@ -163,6 +176,28 @@ def h2h(tg, records, home: str, away: str, asof: date) -> dict | None:
         lead, w, l_ = (home, hw, aw) if hw > aw else (away, aw, hw)
         summary = f"{lead} {w}–{l_} viimeisissä {n} kohtaamisessa"
     return {"summary": summary, "games": games}
+
+
+def h2h_mult(tg: pd.DataFrame, r: Ratings, team: str, opp: str, asof: date) -> float:
+    """Shrunk head-to-head scoring ratio of `team` against `opp` (spec 6.7)."""
+    if tg is None or len(tg) == 0:
+        return 1.0
+    mine = tg[(tg["team"] == team) & (tg["opp"] == opp)]
+    rows = _meetings(
+        list(mine.itertuples(index=False)),
+        lambda x: ((x.team, x.opp), int(x.game_type), pd.Timestamp(x.date).date().isoformat(),
+                   int(x.game_id)),
+        {team, opp}, asof)
+    n = len(rows)
+    if n == 0:
+        return 1.0
+    expected = n * base_lambda(r, team, opp)
+    if expected <= 0:
+        return 1.0
+    ratio = sum(float(x.goals_reg) for x in rows) / expected
+    m = 1 + (ratio - 1) * n / (n + config.H2H_PRIOR_GAMES)
+    lo, hi = config.H2H_CLAMP
+    return min(max(m, lo), hi)
 
 
 def game_context(tg, records, home: str, away: str, season: str, asof: date) -> dict:

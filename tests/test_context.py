@@ -120,3 +120,23 @@ def test_drop_invalid_nulls_only_that_field():
     assert games[1]["form"] is None and games[0]["form"] == {"x": 1}
     assert run._drop_invalid(games, ["$.games[0].xg: bad"]) is False
     assert run._drop_invalid(games, []) is False
+
+
+def test_h2h_mult_bounds():
+    import numpy as np
+
+    from pipeline.ratings import Ratings
+
+    r = Ratings(intercept=float(np.log(1.0)))  # base lambda 1.0 for every pair
+    # A scores 3 regulation goals in each of 10 meetings -> ratio 3, newest 8 used
+    tg = tg_rows("A", ["W"] * 10, opp="B")
+    tg["goals_reg"] = np.where(tg["team"] == "A", 3, 1)
+    assert context.h2h_mult(tg, r, "A", "B", ASOF) == 1.03
+    assert context.h2h_mult(tg, r, "B", "A", ASOF) == 1.0  # ratio 1
+    assert context.h2h_mult(tg, r, "A", "C", ASOF) == 1.0  # no meetings
+    # only meetings before asof count
+    assert context.h2h_mult(tg, r, "A", "B", date(2026, 10, 10)) == 1.0
+    # small sample shrinks: one meeting ratio 1.5 -> 1 + 0.5 * 1/21
+    one = tg[tg["game_id"] == 1000].copy()
+    one["goals_reg"] = np.where(one["team"] == "A", 1.5, 1)
+    assert abs(context.h2h_mult(one, r, "A", "B", ASOF) - (1 + 0.5 / 21)) < 1e-12

@@ -292,7 +292,8 @@ def _lineup_games(records: list[dict], coefs: dict):
         return None
 
 
-def _lineup_block(pg, tg, game: ScheduledGame, day: date, p, season: str, by_team: dict):
+def _lineup_block(pg, tg, game: ScheduledGame, day: date, p, season: str, by_team: dict,
+                  rho: float = config.LINEUP_RHO):
     """(lineup_changes | None, {home|away: team_lineup result} | None) for one game."""
     if pg is None:
         return None, None
@@ -302,11 +303,24 @@ def _lineup_block(pg, tg, game: ScheduledGame, day: date, p, season: str, by_tea
             abbr = game[side]["abbr"]
             lu = players.project_lineup(pg, abbr, day, season)
             res[side] = lineup.team_lineup(
-                pg, tg, abbr, day, p, season, lu, by_team.get(abbr, []), config.LINEUP_RHO)
+                pg, tg, abbr, day, p, season, lu, by_team.get(abbr, []), rho)
         return res["home"]["changes"] + res["away"]["changes"], res
     except Exception as exc:  # noqa: BLE001 - one game's lineup changes never fail the run
         logger.warning("lineup changes for game %s failed: %s", game["id"], type(exc).__name__)
         return None, None
+
+
+def _game_mults(lp: config.LineupParams, lineup_mults: dict | None, tg, r, home: str,
+                away: str, day: date) -> predict.Mults:
+    """Multipliers applied to lambda: only the factors the lineup gate enabled (Task 6)."""
+    kw: dict[str, float] = {}
+    if lp.use_lineup and lineup_mults:
+        h, a = lineup_mults["home"], lineup_mults["away"]
+        kw.update(att_h=h["m_att"], def_h=h["m_def"], att_a=a["m_att"], def_a=a["m_def"])
+    if lp.use_h2h:
+        kw.update(h2h_h=context.h2h_mult(tg, r, home, away, day),
+                  h2h_a=context.h2h_mult(tg, r, away, home, day))
+    return predict.Mults(**kw)
 
 
 def _without_absentees(pin: players.PlayerInputs, mults: dict) -> players.PlayerInputs:
@@ -323,6 +337,7 @@ def _predict_all(
     with_players: bool = False, injuries_by_team: dict | None = None,
 ) -> tuple[list[dict], pd.DataFrame]:
     p = config.load_params()
+    lp = config.load_lineup_params()
     coefs = _load_coefs()
     tg = features.team_games(records, coefs, p.xg_weight)
     r = ratings.fit(tg, today, p, season=season)
@@ -350,16 +365,25 @@ def _predict_all(
             for t in (game["home"]["abbr"], game["away"]["abbr"])
         }
         pin = _player_inputs(ctx, game, season) if ctx is not None else None
-        changes, mults = _lineup_block(pg, tg, game, day, p, season, injuries_by_team or {})
+        changes, mults = _lineup_block(pg, tg, game, day, p, season, injuries_by_team or {},
+                                       lp.rho)
         if pin is not None and changes is not None:
             pin = _without_absentees(pin, mults)
-        obj = predict.predict_game(game, r, ps, sp, p, played, gr, starters, pin)
-        obj["lineup_changes"] = changes
-        obj["_internal"]["lineup"] = {
+        lineup_mults = {
             side: {"m_att": mults[side]["m_att"], "m_def": mults[side]["m_def"]}
             if mults else {"m_att": 1.0, "m_def": 1.0}
             for side in ("home", "away")
         }
+        try:
+            gm = _game_mults(lp, lineup_mults, tg, r, game["home"]["abbr"],
+                             game["away"]["abbr"], day)
+        except Exception as exc:  # noqa: BLE001 - a failing factor never fails the game
+            logger.warning("lineup/h2h factors for game %s failed: %s", game["id"],
+                           type(exc).__name__)
+            gm = predict.Mults()
+        obj = predict.predict_game(game, r, ps, sp, p, played, gr, starters, pin, gm, lp)
+        obj["lineup_changes"] = changes
+        obj["_internal"]["lineup"] = lineup_mults
         obj.update(context.game_context(
             tg, records, game["home"]["abbr"], game["away"]["abbr"], season, day))
         out.append(obj)

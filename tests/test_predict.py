@@ -195,3 +195,55 @@ def test_player_failure_gives_null(monkeypatch):
     g = predict_game(GAME, ratings(), PS, SP, P, {}, GoalieRatings(), {}, synthetic_pin())
     assert g["players"] is None and g["_internal"]["players_log"] is None
     assert g["prob"]["home_win"] > 0
+
+
+def test_game_lambdas_default_unchanged():
+    from pipeline.predict import Mults, game_lambdas
+
+    r = ratings(home=0.05, b2b_att=-0.04)
+    args = (r, "CAR", "SEA", True, False, [], [], GoalieRatings(), P)
+    a, b = game_lambdas(*args), game_lambdas(*args, mults=Mults())
+    assert a == b
+    assert a["lam_h"] == pytest.approx(BASE * np.exp(0.05) * np.exp(-0.04))
+    assert a["lam_a"] == pytest.approx(BASE)
+    assert a["lineup_h"] == a["lineup_a"] == a["h2h_h"] == a["h2h_a"] == 1.0
+
+
+def test_mults_enter_clamp():
+    from pipeline.predict import Mults, game_lambdas
+
+    lm = game_lambdas(ratings(), "CAR", "SEA", False, False, [], [], GoalieRatings(), P,
+                      mults=Mults(att_h=1.3, def_h=0.9, att_a=1.1, def_a=1.0, h2h_a=1.02))
+    assert lm["lineup_h"] == pytest.approx(1.3)
+    assert lm["m_h"] == pytest.approx(1.25)
+    assert lm["lineup_a"] == pytest.approx(1.1 * 0.9)
+    assert lm["m_a"] == pytest.approx(1.1 * 0.9 * 1.02)
+    assert lm["lam_a"] == pytest.approx(BASE * 1.1 * 0.9 * 1.02)
+
+
+def test_factors_multiply_to_applied():
+    from pipeline.config import LineupParams
+    from pipeline.predict import Mults
+
+    r = ratings(home=0.1)
+    m = Mults(att_h=1.15, def_a=1.1, att_a=0.95)
+    g = predict_game(GAME, r, PS, SP, P, {}, GoalieRatings(), {},
+                     mults=m, lp=LineupParams(use_lineup=True, use_h2h=False))
+    keys = [f["key"] for f in g["factors"]]
+    assert keys == ["base", "home_ice", "rest", "goalie", "lineup"]
+    lab = factor(g, "lineup")
+    assert lab["label"] == "Poissaolot ja kaupat" and lab["unit"] == "mult"
+    for side, lam in (("home", "lam_home"), ("away", "lam_away")):
+        prod = float(np.prod([f[side] for f in g["factors"]]))
+        assert prod == pytest.approx(g["_internal"][lam], rel=1e-9)
+    # home clamp binds (1.105 * 1.265 > 1.25); away is the lineup multiplier unclamped
+    assert g["_internal"]["lam_home"] == pytest.approx(BASE * 1.25)
+    assert g["_internal"]["lam_away"] == pytest.approx(BASE * 0.95)
+    m2 = Mults(att_h=1.15, def_a=1.1, att_a=0.95, h2h_h=1.03, h2h_a=0.97)
+    both = predict_game(GAME, r, PS, SP, P, {}, GoalieRatings(), {},
+                        mults=m2, lp=LineupParams(use_lineup=True, use_h2h=True))
+    assert [f["key"] for f in both["factors"]][-2:] == ["lineup", "h2h"]
+    assert factor(both, "h2h")["label"] == "Keskinäiset"
+    prod = float(np.prod([f["away"] for f in both["factors"]]))
+    assert prod == pytest.approx(both["_internal"]["lam_away"], rel=1e-9)
+    assert both["_internal"]["lam_away"] == pytest.approx(BASE * 0.95 * 0.97)
