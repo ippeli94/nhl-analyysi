@@ -233,3 +233,11 @@ test("load/import keep whitelisted fields only; loadBets dedupes ids", () => {
   const r = importJson(JSON.stringify({ v: 1, bets: [dirty] }), []);
   assert.deepEqual(r.bets, [bet()]);
 });
+
+test("invalid start_utc / placed_at are rejected", () => {
+  assert.throws(() => addBet([], bet({ start_utc: "huomenna" })));
+  assert.throws(() => addBet([], bet({ placed_at: "" })));
+  const r = importJson(JSON.stringify({ v: 1, bets: [bet({ start_utc: "x" })] }), []);
+  assert.equal(r.added, 0);
+  assert.equal(r.skipped, 1);
+});

@@ -30,6 +30,7 @@ export function normalizeBet(b) {
     if (typeof b[k] !== "string") return null;
     out[k] = b[k];
   }
+  if (!Number.isFinite(Date.parse(out.start_utc)) || !Number.isFinite(Date.parse(out.placed_at))) return null;
   return out;
 }
 

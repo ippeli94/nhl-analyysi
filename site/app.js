@@ -187,13 +187,16 @@ const targetKey = (t) => `${t.game.id}|${t.market}|${t.line ?? ""}|${t.outcome}`
 const betKey = (b) => `${b.game_id}|${b.market}|${b.line ?? ""}|${b.outcome}`;
 const isPlaced = (t) => bets.some((b) => betKey(b) === targetKey(t));
 
+const canBet = (g) => g.state === "upcoming" && Date.parse(g.start_utc) > Date.now();
+const safeDateTime = (iso) => (Number.isFinite(Date.parse(iso)) ? fmtDateTime(iso) : "—");
+
 function betLabel(t, book) {
   return `${t.game.away.abbr} @ ${t.game.home.abbr} · ${pickLabel(t, t.game)} · ${bookName(book)}`;
 }
 
 // options: [{src, book, price, stake (share of bankroll | null), text}]
 function betControls(t, options) {
-  if (t.game.state !== "upcoming") return "";
+  if (!canBet(t.game)) return "";
   const key = targetKey(t);
   const placed = isPlaced(t);
   const flash = betFlash && betFlash.key === key && betFlash.until > Date.now()
@@ -239,8 +242,10 @@ function saveBetForm() {
   const g = state.latest?.games.find((x) => x.id === f.gameId);
   const stake = parseBankroll(f.stake);
   const price = parseBankroll(f.price);
-  if (!g || g.state !== "upcoming") { f.error = "Ottelu on jo alkanut."; return render(); }
+  if (!g || !canBet(g)) { f.error = "Ottelu on jo alkanut."; return render(); }
   if (stake == null) { f.error = "Anna panos euroina (esim. 10 tai 12,5)."; return render(); }
+  if (stake > 1e7) { f.error = "Panos on liian suuri."; return render(); }
+  if (price != null && price > 1000) { f.error = "Kerroin on liian suuri."; return render(); }
   if (price == null || price <= 1) { f.error = "Kertoimen pitää olla yli 1 (esim. 1,95)."; return render(); }
   const t = { game: g, market: f.market, line: f.line, outcome: f.outcome };
   let next;
@@ -778,13 +783,13 @@ let betsMsg = null;                              // { text, kind } after import/
 
 async function loadResults() {
   if (results.status !== "idle") return;
-  results = { status: "loading", data: null };
+  results = { status: "loading", data: results.data };
   try {
     const res = await fetch(RESULTS_URL, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     results = { status: "ok", data: await res.json() };
   } catch {
-    results = { status: "error", data: null };
+    results = { status: "error", data: results.data };
   }
   if (parseRoute().name === "bets") render();
 }
@@ -801,13 +806,13 @@ function betRow(r, deletable) {
   const settled = !["open", "waiting"].includes(r.status);
   const profit = settled ? `<span class="bet-profit ${r.profit > 0 ? "pos" : r.profit < 0 ? "neg" : ""}">${esc(fmtEurSigned(r.profit))}</span>` : "";
   return `<li class="bet-item"><div class="bet-item-h"><span class="bet-item-label">${esc(b.label)}</span>${badge(txt, kind)}</div>` +
-    `<div class="bet-item-sub"><span>${esc(fmtDateTime(b.start_utc))} · Panos ${esc(fmtEur(b.stake))} @ ${esc(fmtOdds(b.price))}</span>${profit}</div>` +
+    `<div class="bet-item-sub"><span>${esc(safeDateTime(b.start_utc))} · Panos ${esc(fmtEur(b.stake))} @ ${esc(fmtOdds(b.price))}</span>${profit}</div>` +
     (deletable ? `<button type="button" class="bet-btn danger" data-bet-del="${esc(b.id)}">Poista veto</button>` : "") + `</li>`;
 }
 
 function betsView() {
   const head = `<h1 class="day-title">Vedot</h1>`;
-  const ev = evaluate(bets, results.status === "ok" ? results.data : null, new Date());
+  const ev = evaluate(bets, results.data, new Date());
   const t = ev.totals;
   const pending = ev.rows.filter((r) => r.status === "open" || r.status === "waiting");
   const nOpen = pending.filter((r) => r.status === "open").length;
@@ -822,9 +827,9 @@ function betsView() {
     tile("Osumat", t.hit_rate == null ? "—" : pct1(t.hit_rate), `${t.hits} voittoa`) +
     tile("Kesken", String(pending.length), `avoimia ${nOpen} · odottaa tulosta ${pending.length - nOpen}`) +
     `</div>`;
-  const resultsNote = results.status === "error"
+  const resultsNote = results.status === "error" && !results.data
     ? `<p class="note">Tuloksia ei saatu ladattua — vedot näkyvät tilassa "Odottaa tulosta". <button type="button" class="seg-btn" id="results-retry">Yritä uudelleen</button></p>`
-    : results.status !== "ok" ? `<p class="note">Ladataan tuloksia…</p>` : "";
+    : results.status !== "ok" && !results.data ? `<p class="note">Ladataan tuloksia…</p>` : "";
   const list = (rows, del) => rows.length ? `<ul class="bet-list">${rows.map((r) => betRow(r, del && r.status === "open")).join("")}</ul>` : "";
   const market = Object.entries(ev.byMarket).map(([m, s]) =>
     `<tr><th scope="row">${esc(BET_MARKET_NAMES[m] || m)}</th><td>${esc(s.n)}</td><td>${esc(fmtEurSigned(s.profit))}</td><td>${s.roi == null ? "—" : esc(signedPct(s.roi))}</td></tr>`).join("");
@@ -914,6 +919,7 @@ function render() {
   const route = parseRoute();
   const key = location.hash;
   betTargets = [];
+  if (key !== lastKey) betForm = null;
   let html;
   let title = "NHL-analyysi";
   if (state.schemaError !== null) {
@@ -951,11 +957,11 @@ function render() {
   lastKey = key;
   if (route.name !== "model" && perf.status === "error") perf = { status: "idle", data: null };
   if (route.name !== "bets") betsMsg = null;
-  if (route.name !== "bets" && results.status === "error") results = { status: "idle", data: null };
+  if (route.name !== "bets" && results.status === "error") results = { status: "idle", data: results.data };
   const resRetry = $("results-retry");
   if (resRetry) {
     resRetry.addEventListener("click", () => {
-      results = { status: "idle", data: null };
+      results = { status: "idle", data: results.data };
       render();
     });
   }
@@ -1022,7 +1028,7 @@ document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible" && Date.now() - state.loadedAt > RELOAD_AFTER_MS) {
     await load();
     if (perf.status === "ok") perf = { status: "idle", data: null };   // refetch on next Malli render
-    if (results.status === "ok") results = { status: "idle", data: null };
+    if (results.status === "ok") results = { status: "idle", data: results.data };   // keep stale data while refetching
     render();
   }
 });
