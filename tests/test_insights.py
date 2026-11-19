@@ -92,6 +92,27 @@ def test_third_period_collapse():
     assert "third_period_collapse" not in ids(out)
 
 
+def test_collapse_text_has_no_inflected_numeral():
+    out = run({"CAR": ts(led_after2=12, led_after2_won=6), "SEA": ts()})
+    hit = next(i for i in out if i["id"] == "third_period_collapse")
+    assert hit["text"] == ("Carolina on voittanut vain 6 niistä 12 ottelusta, "
+                           "joissa se on johtanut 2. erän jälkeen.")
+
+
+def test_home_road_split_needs_five_games_each_side():
+    base = dict(home_pts_pct=0.8, road_pts_pct=0.4)
+    out = run({"CAR": ts(**base, home_gp=4, road_gp=20), "SEA": ts()})
+    assert "home_road_split" not in ids(out)
+    out = run({"CAR": ts(**base, home_gp=5, road_gp=5), "SEA": ts()})
+    assert "home_road_split" in ids(out)
+
+
+def test_negative_numbers_use_minus_sign():
+    out = run({"CAR": ts(luck_last10=-0.8), "SEA": ts()})
+    luck = next(i for i in out if i["id"] == "luck")
+    assert "−0,8" in luck["text"] and "-" not in luck["text"].replace("— ", "")
+
+
 def test_pp_vs_pk():
     out = run({"CAR": ts(pp=0.26, pp_rank=4), "SEA": ts(pk=0.74, pk_rank=26)})
     hit = next(i for i in out if i["id"] == "pp_vs_pk")
@@ -177,7 +198,8 @@ def test_min_sample():
                 led_after2=9, led_after2_won=3, scored_first=12, scored_first_won=12,
                 pp=0.3, pp_rank=1, pk=0.6, pk_rank=32, pim_rank=1, luck_last10=1.0,
                 xgf_pct_last10=0.7, xgf_pct_season=0.5, pts_pct=0.8, pts_pct_last=0.4,
-                home_pts_pct=0.9, road_pts_pct=0.2, trailed_after2=8, trailed_after2_won=5)
+                home_pts_pct=0.9, road_pts_pct=0.2, home_gp=3, road_gp=2,
+                trailed_after2=8, trailed_after2_won=5)
     assert run({"CAR": ts(**loud), "SEA": ts(**loud)}) == []
 
 
@@ -188,6 +210,7 @@ def test_schedule_and_form_rules():
     out = run({"CAR": ts(xgf_pct_last10=0.58, xgf_pct_season=0.52, luck_last10=0.7,
                          scored_first=12, scored_first_won=10),
                "SEA": ts(pts_pct=0.68, pts_pct_last=0.55, home_pts_pct=0.8, road_pts_pct=0.5,
+                         home_gp=15, road_gp=15,
                          trailed_after2=8, trailed_after2_won=4)})
     assert {"form_vs_season", "luck", "vs_last_season", "home_road_split",
             "first_goal", "comeback"} <= set(ids(out))
@@ -216,8 +239,8 @@ def test_texts_use_decimal_comma():
 
 
 def test_small_sample_note():
-    out = run({"CAR": ts(gp=12, luck_last10=0.8), "SEA": ts()})
-    assert next(i for i in out if i["id"] == "luck")["text"].endswith("(12 ottelua).")
+    out = run({"CAR": ts(gp=12, xgf_pct_last10=0.6, xgf_pct_season=0.5), "SEA": ts()})
+    assert next(i for i in out if i["id"] == "form_vs_season")["text"].endswith("(12 ottelua).")
 
 
 def test_missing_stats_are_skipped():

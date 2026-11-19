@@ -106,6 +106,7 @@ def test_point_streak_and_split():
     assert st["B"].point_streak == 2
     assert st["A"].home_pts_pct == pytest.approx(0.5)
     assert st["A"].road_pts_pct == pytest.approx(0.5)
+    assert (st["A"].home_gp, st["A"].road_gp) == (2, 1)
 
 
 def test_schedule_load_road_run():

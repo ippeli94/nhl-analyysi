@@ -32,6 +32,8 @@ class TeamStats:
     pim_rank: int | None = None
     home_pts_pct: float | None = None
     road_pts_pct: float | None = None
+    home_gp: int = 0
+    road_gp: int = 0
     pts_pct: float | None = None
     pts_pct_last: float | None = None
     gp_last: int = 0
@@ -143,8 +145,11 @@ def league_stats(
             for i in range(3)
         ]
         s.pp, s.pk = context.special_teams(recs, team, season, asof)
-        s.home_pts_pct = _pts_pct(rows[rows["is_home"].astype(bool)])
-        s.road_pts_pct = _pts_pct(rows[~rows["is_home"].astype(bool)])
+        home_rows = rows[rows["is_home"].astype(bool)]
+        road_rows = rows[~rows["is_home"].astype(bool)]
+        s.home_gp, s.road_gp = len(home_rows), len(road_rows)
+        s.home_pts_pct = _pts_pct(home_rows)
+        s.road_pts_pct = _pts_pct(road_rows)
         s.pts_pct = _pts_pct(rows)
         last = context.season_line(tg, records, team, prev, context.FAR_FUTURE)
         if last:

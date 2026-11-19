@@ -19,7 +19,7 @@ def _pct(x: float) -> str:
 
 
 def _dec(x: float, digits: int = 1) -> str:
-    return f"{x:.{digits}f}".replace(".", ",")
+    return f"{x:.{digits}f}".replace(".", ",").replace("-", "−")
 
 
 def _sample(text: str, n: int) -> str:
@@ -60,9 +60,9 @@ def _changes(game: dict, team: str, kinds: tuple, sign: int) -> dict | None:
         impact = c.get("impact_attack")
         if c.get("team") != team or c.get("kind") not in kinds or impact is None:
             continue
-        if sign < 0 and impact > config.INSIGHT_KEY_ABSENCE_IMPACT:
+        if sign < 0 and impact > config.INSIGHT_KEY_ABSENCE_IMPACT + 1e-9:
             continue
-        if sign > 0 and impact < config.INSIGHT_RETURN_IMPACT:
+        if sign > 0 and impact < config.INSIGHT_RETURN_IMPACT - 1e-9:
             continue
         if best is None or abs(impact) > abs(best["impact_attack"]):
             best = c
@@ -170,7 +170,7 @@ def _collapse(game, sides):
         if (s.ok and t.led_after2 >= config.INSIGHT_COLLAPSE_MIN
                 and t.led_after2_won / t.led_after2 < config.INSIGHT_COLLAPSE_WON_SHARE):
             out.append(_ins("third_period_collapse", 2, s.abbr, (
-                f"{s.short} on voittanut vain {t.led_after2_won} ottelua {t.led_after2}:stä, "
+                f"{s.short} on voittanut vain {t.led_after2_won} niistä {t.led_after2} ottelusta, "
                 f"joissa se on johtanut 2. erän jälkeen.")))
     return out
 
@@ -217,8 +217,8 @@ def _comeback(game, sides):
         if (s.ok and t.trailed_after2 >= config.INSIGHT_COMEBACK_MIN
                 and t.trailed_after2_won / t.trailed_after2 >= config.INSIGHT_COMEBACK_WON_SHARE):
             out.append(_ins("comeback", 1, s.abbr, (
-                f"{s.short} on noussut 2. erän jälkeisestä tappioasemasta voittoon "
-                f"{t.trailed_after2_won} kertaa {t.trailed_after2} yrityksestä.")))
+                f"{s.short} on voittanut {t.trailed_after2_won} niistä "
+                f"{t.trailed_after2} ottelusta, joissa se on ollut tappiolla 2. erän jälkeen.")))
     return out
 
 
@@ -230,10 +230,11 @@ def _first_goal(game, sides):
             continue
         share = t.scored_first_won / t.scored_first
         if share >= config.INSIGHT_FIRST_GOAL_HIGH:
-            text = f"Kun {s.short} tekee avausmaalin, se voittaa {_pct(share)} otteluista."
+            text = (f"Kun {s.short} tekee avausmaalin, se voittaa {_pct(share)} otteluista "
+                    f"(otos {t.scored_first} ottelua).")
         elif share <= config.INSIGHT_FIRST_GOAL_LOW:
             text = (f"{s.short} voittaa vain {_pct(share)} otteluista, "
-                    f"joissa se tekee avausmaalin.")
+                    f"joissa se tekee avausmaalin (otos {t.scored_first} ottelua).")
         else:
             continue
         out.append(_ins("first_goal", 1, s.abbr, text))
@@ -299,7 +300,7 @@ def _luck(game, sides):
             text = (f"{s.short} on tehnyt selvästi vähemmän maaleja kuin paikat edellyttävät "
                     f"({_dec(t.luck_last10)} maalia ottelua kohden viime 10 ottelussa) "
                     f"— tulokset voivat parantua.")
-        out.append(_ins("luck", 1, s.abbr, _sample(text, t.gp)))
+        out.append(_ins("luck", 1, s.abbr, text))
     return out
 
 
@@ -343,7 +344,8 @@ def _home_road_split(game, sides):
     out = []
     for s, _ in sides:
         t = s.ts
-        if not s.ok or t.home_pts_pct is None or t.road_pts_pct is None:
+        if (not s.ok or t.home_pts_pct is None or t.road_pts_pct is None
+                or min(t.home_gp, t.road_gp) < config.INSIGHT_SPLIT_MIN_GAMES):
             continue
         if abs(t.home_pts_pct - t.road_pts_pct) >= config.INSIGHT_SPLIT_DIFF - 1e-9:
             where = "vieraissa" if t.road_pts_pct < t.home_pts_pct else "kotona"
@@ -389,7 +391,7 @@ def game_insights(game: dict, stats: dict[str, TeamStats]) -> list[dict]:
     return out
 
 
-# Rules whose text states a season figure; "(n ottelua)" is appended while n < 20 ("luck" has it).
+# Rules whose text states a season figure: "(n ottelua)" is appended while n < 20.
 _SAMPLE_RULES = frozenset({
     "period_strength", "period_weakness", "period_swing", "period_matchup",
     "form_vs_season", "vs_last_season", "home_road_split",
