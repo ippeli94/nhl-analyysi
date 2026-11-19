@@ -5,6 +5,7 @@ import {
   freshness, groupByDate, fmtDateTime, SUPPORTED_SCHEMA,
   fmtOdds, fmtPct1, fmtPp, fmtEv, fmtSeason, drawGapLine, bookName, fairOdds, minValuePrice, pickLabel, marketTitle, collectPicks, oddsFetchedAt,
   playerName, fmtToi, pKey, topOf, gamePlayers, tonightPlayers,
+  formSeq, pct1, signedPct, kindLabel, sourceLabel,
 } from "../format.js";
 
 const NOW = new Date("2026-11-16T12:00:00Z");
@@ -178,4 +179,36 @@ test("tonightPlayers uses earliest date and upcoming only", () => {
   assert.equal(r[0].game.id, 3);
   assert.equal(tonightPlayers(l, "points", 1).length, 1);
   assert.deepEqual(tonightPlayers({ games: [] }, "points"), []);
+});
+
+test("formSeq maps letters to classes", () => {
+  assert.deepEqual(formSeq("VHJ"), [
+    { letter: "V", cls: "w" }, { letter: "H", cls: "l" }, { letter: "J", cls: "otl" },
+  ]);
+  assert.deepEqual(formSeq(""), []);
+  assert.deepEqual(formSeq(null), []);
+});
+test("pct1", () => {
+  assert.equal(pct1(0.56), "56,0 %");
+  assert.equal(pct1(null), "—");
+});
+test("signedPct", () => {
+  assert.equal(signedPct(0.027), "+2,7 %");
+  assert.equal(signedPct(-0.065), "−6,5 %");
+  assert.equal(signedPct(0), "+0,0 %");
+  assert.equal(signedPct(-0.00001), "+0,0 %");
+  assert.equal(signedPct(undefined), "—");
+});
+test("kindLabel", () => {
+  assert.equal(kindLabel("out"), "Poissa");
+  assert.equal(kindLabel("doubtful"), "Epävarma");
+  assert.equal(kindLabel("returning"), "Palaa");
+  assert.equal(kindLabel("acquired"), "Hankittu");
+  assert.equal(kindLabel("traded_away"), "Kaupattu pois");
+  assert.equal(kindLabel("zzz"), "zzz");
+});
+test("sourceLabel", () => {
+  assert.equal(sourceLabel("espn"), "ESPN");
+  assert.equal(sourceLabel("päätelty"), "Päätelty");
+  assert.equal(sourceLabel("nhl"), "NHL");
 });

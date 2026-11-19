@@ -14,6 +14,7 @@ from jsonschema import Draft202012Validator
 from pipeline import config
 
 SCHEMA_FILE = Path(__file__).resolve().parent / "schema" / "latest.schema.json"
+PERFORMANCE_SCHEMA_FILE = Path(__file__).resolve().parent / "schema" / "performance.schema.json"
 
 
 @cache
@@ -74,6 +75,37 @@ def write_latest(obj: dict) -> Path:
     target.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(obj, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     fd, tmp_name = tempfile.mkstemp(dir=target.parent, prefix=".latest-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+        os.replace(tmp_name, target)
+    except BaseException:
+        Path(tmp_name).unlink(missing_ok=True)
+        raise
+    return target
+
+
+@cache
+def _performance_validator() -> Draft202012Validator:
+    schema = json.loads(PERFORMANCE_SCHEMA_FILE.read_text(encoding="utf-8"))
+    return Draft202012Validator(schema)
+
+
+def validate_performance(obj: dict) -> list[str]:
+    """Schema error messages of a performance.json object; empty when valid."""
+    errors = sorted(_performance_validator().iter_errors(obj), key=lambda e: e.json_path)
+    return [f"{e.json_path}: {e.message}" for e in errors]
+
+
+def write_performance(obj: dict) -> Path:
+    """Validate, then write site/data/performance.json atomically. Raises ValueError if invalid."""
+    errors = validate_performance(obj)
+    if errors:
+        raise ValueError("performance.json is invalid:\n" + "\n".join(errors))
+    target = config.path("site", "data", "performance.json")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(obj, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+    fd, tmp_name = tempfile.mkstemp(dir=target.parent, prefix=".performance-", suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text)

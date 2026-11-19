@@ -72,6 +72,16 @@ jobs:
       - name: Deploy Pages
         id: deploy
         if: steps.run.outputs.ran == 'true' && steps.review.outputs.code != '2'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+
+      - name: Wait before retry
+        if: steps.run.outputs.ran == 'true' && steps.review.outputs.code != '2' && steps.deploy.outcome == 'failure'
+        run: sleep 60
+
+      - name: Retry deploy
+        id: deploy_retry
+        if: steps.run.outputs.ran == 'true' && steps.review.outputs.code != '2' && steps.deploy.outcome == 'failure'
         uses: actions/deploy-pages@v4
 
       - name: Fail on review errors

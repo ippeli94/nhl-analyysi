@@ -62,6 +62,22 @@ def test_deploy_is_guarded_by_ran_and_review_code():
     assert "environment:" in text and "github-pages" in text
 
 
+def test_pipeline_deploy_retries():
+    text = _text("pipeline.yml")
+    guard = "steps.run.outputs.ran == 'true' && steps.review.outputs.code != '2'"
+    deploy_step = _step_containing(text, "id: deploy\n")
+    assert "continue-on-error: true" in deploy_step
+    wait_step = _step_containing(text, "name: Wait before retry")
+    assert "sleep 60" in wait_step
+    assert guard in wait_step and "steps.deploy.outcome == 'failure'" in wait_step
+    retry_step = _step_containing(text, "name: Retry deploy")
+    assert "uses: actions/deploy-pages@v4" in retry_step
+    assert "id: deploy_retry" in retry_step
+    assert "steps.deploy.outcome == 'failure'" in retry_step
+    assert guard in retry_step
+    assert "continue-on-error" not in retry_step
+
+
 def test_fail_step_runs_only_on_review_code_2():
     text = _text("pipeline.yml")
     fail_step = _step_containing(text, "exit 1")

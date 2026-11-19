@@ -525,3 +525,45 @@ def test_malformed_players_block_does_not_crash(players_root):
     edit(players_root, lambda o: _home(o).update(goals_mean=None, top=None))
     review.main(ARGS)  # schema errors are SITE's; no traceback either way
     assert "tarkistus kaatui" not in report(players_root)
+
+
+# --- performance --------------------------------------------------------------------------
+
+
+def seed_history(root):
+    f = root / "data/history/predictions/20252026.jsonl"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text("", encoding="utf-8")
+
+
+def write_perf(root, obj):
+    f = root / "site/data/performance.json"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(json.dumps(obj), encoding="utf-8")
+
+
+def test_no_perf_warning_without_history(seeded):
+    review.main(ARGS)
+    assert "PERF" not in report(seeded)
+
+
+def test_missing_performance_file_is_warning(seeded):
+    seed_history(seeded)
+    assert review.main(ARGS) == 1
+    assert "[VAROITUS] PERF" in report(seeded)
+
+
+def test_invalid_performance_file_is_warning(seeded):
+    seed_history(seeded)
+    write_perf(seeded, {"windows": {}})
+    assert review.main(ARGS) == 1
+    assert "[VAROITUS] PERF" in report(seeded) and "skeemavirhe" in report(seeded)
+
+
+def test_valid_performance_file_is_clean(seeded):
+    from pipeline import performance
+
+    seed_history(seeded)
+    write_perf(seeded, performance.build_performance([], [], [], None, datetime.now(UTC), None))
+    review.main(ARGS)
+    assert "PERF" not in report(seeded)

@@ -12,19 +12,27 @@ import os
 import re
 import sys
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
+import pandas as pd
 
 from pipeline import (
     adjust,
     cache,
     config,
+    context,
     export,
     features,
+    insights,
+    lineup,
+    performance,
     players,
     predict,
     ratings,
+    teamstats,
     tracking,
     value,
     xg,
@@ -276,11 +284,61 @@ def _player_inputs(ctx, game: ScheduledGame, season: str) -> players.PlayerInput
         return None
 
 
+def _lineup_games(records: list[dict], coefs: dict):
+    """player_games for lineup changes when players are disabled; None when unbuildable."""
+    try:
+        return players.player_games(records, coefs)
+    except Exception as exc:  # noqa: BLE001 - lineup changes must never fail the run
+        logger.warning("lineup changes disabled for this run: %s", type(exc).__name__)
+        return None
+
+
+def _lineup_block(pg, tg, game: ScheduledGame, day: date, p, season: str, by_team: dict,
+                  rho: float = config.LINEUP_RHO):
+    """(lineup_changes | None, {home|away: team_lineup result} | None) for one game."""
+    if pg is None:
+        return None, None
+    try:
+        res = {}
+        for side in ("home", "away"):
+            abbr = game[side]["abbr"]
+            lu = players.project_lineup(pg, abbr, day, season)
+            res[side] = lineup.team_lineup(
+                pg, tg, abbr, day, p, season, lu, by_team.get(abbr, []), rho)
+        return res["home"]["changes"] + res["away"]["changes"], res
+    except Exception as exc:  # noqa: BLE001 - one game's lineup changes never fail the run
+        logger.warning("lineup changes for game %s failed: %s", game["id"], type(exc).__name__)
+        return None, None
+
+
+def _game_mults(lp: config.LineupParams, lineup_mults: dict | None, tg, r, home: str,
+                away: str, day: date) -> predict.Mults:
+    """Multipliers applied to lambda: only the factors the lineup gate enabled (Task 6)."""
+    kw: dict[str, float] = {}
+    if lp.use_lineup and lineup_mults:
+        h, a = lineup_mults["home"], lineup_mults["away"]
+        kw.update(att_h=h["m_att"], def_h=h["m_def"], att_a=a["m_att"], def_a=a["m_def"])
+    if lp.use_h2h:
+        kw.update(h2h_h=context.h2h_mult(tg, r, home, away, day),
+                  h2h_a=context.h2h_mult(tg, r, away, home, day))
+    return predict.Mults(**kw)
+
+
+def _without_absentees(pin: players.PlayerInputs, mults: dict) -> players.PlayerInputs:
+    """Drop ESPN-confirmed absentees from the lineups the players block uses."""
+    gone = {pid for side in ("home", "away") for pid in mults[side]["espn_out_ids"]}
+    if not gone:
+        return pin
+    return replace(pin, lineups={
+        t: [s for s in lu if s["id"] not in gone] for t, lu in pin.lineups.items()})
+
+
 def _predict_all(
     selected: list[ScheduledGame], records: list[dict], season: str, today: date, now: datetime,
-    with_players: bool = False,
-) -> list[dict]:
+    with_players: bool = False, injuries_by_team: dict | None = None,
+) -> tuple[list[dict], pd.DataFrame]:
     p = config.load_params()
+    lp = config.load_lineup_params()
     coefs = _load_coefs()
     tg = features.team_games(records, coefs, p.xg_weight)
     r = ratings.fit(tg, today, p, season=season)
@@ -290,6 +348,7 @@ def _predict_all(
     gg = adjust.goalie_games(records, coefs)
     gr = adjust.goalie_ratings(gg, today, p, season=season)
     ctx = _player_context(records, coefs, p, today, season) if with_players else None
+    pg = ctx[0] if ctx is not None else _lineup_games(records, coefs)
 
     frozen = {g["id"]: g for g in _read_json(LAST_GAMES, [])}
     out: list[dict] = []
@@ -307,8 +366,70 @@ def _predict_all(
             for t in (game["home"]["abbr"], game["away"]["abbr"])
         }
         pin = _player_inputs(ctx, game, season) if ctx is not None else None
-        out.append(predict.predict_game(game, r, ps, sp, p, played, gr, starters, pin))
-    return out
+        changes, mults = _lineup_block(pg, tg, game, day, p, season, injuries_by_team or {},
+                                       lp.rho)
+        if pin is not None and changes is not None:
+            pin = _without_absentees(pin, mults)
+        lineup_mults = {
+            side: {"m_att": mults[side]["m_att"], "m_def": mults[side]["m_def"]}
+            if mults else {"m_att": 1.0, "m_def": 1.0}
+            for side in ("home", "away")
+        }
+        try:
+            gm = _game_mults(lp, lineup_mults, tg, r, game["home"]["abbr"],
+                             game["away"]["abbr"], day)
+        except Exception as exc:  # noqa: BLE001 - a failing factor never fails the game
+            logger.warning("lineup/h2h factors for game %s failed: %s", game["id"],
+                           type(exc).__name__)
+            gm = predict.Mults()
+        obj = predict.predict_game(game, r, ps, sp, p, played, gr, starters, pin, gm, lp)
+        obj["lineup_changes"] = changes
+        obj["_internal"]["lineup"] = lineup_mults
+        obj.update(context.game_context(
+            tg, records, game["home"]["abbr"], game["away"]["abbr"], season, day))
+        out.append(obj)
+    return out, tg
+
+
+def _attach_insights(
+    games: list[dict], tg: pd.DataFrame, records: list[dict], season: str, today: date
+) -> None:
+    """Fill insights of upcoming games; runs after odds and lineup changes are attached."""
+    try:
+        league = teamstats.league_stats(tg, records, _load_coefs(), season, today)
+    except Exception as exc:  # noqa: BLE001 - insights must never fail the run
+        logger.warning("league stats failed: %s", type(exc).__name__)
+        league = {}
+    for g in games:
+        if g["state"] != "upcoming":
+            continue
+        try:
+            stats = insights.schedule_stats(league, tg, g, season)
+            g["insights"] = insights.game_insights(g, stats)
+        except Exception as exc:  # noqa: BLE001 - one game's insights never fail the run
+            logger.warning("insights for game %s failed: %s", g["id"], type(exc).__name__)
+            g["insights"] = None
+
+
+_DROPPABLE = ("players", "form", "season_compare", "h2h", "insights", "lineup_changes")
+_ERROR_RE = re.compile(r"\$\.games\[(\d+)\]\.(" + "|".join(_DROPPABLE) + r")")
+
+
+def _drop_invalid(games: list[dict], errors: list[str]) -> bool:
+    """Null only the invalid optional field of the game it belongs to; True when all errors
+    were such fields (so a rebuild can be validated again)."""
+    hits = [_ERROR_RE.match(e) for e in errors]
+    if not errors or not all(hits):
+        return False
+    ordered = sorted(games, key=lambda g: (g["start_utc"], g["id"]))  # as build_latest
+    for m in hits:
+        g = ordered[int(m.group(1))]
+        field = m.group(2)
+        logger.warning("%s dropped for game %s", field, g.get("id"))
+        g[field] = None
+        if field == "players" and g.get("_internal"):
+            g["_internal"]["players_log"] = None
+    return True
 
 
 def _fresh_snapshot(now: datetime) -> dict | None:
@@ -416,10 +537,6 @@ def run(
         logger.info("cache: %d written, %d skipped", len(written), len(skipped))
         season = _current_season(selected, week)
         records = cache.load_seasons([_season_before(season), season])
-        games = _predict_all(
-            selected, records, season, today, now, players_enabled(offline)
-        )
-
         state: dict = {
             "nhl": {
                 "status": "ok", "fetched_at": _iso(now), "last_ok_at": _iso(now), "note": None,
@@ -432,9 +549,17 @@ def run(
         def offline_injuries() -> list[dict]:
             raise SourceError("offline mode")
 
-        optional_source(
+        raw_injuries = optional_source(
             "injuries", offline_injuries if offline is not None else injuries.fetch, state, now,
             failed_status="unavailable", note_on_fail=INJURIES_NOTE,
+        )
+        try:
+            injuries_by_team = lineup.parse_espn(raw_injuries) if raw_injuries else {}
+        except Exception as exc:  # noqa: BLE001 - a odd payload must never fail the run
+            logger.warning("injuries not parsed: %s", type(exc).__name__)
+            injuries_by_team = {}
+        games, tg = _predict_all(
+            selected, records, season, today, now, players_enabled(offline), injuries_by_team
         )
         snapshot, fetched_now = odds_stage(selected, state, now, with_odds)
         if snapshot:
@@ -453,6 +578,7 @@ def run(
                         "last_ok_at": previous.get("last_ok_at"), "note": type(exc).__name__,
                         "remaining": previous.get("remaining"), "used": previous.get("used"),
                     }
+        _attach_insights(games, tg, records, season, today)
         odds_history = []
         if fetched_now:
             odds_history = tracking.odds_rows(
@@ -471,15 +597,7 @@ def run(
             calibration = {"draw": None}
         latest = export.build_latest(games, state, next_game_date, now, calibration)
         errors = export.validate(latest)
-        if errors and all(re.match(r"\$\.games\[\d+\]\.players", e) for e in errors):
-            bad = {int(re.match(r"\$\.games\[(\d+)\]", e).group(1)) for e in errors}
-            bad_ids = {latest["games"][i]["id"] for i in bad}
-            logger.warning("players dropped for games %s: %s", sorted(bad_ids), "; ".join(errors))
-            for g in games:
-                if g["id"] in bad_ids:
-                    g["players"] = None
-                    if g.get("_internal"):
-                        g["_internal"]["players_log"] = None
+        if _drop_invalid(games, errors):
             latest = export.build_latest(games, state, next_game_date, now, calibration)
             errors = export.validate(latest)
         if errors:
@@ -506,6 +624,7 @@ def run(
             [g["id"] for g in selected if g["id"] in exported or not is_started(g, now)],
         )
         export.write_latest(latest)
+        _write_performance(records, season, now)
     except (SourceError, FileNotFoundError) as exc:
         logger.error("run failed: %s", exc)
         return 1
@@ -515,6 +634,23 @@ def run(
     _github_output(True)
     logger.info("wrote latest.json with %d games", len(latest["games"]))
     return 0
+
+
+def _write_performance(records: list[dict], season: str, now: datetime) -> None:
+    """performance.json from the history logs; a failure is logged and never fails the run."""
+    try:
+        results = tracking.read_log("results", season)
+        player_rows = tracking.player_outcomes(tracking.read_log("players", season), records)
+        backtest_file = config.path("model", "backtest_20252026.json")
+        backtest = (json.loads(backtest_file.read_text(encoding="utf-8"))
+                    if backtest_file.exists() else None)
+        perf = performance.build_performance(
+            tracking.read_log("predictions", season), results,
+            tracking.read_log("odds", season), player_rows, now, backtest,
+        )
+        export.write_performance(perf)
+    except Exception as exc:  # noqa: BLE001 - performance must never fail the run
+        logger.warning("performance failed: %s", type(exc).__name__)
 
 
 def main(argv: list[str] | None = None) -> int:

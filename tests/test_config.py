@@ -40,3 +40,35 @@ def test_load_params_rejects_unknown_key(root):
 def test_network_is_blocked():
     with pytest.raises(RuntimeError):
         requests.get("https://example.com")
+
+
+def test_load_lineup_params_missing_file(root):
+    from pipeline.config import LineupParams, load_lineup_params
+
+    assert load_lineup_params() == LineupParams()
+    assert LineupParams() == LineupParams(rho=0.45, use_lineup=False, use_h2h=False)
+    (root / "model").mkdir()
+    (root / "model" / "lineup_params.json").write_text(
+        '{"rho": 0.3, "use_lineup": true, "use_h2h": false, "gate": {"season": "x"}}',
+        encoding="utf-8")
+    assert load_lineup_params() == LineupParams(rho=0.3, use_lineup=True, use_h2h=False)
+
+
+def test_load_lineup_params_bad_types_fall_back_to_defaults(root, caplog):
+    from pipeline.config import LineupParams, load_lineup_params
+
+    (root / "model").mkdir()
+    f = root / "model" / "lineup_params.json"
+    for body in ('{"use_lineup": "false"}', '{"use_h2h": 1}', '{"rho": 0}', '{"rho": "0.3"}',
+                 '{"rho": 1.5}', '{"foo": 1}', "[1]"):
+        f.write_text(body, encoding="utf-8")
+        assert load_lineup_params() == LineupParams(), body
+    assert "ignored" in caplog.text
+
+
+def test_load_lineup_params_malformed_json_gives_defaults(root):
+    from pipeline.config import LineupParams, load_lineup_params
+
+    (root / "model").mkdir()
+    (root / "model" / "lineup_params.json").write_text("{not json", encoding="utf-8")
+    assert load_lineup_params() == LineupParams()

@@ -28,7 +28,9 @@ def make_game(gid, start_utc, nhl_date="2025-11-15", home="CAR", away="SEA"):
             "start_utc": start_utc, "state": "FUT",
             "home": team(home, 12), "away": team(away, 55)}
     r = Ratings(intercept=1.0, n_games={home: 20, away: 20})
-    return predict_game(game, r, PS, SP, ModelParams(), {}, GoalieRatings(), {})
+    out = predict_game(game, r, PS, SP, ModelParams(), {}, GoalieRatings(), {})
+    out.update(form=None, season_compare=None, h2h=None)
+    return out
 
 
 @pytest.fixture
@@ -120,7 +122,7 @@ def test_unknown_source_status_is_rejected(g1):
 def test_later_phase_fields_accept_null_and_objects(g1):
     obj = latest([g1])
     game = obj["games"][0]
-    game["insights"] = {"note": "x"}
+    game["insights"] = [{"id": "b2b", "team": None, "severity": 2, "text": "x"}]
     game["form"] = {"home": {}}
     game["h2h"] = None
     assert export.validate(obj) == []

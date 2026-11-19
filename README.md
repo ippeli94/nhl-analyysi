@@ -50,6 +50,24 @@ Sivu näyttää pelaajat vasta, kun `model/player_params.json` sisältää `gate
 
 Kokoonpano on arvio (tila "Arvio"). Se johdetaan joukkueen viimeisimmästä pelistä, eikä loukkaantumislähdettä ole. Pelaaja, joka ei pukeutunut viimeisimpään peliin, ei ole mukana.
 
+## Ottelunäkymä
+
+Ottelusivulla on osiot: **Nostot** (sääntöpohjaiset huomiot), **Maalivahdit ja poissaolot** (maalivahdit, poissaolot ja kokoonpanomuutokset), **Vire**, **Kausivertailu** ja **Keskinäiset** (enintään 8 viimeisintä kohtaamista kahdelta välimuistissa olevalta kaudelta). Nostojen tekstit kirjoitetaan ilman taivutettuja numeroita, ja koti/vieras-ero näytetään vain, kun kummaltakin puolelta on vähintään 5 ottelua.
+
+Maalivahtien tila on aina "Arvio". Poissaolot näytetään vaikutuksineen, ja ESPN:n mukaan poissa olevat poistetaan pelaajaennusteista. Kokoonpano- ja H2H-kertoimet eivät muuta joukkueen λ:aa, koska ne eivät läpäisseet julkaisuehtoa.
+
+## Malli-välilehti
+
+Malli-välilehti näyttää tiedoston `site/data/performance.json` suorituskyvyn. Sivulla on kauden ratkenneiden otteluiden kotivoitto-% perustasona ja tasapanosten ROI, jossa push kuuluu otokseen. Betfairin voitoista vähennetään 5 %:n provisio.
+
+## Kokoonpanoportin uudelleenajo
+
+Kokoonpano- ja H2H-kertoimien julkaisuehdon tulos on tiedostossa `model/lineup_params.json`. Ehto ajetaan uudelleen komennolla:
+
+```bash
+python -m pipeline.lineup_backtest --tune-season 20242025 --gate-season 20252026
+```
+
 ## Jos ajo epäonnistuu tai tarkistus hälyttää
 
 GitHub lähettää sähköpostin, kun ajo päättyy virheeseen. Lue `reports/review.md`, korjaa ongelma paikallisesti, aja `python tools/review.py` uudelleen ja työnnä korjaus repoon. Jos tarkistus löytää virheen (koodi 2), julkaisua ei tehdä ja edellinen sivu jää näkyviin.

@@ -77,6 +77,7 @@ def test_offline_run_end_to_end(seeded):
     assert sorted(ids) == sorted(g["id"] for g in latest["games"])
     assert all(set(g["goalies"]) == {"home", "away"} for g in latest["games"])
     assert all("_internal" not in g for g in latest["games"])
+    assert all(isinstance(g["insights"], list) for g in latest["games"])
     assert latest["next_game_date"] is None
 
 
@@ -536,3 +537,66 @@ def test_players_log_failure_does_not_block(seeded, monkeypatch):
     monkeypatch.setattr(run.tracking, "append_players", boom)
     assert go() == 0
     assert by_id(latest_of(seeded))[2026020338]["players"] is not None
+
+
+def test_game_mults_follow_lineup_params(monkeypatch):
+    from datetime import date as _date
+
+    from pipeline import context as _context
+    from pipeline.config import LineupParams
+    from pipeline.predict import Mults
+
+    lu = {"home": {"m_att": 1.05, "m_def": 0.98}, "away": {"m_att": 0.9, "m_def": 1.02}}
+    calls = []
+
+    def fake_h2h(tg, r, team, opp, asof):
+        calls.append((team, opp, asof))
+        return 1.02 if team == "CAR" else 0.99
+
+    monkeypatch.setattr(_context, "h2h_mult", fake_h2h)
+    d = _date(2026, 11, 20)
+    assert run._game_mults(LineupParams(), lu, None, None, "CAR", "SEA", d) == Mults()
+    assert calls == []
+    assert run._game_mults(LineupParams(use_lineup=True), lu, None, None, "CAR", "SEA", d) == \
+        Mults(att_h=1.05, def_h=0.98, att_a=0.9, def_a=1.02)
+    assert run._game_mults(LineupParams(use_lineup=True), None, None, None, "CAR", "SEA", d) \
+        == Mults()
+    both = run._game_mults(LineupParams(use_lineup=True, use_h2h=True), lu, None, None,
+                           "CAR", "SEA", d)
+    assert (both.h2h_h, both.h2h_a, both.att_h) == (1.02, 0.99, 1.05)
+    assert calls == [("CAR", "SEA", d), ("SEA", "CAR", d)]
+
+
+def _boom(*a, **k):
+    raise RuntimeError("boom")
+
+
+def test_form_failure_nulls_form_blocks_only(seeded, monkeypatch):
+    monkeypatch.setattr("pipeline.context.form", _boom)
+    assert go() == 0
+    lat = latest_of(seeded)
+    assert export.validate(lat) == []
+    upcoming = [g for g in lat["games"] if g["state"] == "upcoming"]
+    assert upcoming and all(g["form"] is None for g in upcoming)
+
+
+def test_league_stats_failure_does_not_fail_run(seeded, monkeypatch):
+    monkeypatch.setattr(run.teamstats, "league_stats", _boom)
+    assert go() == 0
+    lat = latest_of(seeded)
+    assert export.validate(lat) == []
+    for g in lat["games"]:
+        assert g["insights"] is None or isinstance(g["insights"], list)
+
+
+def test_performance_failure_does_not_fail_run(seeded, monkeypatch):
+    monkeypatch.setattr(run.performance, "build_performance", _boom)
+    assert go() == 0
+    assert export.validate(latest_of(seeded)) == []
+    assert not (seeded / "site/data/performance.json").exists()
+
+
+def test_offline_run_writes_valid_performance(seeded):
+    assert go() == 0
+    perf = json.loads((seeded / "site/data/performance.json").read_text(encoding="utf-8"))
+    assert export.validate_performance(perf) == []

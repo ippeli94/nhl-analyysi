@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass, fields, replace
 from pathlib import Path
 
@@ -82,6 +83,41 @@ def load_player_params() -> PlayerParams:
 def load_player_gate() -> dict | None:
     """The `gate` object of model/player_params.json, or None if there is none."""
     return _read_player_params_file().get("gate")
+
+
+@dataclass(frozen=True)
+class LineupParams:
+    rho: float = 0.45
+    use_lineup: bool = False
+    use_h2h: bool = False
+
+
+def load_lineup_params() -> LineupParams:
+    """Defaults (both factors off) overlaid with model/lineup_params.json; `gate` is skipped.
+
+    Bad JSON, unknown structure or wrong types log a warning and give the defaults."""
+    f = path("model", "lineup_params.json")
+    if not f.exists():
+        return LineupParams()
+    try:
+        raw = json.loads(f.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            raise ValueError("not an object")
+        overrides = {k: v for k, v in raw.items() if k != "gate"}
+        unknown = set(overrides) - {x.name for x in fields(LineupParams)}
+        if unknown:
+            raise ValueError(f"unknown keys {sorted(unknown)}")
+        rho = overrides.get("rho", LineupParams.rho)
+        if isinstance(rho, bool) or not isinstance(rho, int | float) or not 0 < rho <= 1:
+            raise ValueError("rho must be a number in (0, 1]")
+        for k in ("use_lineup", "use_h2h"):
+            if k in overrides and not isinstance(overrides[k], bool):
+                raise ValueError(f"{k} must be a bool")
+        return replace(LineupParams(), **overrides)
+    except (ValueError, OSError) as exc:  # JSONDecodeError is a ValueError
+        logging.getLogger(__name__).warning(
+            "model/lineup_params.json ignored, using defaults: %s", exc)
+        return LineupParams()
 
 
 # NHL API (spec 5.1)
@@ -184,3 +220,50 @@ PLAYER_LOG_COLUMNS = (
 PLAYER_PRIOR_GRID = (2.5, 5.0, 10.0)
 PLAYER_HALF_LIFE_GRID = (40.0, 80.0)
 PLAYER_UNASSIGNED_RANGE = (0.0, 0.10)
+
+FORM_GAMES = 10
+H2H_MAX_GAMES = 8
+INSIGHT_MIN_GAMES = 10
+INSIGHT_MAX = 6
+INSIGHT_MAX_PER_TEAM = 3
+INSIGHT_KEY_ABSENCE_IMPACT = -0.02
+INSIGHT_RETURN_IMPACT = 0.02
+INSIGHT_GOALIE_RATIO = 1.04
+INSIGHT_STREAK_RESULT = 4
+INSIGHT_STREAK_POINTS = 6
+INSIGHT_PP_TOP = 8
+INSIGHT_PK_BOTTOM = 8
+INSIGHT_COLLAPSE_MIN = 6
+INSIGHT_COLLAPSE_WON_SHARE = 0.65
+INSIGHT_PERIOD_STRONG = 0.55
+INSIGHT_PERIOD_WEAK = 0.45
+INSIGHT_PERIOD_SWING = 0.10
+INSIGHT_COMEBACK_MIN = 6
+INSIGHT_COMEBACK_WON_SHARE = 0.30
+INSIGHT_FIRST_GOAL_MIN = 10
+INSIGHT_FIRST_GOAL_HIGH = 0.80
+INSIGHT_FIRST_GOAL_LOW = 0.55
+INSIGHT_PENALTY_OPP_RANK = 5
+INSIGHT_PENALTY_OWN_PP_RANK = 10
+INSIGHT_LOAD_GAMES_4D = 3
+INSIGHT_LOAD_ROAD_RUN = 4
+INSIGHT_FORM_DIFF = 0.05
+INSIGHT_LUCK = 0.6
+INSIGHT_LAST_SEASON_DIFF = 0.10
+INSIGHT_LAST_SEASON_MIN_GAMES = 15
+INSIGHT_H2H_WINS = 5
+INSIGHT_H2H_WINDOW = 6
+INSIGHT_SPLIT_DIFF = 0.20
+INSIGHT_SPLIT_MIN_GAMES = 5
+INSIGHT_SMALL_SAMPLE = 20
+
+# Lineup changes (spec 6.6)
+LINEUP_RHO = 0.45
+LINEUP_CLAMP = (0.85, 1.15)
+LINEUP_KAPPA = {"D": 0.5, "F": 0.25}
+LINEUP_PPG_FALLBACK = 2.7
+LINEUP_MAX_CHANGES = 8
+LINEUP_MIN_IMPACT = 0.005
+LINEUP_WINDOW = 10
+H2H_CLAMP = (0.97, 1.03)
+H2H_PRIOR_GAMES = 20
