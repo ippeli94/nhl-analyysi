@@ -788,3 +788,51 @@ def test_select_games_uses_future_season_start_only_without_later_games():
     assert run.select_games([], "2027-07-15", "not-a-date") == ([], None)
     later = [game(1, "FUT", "2027-09-30", "2027-09-30T23:00:00Z")]
     assert run.select_games(later, "2027-09-25", "2027-10-07") == ([], "2027-09-30")
+
+
+# --- phase 6: results.json for bet settlement ---
+
+
+def _res(gid, day, hg=3, ag=2):
+    return {"game_id": gid, "date": day, "home": "TOR", "away": "MTL", "home_goals": hg,
+            "away_goals": ag, "reg_home_goals": hg, "reg_away_goals": ag, "decided": "REG",
+            "home_won": hg > ag}
+
+
+def test_build_results_window_order_and_dedupe():
+    from datetime import date
+    today = date(2026, 11, 19)
+    rows = [_res(1, "2026-07-01"), _res(2, "2026-07-22"), _res(3, "2026-11-18"),
+            _res(4, "2026-11-18"), _res(3, "2026-11-18")]
+    obj = export.build_results(rows, today, dt(NOW))
+    assert [g["id"] for g in obj["games"]] == [4, 3, 2]  # 2026-07-22 is exactly 120 days back
+    assert "game_id" not in obj["games"][0] and "home_won" not in obj["games"][0]
+    assert export.validate_results(obj) == []
+
+
+def test_build_results_empty_is_valid():
+    from datetime import date
+    obj = export.build_results([], date(2026, 11, 19), dt(NOW))
+    assert obj["games"] == [] and export.validate_results(obj) == []
+
+
+def test_validate_results_rejects_bad_rows():
+    obj = {"generated_at": "2026-11-19T00:00:00Z",
+           "games": [{**{k: v for k, v in _res(1, "2026-11-18").items() if k != "home_won"},
+                      "id": 1, "decided": "XX", "home_goals": -1}]}
+    assert export.validate_results(obj)
+
+
+def test_offline_run_writes_valid_results(seeded):
+    assert go() == 0
+    obj = json.loads((seeded / "site/data/results.json").read_text(encoding="utf-8"))
+    assert export.validate_results(obj) == []
+    assert {g["id"] for g in obj["games"]} >= {2026020286, 2026020298}
+
+
+def test_results_failure_does_not_fail_run(seeded, monkeypatch):
+    monkeypatch.setattr(run.export, "build_results", _boom)
+    assert go() == 0
+    assert export.validate(latest_of(seeded)) == []
+    assert (seeded / "site/data/performance.json").exists()
+    assert not (seeded / "site/data/results.json").exists()

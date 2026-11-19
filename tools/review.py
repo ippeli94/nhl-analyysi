@@ -595,6 +595,27 @@ def check_perf(ctx: Ctx) -> list[Problem]:
     return []
 
 
+def check_results(ctx: Ctx) -> list[Problem]:
+    folder = ctx.root / "data" / "history" / "results"
+    if not folder.is_dir() or not any(folder.glob("*.jsonl")):
+        return []
+    target = "site/data/results.json"
+    f = ctx.root / target
+    if not f.exists():
+        return [Problem(WARNING, "RESULTS", target, "tiedosto puuttuu",
+                        "aja pipeline: python -m pipeline.run")]
+    try:
+        obj = json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [Problem(WARNING, "RESULTS", target, f"ei luettavissa: {type(exc).__name__}",
+                        "aja pipeline uudelleen: python -m pipeline.run")]
+    errors = export.validate_results(obj)
+    if errors:
+        return [Problem(WARNING, "RESULTS", target, f"skeemavirhe: {errors[0]}",
+                        "aja pipeline uudelleen: python -m pipeline.run")]
+    return []
+
+
 def _season_files(ctx: Ctx) -> list[tuple[Path, dict | None]]:
     """Cache files of the current (newest) season, read once; None marks an unreadable one."""
 
@@ -687,7 +708,8 @@ def check_secret(ctx: Ctx) -> list[Problem]:
 CHECKS: list[Callable[[Ctx], list[Problem]]] = [
     check_lint, check_test, check_site, check_prob, check_roster, check_players, check_sched,
     check_fresh,
-    check_source, check_odds, check_track, check_calibration, check_perf, check_cache, check_xg,
+    check_source, check_odds, check_track, check_calibration, check_perf, check_results,
+    check_cache, check_xg,
     check_secret,
 ]
 

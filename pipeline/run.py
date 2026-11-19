@@ -642,6 +642,7 @@ def run(
         )
         export.write_latest(latest)
         _write_performance(records, season, now)
+        _write_results(records, season, today, now)
     except (SourceError, FileNotFoundError) as exc:
         logger.error("run failed: %s", exc)
         return 1
@@ -668,6 +669,17 @@ def _write_performance(records: list[dict], season: str, now: datetime) -> None:
         export.write_performance(perf)
     except Exception as exc:  # noqa: BLE001 - performance must never fail the run
         logger.warning("performance failed: %s", type(exc).__name__)
+
+
+def _write_results(records: list[dict], season: str, today: date, now: datetime) -> None:
+    """results.json for bet settlement; a failure is logged and never fails the run."""
+    try:
+        rows = (tracking.read_log("results", _season_before(season))
+                + tracking.read_log("results", season)
+                + [_result_record(rec) for rec in records])
+        export.write_results(export.build_results(rows, today, now))
+    except Exception as exc:  # noqa: BLE001 - results must never fail the run
+        logger.warning("results failed: %s", type(exc).__name__)
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from functools import cache
 from pathlib import Path
 
@@ -14,6 +14,7 @@ from jsonschema import Draft202012Validator
 from pipeline import config
 
 SCHEMA_FILE = Path(__file__).resolve().parent / "schema" / "latest.schema.json"
+RESULTS_SCHEMA_FILE = Path(__file__).resolve().parent / "schema" / "results.schema.json"
 PERFORMANCE_SCHEMA_FILE = Path(__file__).resolve().parent / "schema" / "performance.schema.json"
 
 
@@ -106,6 +107,53 @@ def write_performance(obj: dict) -> Path:
     target.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(obj, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     fd, tmp_name = tempfile.mkstemp(dir=target.parent, prefix=".performance-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+        os.replace(tmp_name, target)
+    except BaseException:
+        Path(tmp_name).unlink(missing_ok=True)
+        raise
+    return target
+
+
+@cache
+def _results_validator() -> Draft202012Validator:
+    schema = json.loads(RESULTS_SCHEMA_FILE.read_text(encoding="utf-8"))
+    return Draft202012Validator(schema)
+
+
+def validate_results(obj: dict) -> list[str]:
+    """Schema error messages of a results.json object; empty when valid."""
+    errors = sorted(_results_validator().iter_errors(obj), key=lambda e: e.json_path)
+    return [f"{e.json_path}: {e.message}" for e in errors]
+
+
+def build_results(rows: list[dict], today: date, now: datetime) -> dict:
+    """results.json: finished games of the last RESULTS_EXPORT_DAYS days, newest first, by id."""
+    cutoff = (today - timedelta(days=config.RESULTS_EXPORT_DAYS)).isoformat()
+    unique: dict[int, dict] = {}
+    for r in rows:
+        if r["date"] >= cutoff:
+            unique[r["game_id"]] = {
+                "id": r["game_id"], "date": r["date"], "home": r["home"], "away": r["away"],
+                "home_goals": r["home_goals"], "away_goals": r["away_goals"],
+                "reg_home_goals": r["reg_home_goals"], "reg_away_goals": r["reg_away_goals"],
+                "decided": r["decided"],
+            }
+    games = sorted(unique.values(), key=lambda g: (g["date"], g["id"]), reverse=True)
+    return {"generated_at": _utc_z(now), "games": games}
+
+
+def write_results(obj: dict) -> Path:
+    """Validate, then write site/data/results.json atomically. Raises ValueError if invalid."""
+    errors = validate_results(obj)
+    if errors:
+        raise ValueError("results.json is invalid:\n" + "\n".join(errors))
+    target = config.path("site", "data", "results.json")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(obj, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+    fd, tmp_name = tempfile.mkstemp(dir=target.parent, prefix=".results-", suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text)
