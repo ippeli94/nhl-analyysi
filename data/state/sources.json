@@ -1,14 +1,14 @@
 {
   "nhl": {
     "status": "ok",
-    "fetched_at": "2026-11-20T02:33:05Z",
-    "last_ok_at": "2026-11-20T02:33:05Z",
+    "fetched_at": "2026-11-20T15:45:43Z",
+    "last_ok_at": "2026-11-20T15:45:43Z",
     "note": null
   },
   "injuries": {
     "status": "ok",
-    "fetched_at": "2026-11-20T02:33:05Z",
-    "last_ok_at": "2026-11-20T02:33:05Z",
+    "fetched_at": "2026-11-20T15:45:43Z",
+    "last_ok_at": "2026-11-20T15:45:43Z",
     "note": null
   },
   "odds": {
