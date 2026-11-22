@@ -356,3 +356,5 @@
 {"game_id":2026020356,"date":"2026-11-19","home":"COL","away":"ANA","home_goals":4,"away_goals":0,"reg_home_goals":4,"reg_away_goals":0,"decided":"REG","home_won":true}
 {"game_id":2026020357,"date":"2026-11-19","home":"SEA","away":"VAN","home_goals":5,"away_goals":1,"reg_home_goals":5,"reg_away_goals":1,"decided":"REG","home_won":true}
 {"game_id":2026020358,"date":"2026-11-19","home":"VGK","away":"DAL","home_goals":3,"away_goals":4,"reg_home_goals":3,"reg_away_goals":3,"decided":"SO","home_won":false}
+{"game_id":2026020359,"date":"2026-11-21","home":"CAR","away":"EDM","home_goals":7,"away_goals":4,"reg_home_goals":7,"reg_away_goals":4,"decided":"REG","home_won":true}
+{"game_id":2026020360,"date":"2026-11-21","home":"CGY","away":"CHI","home_goals":3,"away_goals":4,"reg_home_goals":3,"reg_away_goals":3,"decided":"OT","home_won":false}
