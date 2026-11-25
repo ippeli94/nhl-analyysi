@@ -382,3 +382,4 @@
 {"game_id":2026020382,"date":"2026-11-23","home":"WPG","away":"UTA","home_goals":4,"away_goals":2,"reg_home_goals":4,"reg_away_goals":2,"decided":"REG","home_won":true}
 {"game_id":2026020383,"date":"2026-11-23","home":"SEA","away":"ANA","home_goals":3,"away_goals":2,"reg_home_goals":3,"reg_away_goals":2,"decided":"REG","home_won":true}
 {"game_id":2026020384,"date":"2026-11-23","home":"SJS","away":"MIN","home_goals":2,"away_goals":5,"reg_home_goals":2,"reg_away_goals":5,"decided":"REG","home_won":false}
+{"game_id":2026020385,"date":"2026-11-24","home":"EDM","away":"VGK","home_goals":3,"away_goals":5,"reg_home_goals":3,"reg_away_goals":5,"decided":"REG","home_won":false}
