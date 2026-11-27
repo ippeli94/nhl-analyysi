@@ -397,3 +397,11 @@
 {"game_id":2026020397,"date":"2026-11-25","home":"COL","away":"MTL","home_goals":6,"away_goals":0,"reg_home_goals":6,"reg_away_goals":0,"decided":"REG","home_won":true}
 {"game_id":2026020398,"date":"2026-11-25","home":"ANA","away":"SJS","home_goals":7,"away_goals":0,"reg_home_goals":7,"reg_away_goals":0,"decided":"REG","home_won":true}
 {"game_id":2026020399,"date":"2026-11-25","home":"SEA","away":"CHI","home_goals":1,"away_goals":3,"reg_home_goals":1,"reg_away_goals":3,"decided":"REG","home_won":false}
+{"game_id":2026020400,"date":"2026-11-27","home":"BOS","away":"TOR","home_goals":1,"away_goals":3,"reg_home_goals":1,"reg_away_goals":3,"decided":"REG","home_won":false}
+{"game_id":2026020401,"date":"2026-11-27","home":"NJD","away":"CGY","home_goals":5,"away_goals":3,"reg_home_goals":5,"reg_away_goals":3,"decided":"REG","home_won":true}
+{"game_id":2026020402,"date":"2026-11-27","home":"NSH","away":"UTA","home_goals":5,"away_goals":6,"reg_home_goals":5,"reg_away_goals":5,"decided":"SO","home_won":false}
+{"game_id":2026020403,"date":"2026-11-27","home":"STL","away":"DAL","home_goals":5,"away_goals":3,"reg_home_goals":5,"reg_away_goals":3,"decided":"REG","home_won":true}
+{"game_id":2026020404,"date":"2026-11-27","home":"TBL","away":"OTT","home_goals":2,"away_goals":6,"reg_home_goals":2,"reg_away_goals":6,"decided":"REG","home_won":false}
+{"game_id":2026020405,"date":"2026-11-27","home":"PHI","away":"VAN","home_goals":5,"away_goals":2,"reg_home_goals":5,"reg_away_goals":2,"decided":"REG","home_won":true}
+{"game_id":2026020406,"date":"2026-11-27","home":"WSH","away":"FLA","home_goals":2,"away_goals":3,"reg_home_goals":2,"reg_away_goals":3,"decided":"REG","home_won":false}
+{"game_id":2026020407,"date":"2026-11-27","home":"CBJ","away":"DET","home_goals":0,"away_goals":2,"reg_home_goals":0,"reg_away_goals":2,"decided":"REG","home_won":false}
