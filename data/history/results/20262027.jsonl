@@ -409,3 +409,6 @@
 {"game_id":2026020409,"date":"2026-11-27","home":"ANA","away":"LAK","home_goals":3,"away_goals":5,"reg_home_goals":3,"reg_away_goals":5,"decided":"REG","home_won":false}
 {"game_id":2026020410,"date":"2026-11-27","home":"SJS","away":"VGK","home_goals":4,"away_goals":1,"reg_home_goals":4,"reg_away_goals":1,"decided":"REG","home_won":true}
 {"game_id":2026020411,"date":"2026-11-27","home":"CHI","away":"NYR","home_goals":2,"away_goals":1,"reg_home_goals":2,"reg_away_goals":1,"decided":"REG","home_won":true}
+{"game_id":2026020412,"date":"2026-11-27","home":"NYI","away":"WPG","home_goals":1,"away_goals":3,"reg_home_goals":1,"reg_away_goals":3,"decided":"REG","home_won":false}
+{"game_id":2026020413,"date":"2026-11-27","home":"BUF","away":"PIT","home_goals":3,"away_goals":6,"reg_home_goals":3,"reg_away_goals":6,"decided":"REG","home_won":false}
+{"game_id":2026020414,"date":"2026-11-27","home":"EDM","away":"SEA","home_goals":2,"away_goals":4,"reg_home_goals":2,"reg_away_goals":4,"decided":"REG","home_won":false}
